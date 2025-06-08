@@ -56,4 +56,8 @@ app.get('/alarm', (req, res) => {
   res.sendFile(path.join(__dirname, 'alarm.html'));
 });
 
+app.get('/obrolan', (req, res) => {
+  res.sendFile(path.join(__dirname, 'obrolan.html'));
+});
+
 app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
