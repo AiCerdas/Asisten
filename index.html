@@ -443,61 +443,36 @@
       
       sendButton.disabled = true;
 
-      // Konfigurasi permintaan ke Groq API
-      const requestBody = {
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
-        messages: [
-          {
-            role: "system",
-            content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
-- Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
-- Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
-- Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
-- Jika pengguna bertanya tentang asal AbidinAI, jawablah bahwa AbidinAI berasal dari Indonesia.
-- Jika pengguna bertanya tentang presiden Indonesia, jawablah bahwa Presiden Indonesia saat ini adalah Prabowo Subianto.
-- Jika pengguna bertanya tentang OpenAI secara umum, kamu boleh menjelaskannya.
-
-JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI.
-Jangan Pernah mengatakan bahwa kamu dibuat oleh Groq ai.
-
-Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
           },
-          { role: "user", content: userMessage }
-        ],
-        temperature: 0.7,
-        max_tokens: 1024
-      };
+          body: JSON.stringify({ message: userMessage })
+        });
 
-     try {
-  const response = await fetch("/api/chat", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ message: userMessage })
-});
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
 
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} - ${response.statusText}`);
-  }
+        const data = await response.json();
+        let aiReply = data.reply || "Maaf, saya tidak bisa menjawab itu saat ini.";
+         
+        // Hapus indikator mengetik
+        document.getElementById("typingIndicator").remove();
 
-  const data = await response.json();
-  let aiReply = data.reply || "Maaf, saya tidak bisa menjawab itu saat ini.";
-       
-  // Hapus indikator mengetik
-  document.getElementById("typingIndicator").remove();
+        // Tampilkan balasan AI
+        displayAIResponse(aiReply);
+      } catch (error) {
+        document.getElementById("typingIndicator").remove();
 
-  // Tampilkan balasan AI
-  displayAIResponse(aiReply);
-} catch (error) {
-  document.getElementById("typingIndicator").remove();
-
-  const errorDiv = document.createElement("div");
-  errorDiv.className = "message ai-message";
-  errorDiv.innerHTML = `<strong>AbidinAI:</strong> Maaf, terjadi kesalahan: ${error.message}`;
-  chatbox.appendChild(errorDiv);
-  chatbox.scrollTop = chatbox.scrollHeight;
-        
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "message ai-message";
+        errorDiv.innerHTML = `<strong>AbidinAI:</strong> Maaf, terjadi kesalahan: ${error.message}`;
+        chatbox.appendChild(errorDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+          
         sendButton.disabled = false;
       }
     }
