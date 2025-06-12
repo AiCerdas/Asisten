@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dokter AbidinAI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(10, 15, 35, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, rgba(0,0,0,0) 70%);
+      z-index: -1;
+    }
+    
+    .header {
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 25%;
+      width: 50%;
+      height: 2px;
+      background: linear-gradient(to right, transparent, cyan, transparent);
+    }
+    
+    .title {
+      font-size: 28px;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, cyan, #00ffaa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+    
+    .developer {
+      font-size: 16px;
+      color: #ccc;
+      margin-bottom: 15px;
+    }
+    
+    .developer b {
+      color: cyan;
+    }
+    
+    .logo {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      border-radius: 15px;
+      border: 2px solid cyan;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      margin: 0 auto 15px;
+      display: block;
+    }
+    
+    .audio-control {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 25px;
+      align-items: center;
+    }
+    
+    .audio-btn {
+      background: rgba(0, 20, 40, 0.8);
+      color: cyan;
+      border: 2px solid rgba(0, 255, 255, 0.4);
+      padding: 14px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+      text-decoration: none;
+      min-height: 48px;
+      backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .audio-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .audio-btn:hover::before {
+      left: 100%;
+    }
+    
+    .audio-btn:hover {
+      background: rgba(0, 255, 255, 0.15);
+      color: white;
+      border-color: cyan;
+      box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    
+    .audio-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
+    }
+    
+    .audio-btn i {
+      font-size: 16px;
+      min-width: 16px;
+    }
+    
+    .chat-container {
+      background: rgba(0, 10, 20, 0.7);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+    }
+    
+    #chatbox {
+      width: 100%;
+      height: 300px;
+      padding: 15px;
+      overflow-y: auto;
+      text-align: left;
+      background: rgba(0, 5, 15, 0.8);
+      border-radius: 10px;
+      white-space: pre-line;
+      border: 1px solid rgba(0, 255, 255, 0.2);
+    }
+    
+    #chatbox::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #chatbox::-webkit-scrollbar-track {
+      background: rgba(0, 20, 40, 0.5);
+    }
+    
+    #chatbox::-webkit-scrollbar-thumb {
+      background: cyan;
+      border-radius: 4px;
+    }
+    
+    .message {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .user-message {
+      background: rgba(0, 50, 100, 0.3);
+      border-left: 3px solid #00aaff;
+    }
+    
+    .ai-message {
+      background: rgba(0, 80, 60, 0.3);
+      border-left: 3px solid #00ffaa;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    #messageInput {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 30px;
+      border: none;
+      background: rgba(0, 20, 40, 0.7);
+      color: white;
+      font-size: 16px;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+    }
+    
+    #messageInput:focus {
+      outline: none;
+      border-color: cyan;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    
+    #sendButton {
+      padding: 12px 25px;
+      border-radius: 30px;
+      border: none;
+      background: linear-gradient(45deg, #00ccff, #00ffcc);
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    #sendButton:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+    }
+    
+    #sendButton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .voice-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 30px;
+      background: linear-gradient(45deg, #ff00cc, #cc00ff);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .voice-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 0, 204, 0.4);
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: cyan;
+      animation: spin 1s ease-in-out infinite;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    
+    .typing-indicator {
+      color: #aaa;
+      font-style: italic;
+      padding: 10px;
+    }
+    
+    .code-container {
+      position: relative;
+      margin: 15px 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 200, 255, 0.9);
+      color: black;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .copy-btn:hover {
+      background: cyan;
+      box-shadow: 0 0 10px cyan;
+    }
+    
+    pre {
+      background: rgba(0, 17, 34, 0.8);
+      color: #0ff;
+      padding: 20px 15px 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      text-align: left;
+    }
+    
+    .status {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+        border-radius: 15px;
+      }
+      
+      .title {
+        font-size: 24px;
+      }
+      
+      #chatbox {
+        height: 250px;
+      }
+      
+      .input-group {
+        flex-direction: column;
+      }
+      
+      .audio-control {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      
+      .audio-btn {
+        padding: 12px 16px;
+        font-size: 13px;
+        min-height: 44px;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .audio-control {
+        grid-template-columns: 1fr;
+      }
+      
+      .audio-btn {
+        padding: 10px 12px;
+        font-size: 12px;
+        min-height: 40px;
+      }
+      
+      .audio-btn i {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title"><i class="fas fa-user-md"></i> Dokter Abidin</h1>
+      <p class="developer"><b>Spesialis:</b> Kesehatan Umum</p>
+      <img src="https://i.imgur.com/ODpJVSL.jpeg" alt="Dokter AI" class="logo">
+    </div>
+    
+    <div class="audio-control">
+      <button id="playBtn" class="audio-btn" onclick="toggleAudio()">
+        <i class="fas fa-play"></i>
+        <span>Putar Musik</span>
+      </button>
+  
+    </div>
+    
+    <div class="chat-container">
+      <div id="chatbox"></div>
+    </div>
+    
+    <div class="input-group">
+      <input type="text" id="messageInput" placeholder="Tanyakan masalah kesehatan Anda..." onkeypress="handleKeyPress(event)">
+      <button onclick="sendMessage()" id="sendButton">
+        <i class="fas fa-paper-plane"></i> Kirim
+      </button>
+    </div>
+    
+    <button onclick="startVoiceRecognition()" class="voice-btn">
+      <i class="fas fa-microphone-alt"></i> Konsultasi Suara
+    </button>
+    
+    <div class="status">
+      <i class="fas fa-plug"></i>
+      <span>Terhubung ke Server AbidinAI</span>
+    </div>
+  </div>
+
+  <audio id="audioPlayer" loop>
+    <source src="https://d.top4top.io/m_33403we8x0.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    let isVoiceInput = false;
+    let audioEnabled = false;
+    let listeningIndicator = null; 
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatbox = document.getElementById("chatbox");
+      const welcomeMsg = document.createElement("div");
+      welcomeMsg.className = "message ai-message";
+      welcomeMsg.innerHTML = `
+        <strong>Dokter AI:</strong>  Selamat datang! Saya adalah Dokter Abidin, asisten kesehatan digital yang dikembangkan oleh Abidin. 
+        Saya khusus membantu memberikan informasi dan saran mengenai masalah kesehatan. 
+        Silakan tanyakan keluhan kesehatan Anda atau konsultasi medis yang diperlukan.
+        <br><br>
+        <i>Catatan: Saya tidak bisa menjawab pertanyaan di luar topik kesehatan.</i>
+      `;
+      chatbox.appendChild(welcomeMsg);
+    });
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+      const userMessage = document.getElementById("messageInput").value.trim();
+      if (!userMessage) return;
+
+      const chatbox = document.getElementById("chatbox");
+      const sendButton = document.getElementById("sendButton");
+
+      // Add user message to chat
+      const userMsgDiv = document.createElement("div");
+      userMsgDiv.className = "message user-message";
+      userMsgDiv.innerHTML = `<strong>Anda:</strong> ${userMessage}`;
+      chatbox.appendChild(userMsgDiv);
+      document.getElementById("messageInput").value = "";
+
+      // Add typing indicator
+      const typingIndicator = document.createElement("div");
+      typingIndicator.className = "message ai-message typing-indicator";
+      typingIndicator.id = "typingIndicator";
+      typingIndicator.innerHTML = `<strong>Dokter AI:</strong> <span class="loading"></span> Menganalisis...`;
+      chatbox.appendChild(typingIndicator);
+      chatbox.scrollTop = chatbox.scrollHeight;
+      
+      sendButton.disabled = true;
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ 
+            message: `Anda adalah dokter AI yang hanya menjawab pertanyaan kesehatan. Jika pertanyaan tidak terkait kesehatan, jawab dengan sopan bahwa Anda hanya bisa membantu masalah kesehatan. Pertanyaan: ${userMessage}` 
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        let aiReply = data.reply || "Maaf, saya tidak bisa menjawab pertanyaan itu saat ini.";
+        
+        // Remove typing indicator
+        document.getElementById("typingIndicator").remove();
+        
+        // Display AI response
+        displayAIResponse(aiReply);
+      } catch (error) {
+        document.getElementById("typingIndicator").remove();
+
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "message ai-message";
+        errorDiv.innerHTML = `<strong>Dokter AI:</strong> Maaf, terjadi kesalahan: ${error.message}`;
+        chatbox.appendChild(errorDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+          
+        sendButton.disabled = false;
+      }
+    }
+
+    function displayAIResponse(aiReply) {
+      const chatbox = document.getElementById("chatbox");
+      const sendButton = document.getElementById("sendButton");
+
+      if (listeningIndicator) {
+        listeningIndicator.remove();
+        listeningIndicator = null;
+      }
+      
+      // Pisahkan teks dan kode
+      const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
+      const container = document.createElement("div");
+      container.className = "message ai-message";
+      container.innerHTML = `<strong>Dokter AI:</strong><br>`;
+      let textToRead = "";
+
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 0) {
+          const span = document.createElement("span");
+          span.textContent = parts[i];
+          textToRead += parts[i] + " ";
+          container.appendChild(span);
+        } else {
+          const codeContainer = document.createElement("div");
+          codeContainer.className = "code-container";
+
+          const copyButton = document.createElement("button");
+          copyButton.className = "copy-btn";
+          copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
+          copyButton.onclick = () => {
+            navigator.clipboard.writeText(parts[i]).then(() => {
+              copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+              setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
+            });
+          };
+
+          const pre = document.createElement("pre");
+          pre.textContent = parts[i];
+          codeContainer.appendChild(copyButton);
+          codeContainer.appendChild(pre);
+          container.appendChild(codeContainer);
+        }
+      }
+
+      chatbox.appendChild(container);
+      chatbox.scrollTop = chatbox.scrollHeight;
+      sendButton.disabled = false;
+
+      // Baca dengan suara jika input berasal dari suara
+      if (isVoiceInput) {
+        readWithPauses(textToRead);
+      }
+      isVoiceInput = false;
+    }
+
+    function readWithPauses(text) {
+      if (!('speechSynthesis' in window)) {
+        console.log("Text-to-speech tidak didukung di browser ini");
+        return;
+      }
+      
+      const sentences = text.split(/(?<=[.!?])\s+/);
+      const synth = window.speechSynthesis;
+      synth.cancel(); 
+
+      function cleanText(t) {
+        return t.replace(/[*"`\-+/:;\\]/g, '');
+      }
+
+      function speakNext(index) {
+        if (index >= sentences.length) return;
+        
+        const cleanSentence = cleanText(sentences[index]).trim();
+        if (!cleanSentence) return speakNext(index + 1);
+        
+        const utter = new SpeechSynthesisUtterance(cleanSentence);
+        utter.lang = 'id-ID';
+        utter.rate = 1.0;
+        utter.pitch = 1.0;
+        utter.volume = 1.0;
+        
+        utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
+        synth.speak(utter);
+      }
+
+      speakNext(0);
+    }
+
+    function toggleAudio() {
+      const audio = document.getElementById("audioPlayer");
+      const playBtn = document.getElementById("playBtn");
+      
+      if (audio.paused) {
+        audio.play().catch(e => console.log("Autoplay blocked:", e));
+        playBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause Musik</span>';
+        playBtn.classList.add("pulse");
+      } else {
+        audio.pause();
+        playBtn.innerHTML = '<i class="fas fa-play"></i><span>Putar Musik</span>';
+        playBtn.classList.remove("pulse");
+      }
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        const voiceText = event.results[0][0].transcript;
+        document.getElementById("messageInput").value = voiceText;
+        isVoiceInput = true;
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        alert('Gagal mengenali suara: ' + event.error);
+        
+        if (listeningIndicator) {
+          listeningIndicator.remove();
+          listeningIndicator = null;
+        }
+      };
+      
+      recognition.onend = () => {
+        // Nothing to do here
+      };
+    } else {
+      alert("Browser tidak mendukung pengenalan suara.");
+    }
+
+    function startVoiceRecognition() {
+      if (recognition) {
+        try {
+          recognition.start();
+  
+          const chatbox = document.getElementById("chatbox");
+          
+          if (listeningIndicator) {
+            listeningIndicator.remove();
+          }
+          
+          listeningIndicator = document.createElement("div");
+          listeningIndicator.className = "message user-message";
+          listeningIndicator.innerHTML = `<strong>Sistem:</strong> Mendengarkan keluhan kesehatan Anda...`;
+          chatbox.appendChild(listeningIndicator);
+          chatbox.scrollTop = chatbox.scrollHeight;
+        } catch (e) {
+          console.error("Error starting recognition:", e);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
