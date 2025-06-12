@@ -85,32 +85,34 @@ app.post('/api/telegram', async (req, res) => {
 // === Serve file statis ===
 app.use(express.static(path.join(__dirname)));
 
+// serve index.html dari root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// serve file yang ada di /private
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
+  res.sendFile(path.join(__dirname, 'private/login.html'));
 });
-
 app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'register.html'));
+  res.sendFile(path.join(__dirname, 'private/register.html'));
 });
-
 app.get('/dasboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dasboard.html'));
+  res.sendFile(path.join(__dirname, 'private/dasboard.html'));
 });
-
-app.get('/dokter', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dokter.html'));
-});
-
 app.get('/alarm', (req, res) => {
-  res.sendFile(path.join(__dirname, 'alarm.html'));
+  res.sendFile(path.join(__dirname, 'private/alarm.html'));
+});
+app.get('/dokter', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/dokter.html'));
+});
+app.get('/obrolan', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/obrolan.html'));
 });
 
-app.get('/obrolan', (req, res) => {
-  res.sendFile(path.join(__dirname, 'obrolan.html'));
+// fallback: jika URL tidak cocok, redirect ke index
+app.use((req, res) => {
+  res.redirect('/');
 });
 
 app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
