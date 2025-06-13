@@ -6,12 +6,11 @@
   <title>AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Minified & Obfuscated CSS */
+    /* Minified & Obfuscated CSS (tetap sama) */
     *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;text-align:center;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;overflow-x:hidden}.container{width:100%;max-width:500px;background:rgba(10,15,35,0.8);padding:25px;border-radius:20px;box-shadow:0 0 25px rgba(0,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(0,255,255,0.3);position:relative;overflow:hidden}.container::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(0,255,255,0.1) 0%,rgba(0,0,0,0) 70%);z-index:-1}.header{margin-bottom:20px;position:relative;padding-bottom:15px}.header::after{content:'';position:absolute;bottom:0;left:25%;width:50%;height:2px;background:linear-gradient(to right,transparent,cyan,transparent)}.title{font-size:28px;margin-bottom:10px;background:linear-gradient(90deg,cyan,#00ffaa);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 10px rgba(0,255,255,0.3)}.developer{font-size:16px;color:#ccc;margin-bottom:15px}.developer b{color:cyan}.logo{width:100%;max-width:300px;height:auto;border-radius:15px;border:2px solid cyan;box-shadow:0 0 15px rgba(0,255,255,0.5);margin:0 auto 15px;display:block}.audio-control{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:25px;align-items:center}.audio-btn{background:rgba(0,20,40,0.8);color:cyan;border:2px solid rgba(0,255,255,0.4);padding:14px 16px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,255,255,0.2);text-decoration:none;min-height:48px;backdrop-filter:blur(5px);position:relative;overflow:hidden}.audio-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,255,0.2),transparent);transition:left 0.5s ease}.audio-btn:hover::before{left:100%}.audio-btn:hover{background:rgba(0,255,255,0.15);color:white;border-color:cyan;box-shadow:0 6px 20px rgba(0,255,255,0.4);transform:translateY(-2px);text-decoration:none}.audio-btn:active{transform:translateY(0);box-shadow:0 2px 8px rgba(0,255,255,0.3)}.audio-btn i{font-size:16px;min-width:16px}.chat-container{background:rgba(0,10,20,0.7);border-radius:15px;padding:15px;margin-bottom:20px;border:1px solid rgba(0,255,255,0.3);box-shadow:inset 0 0 10px rgba(0,255,255,0.2)}#chatbox{width:100%;height:300px;padding:15px;overflow-y:auto;text-align:left;background:rgba(0,5,15,0.8);border-radius:10px;white-space:pre-line;border:1px solid rgba(0,255,255,0.2)}#chatbox::-webkit-scrollbar{width:8px}#chatbox::-webkit-scrollbar-track{background:rgba(0,20,40,0.5)}#chatbox::-webkit-scrollbar-thumb{background:cyan;border-radius:4px}.message{margin-bottom:15px;padding:10px;border-radius:10px;animation:fadeIn 0.3s ease}.user-message{background:rgba(0,50,100,0.3);border-left:3px solid #00aaff}.ai-message{background:rgba(0,80,60,0.3);border-left:3px solid #00ffaa}.maintenance-message{background:rgba(255,140,0,0.2);border-left:3px solid #ff8c00}.input-group{display:flex;gap:10px;margin-bottom:15px}#messageInput{flex:1;padding:12px 15px;border-radius:30px;border:none;background:rgba(0,20,40,0.7);color:white;font-size:16px;border:1px solid rgba(0,255,255,0.3)}#messageInput:focus{outline:none;border-color:cyan;box-shadow:0 0 10px rgba(0,255,255,0.5)}#sendButton{padding:12px 25px;border-radius:30px;border:none;background:linear-gradient(45deg,#00ccff,#00ffcc);color:black;font-weight:bold;cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}#sendButton:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,255,255,0.4)}#sendButton:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}.voice-btn{width:100%;padding:12px;border-radius:30px;background:linear-gradient(45deg,#ff00cc,#cc00ff);color:white;font-weight:bold;border:none;cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}.voice-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,0,204,0.4)}.loading{display:inline-block;width:20px;height:20px;border:3px solid rgba(0,255,255,0.3);border-radius:50%;border-top-color:cyan;animation:spin 1s ease-in-out infinite;vertical-align:middle;margin-left:10px}.typing-indicator{color:#aaa;font-style:italic;padding:10px}.code-container{position:relative;margin:15px 0;border-radius:8px;overflow:hidden}.copy-btn{position:absolute;top:10px;right:10px;background:rgba(0,200,255,0.9);color:black;border:none;padding:5px 10px;border-radius:5px;font-size:12px;cursor:pointer;z-index:10;transition:all 0.3s ease;display:flex;align-items:center;gap:5px}.copy-btn:hover{background:cyan;box-shadow:0 0 10px cyan}pre{background:rgba(0,17,34,0.8);color:#0ff;padding:20px 15px 15px;border-radius:8px;overflow-x:auto;font-family:'Fira Code','Courier New',monospace;font-size:14px;white-space:pre-wrap;border:1px solid rgba(0,255,255,0.2);text-align:left}.status{margin-top:15px;font-size:14px;color:#aaa;display:flex;align-items:center;justify-content:center;gap:8px}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,255,255,0.7)}70%{box-shadow:0 0 0 10px rgba(0,255,255,0)}100%{box-shadow:0 0 0 0 rgba(0,255,255,0)}}.pulse{animation:pulse 2s infinite}@media (max-width:600px){.container{padding:15px;border-radius:15px}.title{font-size:24px}#chatbox{height:250px}.input-group{flex-direction:column}.audio-control{grid-template-columns:1fr;gap:10px;margin-bottom:20px}.audio-btn{padding:12px 16px;font-size:13px;min-height:44px}}@media (max-width:400px){.audio-control{grid-template-columns:1fr}.audio-btn{padding:10px 12px;font-size:12px;min-height:40px}.audio-btn i{font-size:14px}}::-webkit-scrollbar{display:none}html{-ms-overflow-style:none;scrollbar-width:none}.blur-screen{filter:blur(10px) !important}.warning-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,0.9);z-index:9999;display:none;justify-content:center;align-items:center;color:white;font-size:24px}.no-select{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
   </style>
 </head>
 <body class="no-select">
-  <!-- Security Warning Overlay -->
   <div class="warning-overlay" id="warningOverlay">
     <div style="text-align: center;">
       <i class="fas fa-shield-alt" style="font-size: 48px; margin-bottom: 20px; color: #ff0000;"></i>
@@ -67,28 +66,21 @@
   </audio>
 
   <script>
-    // Obfuscated & Protected JavaScript
     (function() {
       'use strict';
       
-      // Security Variables (Obfuscated)
-      const _0x1a2b = "YwAAAAAAAACoAAAADwAAADE3NDIwNTgwNzQ4OkFBSGhkR1NrRUZlNVRkNmwwLVZnQUlybjlRRjFJNnRtUmkw";
-      const _0x3c4d = "7051758746";
       let _0x5e6f = false;
       let _0x7890 = null;
       let _0xabcd = false;
       let _0xef12 = null;
       
-      // Anti-DevTools Protection
       const _0x3456 = {open: false, orientation: null};
       const _0x7890_threshold = 160;
       
-      // Disable shortcuts and right-click
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('selectstart', e => e.preventDefault());
       document.addEventListener('dragstart', e => e.preventDefault());
       
-      // Key blocking
       document.addEventListener('keydown', function(e) {
         if (
           e.key === 'F12' ||
@@ -106,8 +98,7 @@
           return false;
         }
       });
-      
-      // DevTools Detection
+    
       const _0xDetectDevTools = () => {
         if (window.outerHeight - window.innerHeight > _0x7890_threshold || 
             window.outerWidth - window.innerWidth > _0x7890_threshold) {
@@ -123,10 +114,8 @@
         }
       };
       
-      // Check every 300ms
       setInterval(_0xDetectDevTools, 300);
       
-      // Console Protection
       const _0xClearConsole = () => {
         if (typeof console !== 'undefined') {
           console.clear();
@@ -136,11 +125,9 @@
         }
       };
       
-      // Clear console periodically
       setInterval(_0xClearConsole, 1000);
       _0xClearConsole();
-      
-      // Warning functions
+    
       function _0xShowWarning() {
         const overlay = document.getElementById('warningOverlay');
         const container = document.getElementById('mainContainer');
@@ -160,8 +147,7 @@
           document.body.style.overflow = 'auto';
         }
       }
-      
-      // Anti-debugging trap
+    
       (() => {
         const _0xDebugTrap = () => {
           debugger;
@@ -169,12 +155,10 @@
         setInterval(_0xDebugTrap, 100);
       })();
       
-      // Window events
       window.addEventListener('blur', _0xClearConsole);
       window.addEventListener('focus', _0xClearConsole);
       window.addEventListener('resize', _0xDetectDevTools);
       
-      // Initialize chat
       document.addEventListener('DOMContentLoaded', function() {
         // Security check
         if (_0x3456.open) {
@@ -192,7 +176,6 @@
         chatbox.appendChild(welcomeMsg);
       });
       
-      // Protected Functions
       window.handleKeyPress = function(event) {
         if (_0x3456.open) {
           _0xShowWarning();
@@ -276,27 +259,6 @@
         userDiv.innerHTML = `<strong>Anda:</strong> ${text}`;
         chatbox.appendChild(userDiv);
 
-        // Send to Telegram (obfuscated)
-        const _0xtgUrl = `https://api.telegram.org/bot${_0x1a2b}/sendMessage`;
-        const _0xtgData = {
-          chat_id: _0x3c4d,
-          text: `🧑 Pengguna AbidinAI:\n${text}`
-        };
-
-        // Send via backend
-        try {
-          await fetch("/api/telegram", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ text })
-          });
-        } catch (err) {
-          console.error("Gagal kirim ke via backend:", err);
-        }
-
-        // Show typing indicator
         const typingIndicator = document.createElement("div");
         typingIndicator.className = "message ai-message typing-indicator";
         typingIndicator.id = "typingIndicator";
@@ -306,7 +268,6 @@
         
         sendButton.disabled = true;
 
-        // Send to AI API
         try {
           const response = await fetch("/api/chat", {
             method: "POST",
