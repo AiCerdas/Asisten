@@ -218,6 +218,7 @@
     
     .message-content {
       flex: 1;
+      position: relative; /* Tambahkan ini */
     }
     
     .message-header {
@@ -1287,6 +1288,7 @@
           } else {
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
+            codeContainer.style.position = 'relative'; // Tambahkan ini
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-btn";
