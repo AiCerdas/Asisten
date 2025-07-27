@@ -7,7 +7,7 @@
   <title>AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <style>
+  <style>
     * {
       margin: 0;
       padding: 0;
@@ -64,14 +64,14 @@
 
     /* menu digital */
     .menu-badge {
-     margin-left: auto;
-     background: #4f46e5;
-     color: white;
-     padding: 2px 8px;
-     border-radius: 10px;
-    font-size: 0.75rem;
+      margin-left: auto;
+      background: #4f46e5;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
     }
-    /*-------*/
+    
     .menu-item {
       display: flex;
       align-items: center;
@@ -218,7 +218,8 @@
     
     .message-content {
       flex: 1;
-      position: relative; /* Tambahkan ini */
+      position: relative;
+      overflow: hidden;
     }
     
     .message-header {
@@ -240,6 +241,7 @@
     .message-text {
       line-height: 1.6;
       white-space: pre-line;
+      position: relative;
     }
     
     .code-container {
@@ -247,6 +249,7 @@
       margin: 15px 0;
       border-radius: 8px;
       overflow: hidden;
+      background: #1e293b;
     }
     
     .copy-btn {
@@ -281,6 +284,7 @@
       font-size: 14px;
       white-space: pre-wrap;
       text-align: left;
+      margin: 0;
     }
     
     .typing-indicator {
@@ -592,7 +596,6 @@
         justify-content: flex-end;
       }
     }
-  </style>
   </style>
 </head>
 <body class="no-select">
@@ -1288,7 +1291,8 @@
           } else {
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
-            codeContainer.style.position = 'relative'; // Tambahkan ini
+            codeContainer.style.position = 'relative';
+            codeContainer.style.overflow = 'hidden';
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-btn";
