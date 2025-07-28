@@ -1306,12 +1306,8 @@
 
             const pre = document.createElement("pre");
             pre.textContent = parts[i];
-            
-            // Tambahkan padding ke pre untuk memberi ruang tombol salin
-            pre.style.padding = '20px 15px 15px';
-            
-            codeContainer.appendChild(pre);
             codeContainer.appendChild(copyButton);
+            codeContainer.appendChild(pre);
             messageText.appendChild(codeContainer);
           }
         }
