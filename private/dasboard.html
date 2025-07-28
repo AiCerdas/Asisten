@@ -219,7 +219,7 @@
     .message-content {
       flex: 1;
       position: relative;
-      overflow: hidden;
+      overflow: hidden; /* Added to contain floated elements if any */
     }
     
     .message-header {
@@ -244,12 +244,11 @@
       position: relative;
     }
     
-    /* Perbaikan CSS untuk tombol Salin */
     .code-container {
-      position: relative; /* Penting agar tombol absolute relatif terhadap container ini */
+      position: relative; /* Ensure position for absolute copy-btn */
       margin: 15px 0;
       border-radius: 8px;
-      overflow: hidden;
+      overflow: hidden; /* Crucial for containing pre with overflow-x: auto */
       background: #1e293b;
     }
     
@@ -264,7 +263,7 @@
       border-radius: 5px;
       font-size: 12px;
       cursor: pointer;
-      z-index: 2; /* Tingkatkan z-index agar di atas pre */
+      z-index: 10; /* Make sure it's above the pre content */
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
@@ -278,17 +277,14 @@
     pre {
       background: #1e293b;
       color: #f8fafc;
-      padding: 20px 15px 15px; /* Tambahkan padding di atas untuk tombol */
-      padding-top: 40px; /* Sesuaikan padding-top agar tombol tidak menutupi teks */
+      padding: 20px 15px 15px;
       border-radius: 8px;
-      overflow-x: auto;
+      overflow-x: auto; /* Enable horizontal scrolling for long lines */
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
-      white-space: pre-wrap;
+      white-space: pre-wrap; /* Wrap long lines if possible */
       text-align: left;
       margin: 0;
-      position: relative; /* Pastikan pre juga memiliki position relative/static agar tidak keluar dari flow */
-      z-index: 1; /* Pastikan pre di bawah tombol */
     }
     
     .typing-indicator {
@@ -702,10 +698,10 @@
         <span>Ekstrak Teks (OCR)</span>
       </div>
       
-      <a            href="https://wa.me/6283169364879?text=Hallo%20admin"         class="menu-item" target="_blank">
-  <i class="fas fa-exclamation-triangle"></i>
-  <span>Lapor Masalah</span>
-</a>
+      <a href="https://wa.me/6283169364879?text=Hallo%20admin" class="menu-item" target="_blank">
+      <i class="fas fa-exclamation-triangle"></i>
+     <span>Lapor Masalah</span>
+     </a>
       
       <div class="menu-item" id="musicMenuItem">
         <i class="fas fa-music"></i>
@@ -1289,9 +1285,11 @@
           } else {
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
-            // Tidak perlu style.position dan style.overflow di sini karena sudah ada di CSS
-            // codeContainer.style.position = 'relative';
-            // codeContainer.style.overflow = 'hidden';
+            // The following two lines were already correctly applied in the provided code snippet
+            // and are crucial for the copy button to be positioned correctly relative to the code block
+            // and for the code block to handle its own overflow.
+            // codeContainer.style.position = 'relative'; // Already in .code-container CSS
+            // codeContainer.style.overflow = 'hidden';   // Already in .code-container CSS
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-btn";
@@ -1306,7 +1304,6 @@
             const pre = document.createElement("pre");
             pre.textContent = parts[i];
             
-            // Tambahkan tombol ke codeContainer, kemudian pre
             codeContainer.appendChild(copyButton);
             codeContainer.appendChild(pre);
             messageText.appendChild(codeContainer);
