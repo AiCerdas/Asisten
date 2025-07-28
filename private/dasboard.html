@@ -244,8 +244,9 @@
       position: relative;
     }
     
+    /* Perbaikan CSS untuk tombol Salin */
     .code-container {
-      position: relative;
+      position: relative; /* Penting agar tombol absolute relatif terhadap container ini */
       margin: 15px 0;
       border-radius: 8px;
       overflow: hidden;
@@ -263,7 +264,7 @@
       border-radius: 5px;
       font-size: 12px;
       cursor: pointer;
-      z-index: 10;
+      z-index: 2; /* Tingkatkan z-index agar di atas pre */
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
@@ -277,7 +278,8 @@
     pre {
       background: #1e293b;
       color: #f8fafc;
-      padding: 20px 15px 15px;
+      padding: 20px 15px 15px; /* Tambahkan padding di atas untuk tombol */
+      padding-top: 40px; /* Sesuaikan padding-top agar tombol tidak menutupi teks */
       border-radius: 8px;
       overflow-x: auto;
       font-family: 'Fira Code', 'Courier New', monospace;
@@ -285,6 +287,8 @@
       white-space: pre-wrap;
       text-align: left;
       margin: 0;
+      position: relative; /* Pastikan pre juga memiliki position relative/static agar tidak keluar dari flow */
+      z-index: 1; /* Pastikan pre di bawah tombol */
     }
     
     .typing-indicator {
@@ -599,7 +603,6 @@
   </style>
 </head>
 <body class="no-select">
-  <!-- Warning Overlay -->
   <div class="warning-overlay" id="warningOverlay">
     <div style="text-align: center;">
       <i class="fas fa-shield-alt" style="font-size: 48px; margin-bottom: 20px; color: #ff0000;"></i>
@@ -609,7 +612,6 @@
     </div>
   </div>
 
-  <!-- Modal OCR -->
   <div class="modal" id="ocrModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -656,12 +658,10 @@
     </div>
   </div>
 
-  <!-- Mobile Menu Button -->
   <div class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
   </div>
 
-  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-title">
@@ -702,10 +702,10 @@
         <span>Ekstrak Teks (OCR)</span>
       </div>
       
-      <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>Lapor Masalah</span>
-      </a>
+      <a            href="https://wa.me/6283169364879?text=Hallo%20admin"         class="menu-item" target="_blank">
+  <i class="fas fa-exclamation-triangle"></i>
+  <span>Lapor Masalah</span>
+</a>
       
       <div class="menu-item" id="musicMenuItem">
         <i class="fas fa-music"></i>
@@ -724,7 +724,6 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="main-content" id="mainContainer">
     <div class="chat-container">
      <div class="chat-header">
@@ -739,8 +738,7 @@
 </div>
       
       <div class="chat-messages" id="chatbox">
-        <!-- Messages will appear here -->
-      </div>
+        </div>
       
       <div class="input-container">
         <div class="input-box">
@@ -1291,8 +1289,9 @@
           } else {
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
-            codeContainer.style.position = 'relative';
-            codeContainer.style.overflow = 'hidden';
+            // Tidak perlu style.position dan style.overflow di sini karena sudah ada di CSS
+            // codeContainer.style.position = 'relative';
+            // codeContainer.style.overflow = 'hidden';
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-btn";
@@ -1306,6 +1305,8 @@
 
             const pre = document.createElement("pre");
             pre.textContent = parts[i];
+            
+            // Tambahkan tombol ke codeContainer, kemudian pre
             codeContainer.appendChild(copyButton);
             codeContainer.appendChild(pre);
             messageText.appendChild(codeContainer);
