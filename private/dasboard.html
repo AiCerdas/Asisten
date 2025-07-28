@@ -14,7 +14,7 @@
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    
+
     body {
       background-color: #f7f7f8;
       color: #333;
@@ -22,7 +22,7 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-    
+
     /* Sidebar Styles */
     .sidebar {
       width: 260px;
@@ -36,13 +36,13 @@
       transition: transform 0.3s ease;
       z-index: 100;
     }
-    
+
     .sidebar-header {
       padding: 0 20px 20px;
       border-bottom: 1px solid #e5e5e6;
       margin-bottom: 20px;
     }
-    
+
     .sidebar-title {
       font-size: 20px;
       font-weight: 600;
@@ -51,11 +51,11 @@
       align-items: center;
       gap: 10px;
     }
-    
+
     .sidebar-title i {
       color: #4f46e5;
     }
-    
+
     .sidebar-menu {
       flex: 1;
       overflow-y: auto;
@@ -71,7 +71,7 @@
       border-radius: 10px;
       font-size: 0.75rem;
     }
-    
+
     .menu-item {
       display: flex;
       align-items: center;
@@ -83,37 +83,37 @@
       text-decoration: none;
       color: #4a5568;
     }
-    
+
     .menu-item:hover {
       background-color: #f3f4f6;
       color: #4f46e5;
     }
-    
+
     .menu-item.active {
       background-color: #eef2ff;
       color: #4f46e5;
       font-weight: 500;
     }
-    
+
     .menu-item i {
       margin-right: 12px;
       font-size: 18px;
       width: 24px;
       text-align: center;
     }
-    
+
     .sidebar-footer {
       padding: 20px;
       border-top: 1px solid #e5e5e6;
       margin-top: auto;
     }
-    
+
     .user-profile {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    
+
     .user-avatar {
       width: 36px;
       height: 36px;
@@ -125,17 +125,17 @@
       color: #4f46e5;
       font-weight: bold;
     }
-    
+
     .user-name {
       font-weight: 500;
       font-size: 14px;
     }
-    
+
     .user-role {
       font-size: 12px;
       color: #718096;
     }
-    
+
     /* Main Content Styles */
     .main-content {
       flex: 1;
@@ -145,7 +145,7 @@
       min-height: 100vh;
       transition: margin 0.3s ease;
     }
-    
+
     .chat-container {
       flex: 1;
       display: flex;
@@ -155,31 +155,31 @@
       margin: 0 auto;
       padding: 20px;
     }
-    
+
     .chat-header {
       padding: 20px 0;
       text-align: center;
       margin-bottom: 20px;
     }
-    
+
     .chat-title {
       font-size: 28px;
       font-weight: 600;
       color: #2d3748;
       margin-bottom: 5px;
     }
-    
+
     .chat-subtitle {
       color: #718096;
       font-size: 14px;
     }
-    
+
     .chat-messages {
       flex: 1;
       overflow-y: auto;
       padding: 20px 0;
     }
-    
+
     .message {
       margin-bottom: 24px;
       display: flex;
@@ -188,16 +188,16 @@
       border-radius: 8px;
       animation: fadeIn 0.3s ease;
     }
-    
+
     .user-message {
       background-color: #ffffff;
       border: 1px solid #e5e5e6;
     }
-    
+
     .ai-message {
       background-color: #f9fafb;
     }
-    
+
     .avatar {
       width: 36px;
       height: 36px;
@@ -210,83 +210,83 @@
       font-weight: bold;
       flex-shrink: 0;
     }
-    
+
     .ai-avatar {
       background-color: #4f46e5;
       color: white;
     }
-    
+
     .message-content {
       flex: 1;
       position: relative;
       overflow: hidden;
     }
-    
+
     .message-header {
       display: flex;
       align-items: center;
       margin-bottom: 8px;
     }
-    
+
     .message-sender {
       font-weight: 600;
       margin-right: 8px;
     }
-    
+
     .message-time {
       font-size: 12px;
       color: #718096;
     }
-    
+
     .message-text {
       line-height: 1.6;
       white-space: pre-line;
       position: relative;
     }
-    
+
     .code-container {
-      position: relative; /* Crucial for positioning the copy button */
       margin: 15px 0;
       border-radius: 8px;
-      overflow: hidden; /* Ensures content, including button, stays within bounds */
+      overflow: auto; /* Biarkan scroll jika terlalu panjang */
       background: #1e293b;
+      position: relative; /* Ini penting untuk memposisikan tombol salin di dalamnya */
     }
-    
-    .copy-btn {
-      position: absolute; /* Positions the button relative to .code-container */
-      top: 10px; /* Distance from the top of .code-container */
-      right: 10px; /* Distance from the right of .code-container */
-      background: rgba(79, 70, 229, 0.9);
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 12px;
-      cursor: pointer;
-      z-index: 10; /* Ensures the button is above the code */
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+
+    .copy-btn-code {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(79, 70, 229, 0.9);
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
     }
-    
-    .copy-btn:hover {
-      background: #4f46e5;
+
+    .copy-btn-code:hover {
+        background: #4f46e5;
     }
-    
+
     pre {
       background: #1e293b;
       color: #f8fafc;
-      padding: 20px 15px 15px; /* Adjusted top padding to make space for the button */
+      padding: 15px;
       border-radius: 8px;
-      overflow-x: auto; /* Adds horizontal scroll if code is too long */
+      overflow-x: auto;
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
-      white-space: pre-wrap; /* Allows long lines to wrap */
+      white-space: pre-wrap; /* Memastikan baris panjang terbungkus */
       text-align: left;
-      margin: 0; /* Remove default margin */
+      margin: 0;
     }
-    
+
     .typing-indicator {
       display: flex;
       align-items: center;
@@ -295,7 +295,7 @@
       font-style: italic;
       padding: 12px 16px;
     }
-    
+
     .loading {
       display: inline-block;
       width: 16px;
@@ -305,7 +305,7 @@
       border-top-color: #4f46e5;
       animation: spin 1s ease-in-out infinite;
     }
-    
+
     .input-container {
       padding: 20px 0;
       position: sticky;
@@ -313,7 +313,7 @@
       background: #f7f7f8;
       border-top: 1px solid #e5e5e6;
     }
-    
+
     .input-box {
       display: flex;
       gap: 12px;
@@ -324,7 +324,7 @@
       padding: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    
+
     #messageInput {
       flex: 1;
       border: none;
@@ -336,12 +336,13 @@
       font-size: 16px;
       background: transparent;
     }
-    
+
     .input-buttons {
       display: flex;
       gap: 8px;
+      align-items: center; /* Align items vertically in the button group */
     }
-    
+
     .voice-btn, .send-btn, .ocr-btn {
       width: 40px;
       height: 40px;
@@ -353,39 +354,39 @@
       border: none;
       transition: all 0.2s;
     }
-    
+
     .voice-btn {
       background-color: #f3f4f6;
       color: #4b5563;
     }
-    
+
     .voice-btn:hover {
       background-color: #e5e7eb;
     }
-    
+
     .ocr-btn {
       background-color: #f3f4f6;
       color: #4b5563;
     }
-    
+
     .ocr-btn:hover {
       background-color: #e5e7eb;
     }
-    
+
     .send-btn {
       background-color: #4f46e5;
       color: white;
     }
-    
+
     .send-btn:hover {
       background-color: #4338ca;
     }
-    
+
     .send-btn:disabled {
       background-color: #a5b4fc;
       cursor: not-allowed;
     }
-    
+
     .mobile-menu-btn {
       display: none;
       position: fixed;
@@ -403,7 +404,7 @@
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    
+
     /* Modal OCR */
     .modal {
       display: none;
@@ -417,7 +418,7 @@
       justify-content: center;
       align-items: center;
     }
-    
+
     .modal-content {
       background-color: white;
       padding: 20px;
@@ -426,20 +427,20 @@
       max-width: 500px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
-    
+
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
     }
-    
+
     .modal-title {
       font-size: 18px;
       font-weight: 600;
       color: #2d3748;
     }
-    
+
     .close-btn {
       background: none;
       border: none;
@@ -447,7 +448,7 @@
       cursor: pointer;
       color: #718096;
     }
-    
+
     .upload-area {
       border: 2px dashed #e5e5e6;
       border-radius: 8px;
@@ -457,27 +458,27 @@
       cursor: pointer;
       transition: all 0.3s;
     }
-    
+
     .upload-area:hover {
       border-color: #4f46e5;
       background-color: #f9fafb;
     }
-    
+
     .upload-icon {
       font-size: 40px;
       color: #4f46e5;
       margin-bottom: 10px;
     }
-    
+
     .upload-text {
       margin-bottom: 10px;
       color: #4a5568;
     }
-    
+
     .file-input {
       display: none;
     }
-    
+
     .preview-image {
       max-width: 100%;
       max-height: 300px;
@@ -485,7 +486,7 @@
       display: none;
       border-radius: 5px;
     }
-    
+
     .process-btn {
       background-color: #4f46e5;
       color: white;
@@ -497,11 +498,11 @@
       display: none;
       margin: 10px auto;
     }
-    
+
     .process-btn:hover {
       background-color: #4338ca;
     }
-    
+
     .ocr-result {
       margin-top: 20px;
       padding: 15px;
@@ -509,7 +510,7 @@
       border-radius: 8px;
       display: none;
     }
-    
+
     .ocr-progress {
       display: flex;
       align-items: center;
@@ -518,17 +519,17 @@
       color: #4f46e5;
       font-weight: 500;
     }
-    
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
+
     /* Warning Overlay */
     .warning-overlay {
       position: fixed;
@@ -544,11 +545,11 @@
       color: white;
       font-size: 24px;
     }
-    
+
     .blur-screen {
       filter: blur(10px) !important;
     }
-    
+
     .no-select {
       -webkit-touch-callout: none;
       -webkit-user-select: none;
@@ -557,41 +558,41 @@
       -ms-user-select: none;
       user-select: none;
     }
-    
+
     /* Responsive Styles */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
       }
-      
+
       .sidebar.open {
         transform: translateX(0);
       }
-      
+
       .main-content {
         margin-left: 0;
       }
-      
+
       .mobile-menu-btn {
         display: flex;
       }
     }
-    
+
     @media (max-width: 480px) {
       .chat-container {
         padding: 15px;
       }
-      
+
       .message {
         flex-direction: column;
         gap: 8px;
       }
-      
+
       .input-box {
         flex-direction: column;
         align-items: stretch;
       }
-      
+
       .input-buttons {
         justify-content: flex-end;
       }
@@ -616,7 +617,7 @@
         </div>
         <button class="close-btn" id="closeModal">&times;</button>
       </div>
-      
+
       <div class="upload-area" id="uploadArea">
         <div class="upload-icon">
           <i class="fas fa-cloud-upload-alt"></i>
@@ -630,18 +631,18 @@
         </div>
         <input type="file" id="fileInput" class="file-input" accept="image/*,.pdf">
       </div>
-      
+
       <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
-      
+
       <button id="processBtn" class="process-btn">
         <i class="fas fa-cogs"></i> Proses OCR
       </button>
-      
+
       <div class="ocr-progress" id="progressContainer" style="display: none;">
         <div class="loading"></div>
         <span id="progressText">Memproses gambar...</span>
       </div>
-      
+
       <div class="ocr-result" id="ocrResult">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
           <strong>Hasil OCR:</strong>
@@ -665,50 +666,50 @@
         <span>AbidinAI</span>
       </div>
     </div>
-    
+
     <div class="sidebar-menu">
       <a href="#" class="menu-item active" id="chatMenuItem">
         <i class="fas fa-comment-dots"></i>
         <span>Obrolan AI</span>
       </a>
-      
+
       <a href="https://lynk.id/abidincerdas" class="menu-item" target="_blank">
         <i class="fas fa-shopping-cart"></i>
        <span>Jualan Produk Digital</span>
        <span class="menu-badge"></span>
      </a>
-  
+
      <a href="alarm.html" class="menu-item">
         <i class="fas fa-bell"></i>
         <span>Alarm AI</span>
       </a>
-      
+
       <a href="obrolan.html" class="menu-item">
         <i class="fas fa-comments"></i>
         <span>Obrolan Grup</span>
       </a>
-      
+
       <a href="dokter.html" class="menu-item">
         <i class="fas fa-user-md"></i>
         <span>Dokter Kesehatan</span>
       </a>
-      
+
       <div class="menu-item" id="ocrMenuItem">
         <i class="fas fa-file-alt"></i>
         <span>Ekstrak Teks (OCR)</span>
       </div>
-      
+
       <a href="https://wa.me/6283169364879?text=Hallo%20admin" class="menu-item" target="_blank">
        <i class="fas fa-exclamation-triangle"></i>
        <span>Lapor Masalah</span>
-    </a>
-      
+     </a>
+
       <div class="menu-item" id="musicMenuItem">
         <i class="fas fa-music"></i>
         <span>Putar Musik</span>
       </div>
     </div>
-    
+
     <div class="sidebar-footer">
       <div class="user-profile">
         <div class="user-avatar">A</div>
@@ -732,10 +733,10 @@
   <p class="chat-subtitle">Asisten AI cerdas AbidinAI</p>
    <p class="chat-subtitle">Ada yang bisa saya bantu?</p>
 </div>
-      
+
       <div class="chat-messages" id="chatbox">
         </div>
-      
+
       <div class="input-container">
         <div class="input-box">
           <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
@@ -762,20 +763,20 @@
   <script>
     (function() {
       'use strict';
-      
+
       let isVoiceMode = false;
       let listeningElement = null;
       let isMusicPlaying = false;
       let lastTypingElement = null;
-      
+
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
-      
+
       // Security event listeners
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('selectstart', e => e.preventDefault());
       document.addEventListener('dragstart', e => e.preventDefault());
-      
+
       document.addEventListener('keydown', function(e) {
         if (
           e.key === 'F12' ||
@@ -793,10 +794,10 @@
           return false;
         }
       });
-    
+
       // DevTools detection
       const detectDevTools = () => {
-        if (window.outerHeight - window.innerHeight > devToolsThreshold || 
+        if (window.outerHeight - window.innerHeight > devToolsThreshold ||
             window.outerWidth - window.innerWidth > devToolsThreshold) {
           if (!devToolsState.open) {
             devToolsState.open = true;
@@ -809,9 +810,9 @@
           }
         }
       };
-      
+
       setInterval(detectDevTools, 300);
-      
+
       // Console protection
       const clearConsole = () => {
         if (typeof console !== 'undefined') {
@@ -821,10 +822,10 @@
           console.log('%cHalaman ini dilindungi sistem keamanan AbidinAI. Akses tidak sah akan diblokir!', 'color: red; font-size: 14px;');
         }
       };
-      
+
       setInterval(clearConsole, 1000);
       clearConsole();
-    
+
       function showWarning() {
         const overlay = document.getElementById('warningOverlay');
         const container = document.getElementById('mainContainer');
@@ -834,7 +835,7 @@
           document.body.style.overflow = 'hidden';
         }
       }
-      
+
       function hideWarning() {
         const overlay = document.getElementById('warningOverlay');
         const container = document.getElementById('mainContainer');
@@ -844,7 +845,7 @@
           document.body.style.overflow = 'auto';
         }
       }
-    
+
       // Debugger trap
       (() => {
         const debugTrap = () => {
@@ -852,55 +853,72 @@
         };
         setInterval(debugTrap, 100);
       })();
-      
+
       // Event listeners
       window.addEventListener('blur', clearConsole);
       window.addEventListener('focus', clearConsole);
       window.addEventListener('resize', detectDevTools);
-      
+
       // Mobile menu toggle
       document.getElementById('mobileMenuBtn').addEventListener('click', function() {
         document.getElementById('sidebar').classList.toggle('open');
       });
-      
+
       // Format bold text function
       function formatBoldText(text) {
         return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       }
-      
+
       // Initialize chat
       document.addEventListener('DOMContentLoaded', function() {
         if (devToolsState.open) {
           showWarning();
           return;
         }
-        
+
         const chatbox = document.getElementById("chatbox");
         const welcomeMsg = document.createElement("div");
-    
-        
+
+        // Set initial welcome message
+        welcomeMsg.innerHTML = `
+          <div class="message ai-message">
+            <div class="avatar ai-avatar">
+              <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-sender">AbidinAI</span>
+                <span class="message-time">${getCurrentTime()}</span>
+              </div>
+              <div class="message-text">Halo! Ada yang bisa saya bantu hari ini?</div>
+            </div>
+          </div>
+        `;
+        chatbox.appendChild(welcomeMsg);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
         // Auto-resize textarea
         const textarea = document.getElementById('messageInput');
         textarea.addEventListener('input', function() {
           this.style.height = 'auto';
           this.style.height = (this.scrollHeight) + 'px';
         });
-        
+
         // Music control
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
-        
+
         // OCR menu item
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
-        
+
         // Initialize OCR modal
         initOCRModal();
       });
-      
+
       function getCurrentTime() {
         const now = new Date();
         return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
-      
+
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
           showWarning();
@@ -911,13 +929,13 @@
           sendMessage();
         }
       };
-      
+
       function toggleAudio() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        
+
         const player = document.getElementById("audioPlayer");
         const menuItem = document.getElementById("musicMenuItem");
         if (player.paused) {
@@ -930,7 +948,193 @@
           isMusicPlaying = false;
         }
       };
-      
+
+      // Function to display user message
+      function displayUserMessage(message) {
+        const chatbox = document.getElementById("chatbox");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message user-message";
+        messageDiv.innerHTML = `
+          <div class="avatar">U</div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">Anda</span>
+              <span class="message-time">${getCurrentTime()}</span>
+            </div>
+            <div class="message-text">${formatBoldText(message)}</div>
+          </div>
+        `;
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+
+      // Function to display AI response
+      function displayAIResponse(response) {
+        const chatbox = document.getElementById("chatbox");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message ai-message";
+
+        // Regex to find code blocks (lines starting with ``` and ending with ```)
+        // This regex now properly captures content between ``` and also lines not in code blocks
+        const parts = response.split(/```(.*?)```/gs); // Split by ```code``` block
+
+        const formattedContent = parts.map((part, index) => {
+            // If index is odd, it's a code block (due to split behavior)
+            if (index % 2 !== 0) {
+                // Remove optional language identifier from the first line
+                const codeContent = part.replace(/^\s*\w*\s*\n?/, '');
+                return `
+                    <div class="code-container">
+                        <button class="copy-btn-code" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Salin
+                        </button>
+                        <pre>${escapeHtml(codeContent)}</pre>
+                    </div>
+                `;
+            } else {
+                // Regular text, format bold and escape HTML
+                return formatBoldText(escapeHtml(part));
+            }
+        }).join(''); // Join all parts back
+
+        messageDiv.innerHTML = `
+          <div class="avatar ai-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">AbidinAI</span>
+              <span class="message-time">${getCurrentTime()}</span>
+            </div>
+            <div class="message-text">${formattedContent}</div>
+          </div>
+        `;
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+
+      // Function to escape HTML for displaying user input safely
+      function escapeHtml(text) {
+        const map = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+      }
+
+      // Function to handle sending messages
+      window.sendMessage = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value.trim();
+        if (message) {
+          displayUserMessage(message);
+          messageInput.value = "";
+          messageInput.style.height = 'auto'; // Reset textarea height
+
+          // Show typing indicator
+          showTypingIndicator();
+
+          // Simulate AI response (replace with actual API call)
+          setTimeout(() => {
+            hideTypingIndicator();
+            let aiResponse = "";
+            const lowerCaseMessage = message.toLowerCase();
+
+            if (lowerCaseMessage.includes("halo") || lowerCaseMessage.includes("hai")) {
+              aiResponse = "Halo juga! Ada yang bisa saya bantu?";
+            } else if (lowerCaseMessage.includes("siapa kamu") || lowerCaseMessage.includes("nama kamu siapa")) {
+              aiResponse = "Saya AbidinAI, asisten virtual yang diciptakan oleh Abidin. Saya di sini untuk membantu Anda!";
+            } else if (lowerCaseMessage.includes("waktu sekarang")) {
+              aiResponse = `Waktu saat ini adalah ${getCurrentTime()} WIB.`;
+            } else if (lowerCaseMessage.includes("tanggal sekarang")) {
+              const date = new Date();
+              const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+              aiResponse = `Tanggal saat ini adalah ${date.toLocaleDateString('id-ID', options)}.`;
+            } else if (lowerCaseMessage.includes("fungsi ini")) {
+                 aiResponse = `Berikut adalah contoh fungsi JavaScript sederhana:
+\`\`\`javascript
+function greet(name) {
+  console.log("Halo, " + name + "!");
+}
+greet("Dunia");
+\`\`\`
+Fungsi ini akan mencetak 'Halo, Dunia!' ke konsol.`;
+            } else if (lowerCaseMessage.includes("css untuk tombol")) {
+                aiResponse = `Tentu, berikut adalah contoh CSS untuk tombol:
+\`\`\`css
+.my-button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.my-button:hover {
+  background-color: #45a049;
+}
+\`\`\``;
+            } else if (lowerCaseMessage.includes("contoh python")) {
+                aiResponse = `Baik, ini contoh kode Python untuk mencetak deret Fibonacci:
+\`\`\`python
+def fibonacci(n):
+    a, b = 0, 1
+    for i in range(n):
+        print(a, end=" ")
+        a, b = b, a + b
+
+fibonacci(10)
+\`\`\`
+Kode ini akan mencetak 10 angka pertama dari deret Fibonacci.`;
+            }
+            else {
+              aiResponse = "Maaf, saya belum memahami pertanyaan Anda. Bisakah Anda mengulanginya dengan cara lain?";
+            }
+            displayAIResponse(aiResponse);
+          }, 1500); // Simulate network delay
+        }
+      };
+
+      function showTypingIndicator() {
+        const chatbox = document.getElementById("chatbox");
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "message ai-message typing-indicator";
+        typingDiv.innerHTML = `
+          <div class="avatar ai-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="message-content">
+            <div class="loading"></div>
+            <span>AbidinAI sedang mengetik...</span>
+          </div>
+        `;
+        chatbox.appendChild(typingDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        lastTypingElement = typingDiv;
+      }
+
+      function hideTypingIndicator() {
+        if (lastTypingElement) {
+          lastTypingElement.remove();
+          lastTypingElement = null;
+        }
+      }
+
       // OCR Functions
       function initOCRModal() {
         const modal = document.getElementById('ocrModal');
@@ -943,411 +1147,233 @@
         const resultText = document.getElementById('resultText');
         const progressContainer = document.getElementById('progressContainer');
         const progressText = document.getElementById('progressText');
-        const ocrResult = document.getElementById('ocrResult');
-        
+        const ocrResultDiv = document.getElementById('ocrResult'); // Renamed to avoid conflict
+
         // Close modal when clicking X or outside
         closeBtn.addEventListener('click', () => modal.style.display = 'none');
         modal.addEventListener('click', (e) => {
           if (e.target === modal) modal.style.display = 'none';
         });
-        
+
         // Handle file upload
         uploadArea.addEventListener('click', () => fileInput.click());
-        
+
         // Drag and drop functionality
         uploadArea.addEventListener('dragover', (e) => {
           e.preventDefault();
           uploadArea.style.borderColor = '#4f46e5';
           uploadArea.style.backgroundColor = '#f9fafb';
         });
-        
+
         uploadArea.addEventListener('dragleave', () => {
           uploadArea.style.borderColor = '#e5e5e6';
           uploadArea.style.backgroundColor = 'transparent';
         });
-        
+
         uploadArea.addEventListener('drop', (e) => {
           e.preventDefault();
           uploadArea.style.borderColor = '#e5e5e6';
-          uploadArea.style.backgroundColor = 'transparent';
-          
-          if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            handleFileUpload(fileInput.files[0]);
-          }
+          e.dataTransfer.files.length ? (fileInput.files = e.dataTransfer.files) : null;
+          handleFileUpload(fileInput.files[0]);
         });
-        
-        // Handle file selection
-        fileInput.addEventListener('change', () => {
-          if (fileInput.files.length) {
-            handleFileUpload(fileInput.files[0]);
-          }
-        });
-        
-        // Process button click
-        processBtn.addEventListener('click', processOCR);
-        
-        // Copy result button
-        copyResultBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(resultText.textContent).then(() => {
-            copyResultBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-            setTimeout(() => {
-              copyResultBtn.innerHTML = '<i class="fas fa-copy"></i> Salin';
-            }, 1500);
-          });
-        });
-        
+
+        fileInput.addEventListener('change', (e) => handleFileUpload(e.target.files[0]));
+
         function handleFileUpload(file) {
-          // Check file type and size
-          if (!file.type.match('image.*') && file.type !== 'application/pdf') {
-            alert('Hanya file gambar (JPG, PNG) atau PDF yang didukung!');
-            return;
-          }
-          
-          if (file.size > 5 * 1024 * 1024) {
-            alert('Ukuran file maksimal 5MB!');
-            return;
-          }
-          
-          // Show preview for images
-          if (file.type.match('image.*')) {
+          if (!file) return;
+
+          // Hide previous results
+          previewImage.style.display = 'none';
+          processBtn.style.display = 'none';
+          ocrResultDiv.style.display = 'none';
+          progressContainer.style.display = 'none';
+
+          if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
               previewImage.src = e.target.result;
               previewImage.style.display = 'block';
               processBtn.style.display = 'block';
-              ocrResult.style.display = 'none';
             };
             reader.readAsDataURL(file);
+          } else if (file.type === 'application/pdf') {
+             // For PDF, we just show the process button without a direct image preview
+             previewImage.style.display = 'none'; // Ensure image preview is hidden
+             processBtn.style.display = 'block';
+             // Store the PDF file for processing
+             previewImage.dataset.pdfFile = URL.createObjectURL(file);
+             alert('File PDF diunggah. Klik "Proses OCR" untuk mengekstrak teks.');
           } else {
-            // For PDF, just show the filename
-            previewImage.style.display = 'none';
-            processBtn.style.display = 'block';
-            ocrResult.style.display = 'none';
+            alert('Format file tidak didukung. Harap unggah gambar (JPG, PNG) atau PDF.');
+            fileInput.value = ''; // Clear the input
           }
         }
-        
-        function processOCR() {
-          const file = fileInput.files[0];
-          if (!file) return;
-          
-          // Show progress
+
+        processBtn.addEventListener('click', () => {
+          const fileToProcess = fileInput.files[0];
+          if (!fileToProcess) {
+            alert('Mohon unggah file terlebih dahulu.');
+            return;
+          }
+
           processBtn.style.display = 'none';
           progressContainer.style.display = 'flex';
-          
-          // Use Tesseract.js for OCR
+          progressText.textContent = 'Memulai proses OCR...';
+          ocrResultDiv.style.display = 'none';
+
+          if (fileToProcess.type === 'application/pdf') {
+            // Placeholder for PDF processing (Tesseract.js can handle it, but needs proper setup)
+            // For simplicity, this example only directly shows image OCR logic.
+            // A full PDF OCR would involve rendering PDF pages to images first.
+            progressText.textContent = 'Memproses PDF (fitur ini mungkin memerlukan waktu lebih lama atau library khusus)...';
+            // Simulate processing
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                resultText.textContent = 'Ekstraksi teks dari PDF berhasil (simulasi).';
+                ocrResultDiv.style.display = 'block';
+            }, 3000);
+            return;
+          }
+
           Tesseract.recognize(
-            file,
-            'ind', // Bahasa Indonesia
+            previewImage.src,
+            'eng+ind', // languages (English and Indonesian)
             {
               logger: m => {
                 if (m.status === 'recognizing text') {
-                  progressText.textContent = `Memproses: ${Math.round(m.progress * 100)}%`;
+                  const progress = Math.round(m.progress * 100);
+                  progressText.textContent = `Memproses gambar: ${progress}%`;
+                } else if (m.status === 'loading tesseract core') {
+                   progressText.textContent = 'Memuat inti Tesseract...';
+                } else if (m.status === 'loading language traineddata') {
+                   progressText.textContent = `Memuat data bahasa: ${Math.round(m.progress * 100)}%`;
                 }
               }
             }
           ).then(({ data: { text } }) => {
-            // Show result
-            resultText.textContent = text;
-            ocrResult.style.display = 'block';
             progressContainer.style.display = 'none';
-            
-            // Auto-scroll to result
-            ocrResult.scrollIntoView({ behavior: 'smooth' });
+            resultText.textContent = text;
+            ocrResultDiv.style.display = 'block';
+            if (!text.trim()) {
+                resultText.textContent = 'Tidak ada teks yang terdeteksi atau teks sangat sedikit.';
+            }
           }).catch(err => {
+            progressContainer.style.display = 'none';
+            resultText.textContent = `Error saat memproses OCR: ${err.message}`;
+            ocrResultDiv.style.display = 'block';
             console.error('OCR Error:', err);
-            progressText.textContent = 'Error saat memproses gambar';
-            setTimeout(() => {
-              progressContainer.style.display = 'none';
-              processBtn.style.display = 'block';
-            }, 2000);
+            alert('Gagal memproses gambar untuk OCR. Pastikan gambar jelas dan teks terbaca.');
           });
-        }
+        });
+
+        copyResultBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(resultText.textContent).then(() => {
+            copyResultBtn.innerHTML = '<i class="fas fa-check"></i> Disalin!';
+            setTimeout(() => {
+              copyResultBtn.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            }, 1500);
+          }).catch(err => {
+            console.error('Failed to copy OCR result:', err);
+            alert('Gagal menyalin teks.');
+          });
+        });
       }
-      
+
       window.openOCRModal = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        
-        const modal = document.getElementById('ocrModal');
-        modal.style.display = 'flex';
-        
+        document.getElementById('ocrModal').style.display = 'flex';
         // Reset modal state
-        document.getElementById('previewImage').style.display = 'none';
-        document.getElementById('processBtn').style.display = 'none';
-        document.getElementById('progressContainer').style.display = 'none';
-        document.getElementById('ocrResult').style.display = 'none';
         document.getElementById('fileInput').value = '';
+        document.getElementById('previewImage').style.display = 'none';
+        document.getElementById('previewImage').src = '';
+        document.getElementById('processBtn').style.display = 'none';
+        document.getElementById('ocrResult').style.display = 'none';
+        document.getElementById('progressContainer').style.display = 'none';
+        document.getElementById('resultText').textContent = '';
       };
-      
+
+      // Function to copy code from a specific block
+      window.copyCode = function(buttonElement) {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
+        const codeBlock = buttonElement.nextElementSibling; // Get the <pre> element
+        if (codeBlock && codeBlock.tagName === 'PRE') {
+          const codeToCopy = codeBlock.textContent;
+          navigator.clipboard.writeText(codeToCopy).then(() => {
+            buttonElement.innerHTML = '<i class="fas fa-check"></i> Disalin!';
+            setTimeout(() => {
+              buttonElement.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            }, 1500);
+          }).catch(err => {
+            console.error('Failed to copy code:', err);
+            alert('Gagal menyalin kode.');
+          });
+        }
+      };
+
+      // Voice Recognition (SpeechRecognition)
+      let recognition;
       window.startVoiceRecognition = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        
+
         if (!('webkitSpeechRecognition' in window)) {
-          addMessage('Sistem', 'Browser Anda tidak mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.', 'ai-message');
+          alert("Maaf, browser Anda tidak mendukung Web Speech API. Coba gunakan Google Chrome.");
           return;
         }
-        
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'id-ID';
-        recognition.start();
 
-        const chatbox = document.getElementById("chatbox");
-        if (listeningElement) {
-          listeningElement.remove();
+        if (!recognition) {
+          recognition = new webkitSpeechRecognition();
+          recognition.continuous = false; // Only get one result per recognition
+          recognition.interimResults = false; // Only return final results
+          recognition.lang = 'id-ID'; // Set language to Indonesian
+          recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('messageInput').value = transcript;
+            sendMessage(); // Send message automatically after recognition
+          };
+          recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            alert('Terjadi kesalahan pada pengenalan suara: ' + event.error);
+            isVoiceMode = false;
+            updateVoiceButton();
+          };
+          recognition.onend = function() {
+            isVoiceMode = false;
+            updateVoiceButton();
+          };
         }
-        
-        listeningElement = document.createElement("div");
-        listeningElement.className = "message ai-message";
-        listeningElement.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="message-header">
-              <span class="message-sender">Sistem</span>
-              <span class="message-time">${getCurrentTime()}</span>
-            </div>
-            <div class="message-text">
-              <div class="typing-indicator">
-                <div class="loading"></div>
-                Mendengarkan...
-              </div>
-            </div>
-          </div>
-        `;
-        chatbox.appendChild(listeningElement);
-        chatbox.scrollTop = chatbox.scrollHeight;
 
-        recognition.onresult = function(event) {
-          const transcript = event.results[0][0].transcript;
-          document.getElementById("messageInput").value = transcript;
+        if (!isVoiceMode) {
           isVoiceMode = true;
-          sendMessage();
-        };
-
-        recognition.onerror = function(event) {
-          if (listeningElement) {
-            listeningElement.remove();
-            listeningElement = null;
-          }
-          
-          if (event.error !== 'no-speech') {
-            addMessage('Sistem', `Error: ${event.error}`, 'ai-message');
-          }
-        };
-      };
-      
-      function addMessage(sender, text, messageClass) {
-        const chatbox = document.getElementById("chatbox");
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `message ${messageClass}`;
-        messageDiv.innerHTML = `
-          <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
-            ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
-          </div>
-          <div class="message-content">
-            <div class="message-header">
-              <span class="message-sender">${sender}</span>
-              <span class="message-time">${getCurrentTime()}</span>
-            </div>
-            <div class="message-text">${text}</div>
-          </div>
-        `;
-        chatbox.appendChild(messageDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-        return messageDiv;
-      }
-      
-      window.sendMessage = async function() {
-        if (devToolsState.open) {
-          showWarning();
-          return false;
-        }
-        
-        const input = document.getElementById("messageInput");
-        const text = input.value.trim();
-        if (!text) return;
-
-        const chatbox = document.getElementById("chatbox");
-        const sendButton = document.getElementById("sendButton");
-
-        // Show user message
-        const userDiv = addMessage('Anda', text, 'user-message');
-
-        const typingDiv = document.createElement("div");
-        typingDiv.className = "message ai-message";
-        typingDiv.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="typing-indicator">
-              <div class="loading"></div>
-              AbidinAI sedang mengetik...
-            </div>
-          </div>
-        `;
-        chatbox.appendChild(typingDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-        
-        sendButton.disabled = true;
-        input.value = '';
-        input.style.height = 'auto';
-
-        try {
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: text })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          let aiReply = data.reply;
-          
-          typingDiv.remove();
-
-          if (!aiReply || aiReply.trim() === "") {
-            displayMaintenanceMessage();
-          } else {
-            displayAIResponse(aiReply);
-          }
-        } catch (error) {
-          typingDiv.remove();
-          displayMaintenanceMessage();
-          console.error("Error:", error);
-          sendButton.disabled = false;
+          recognition.start();
+          updateVoiceButton();
+        } else {
+          isVoiceMode = false;
+          recognition.stop();
+          updateVoiceButton();
         }
       };
-      
-      function displayMaintenanceMessage() {
-        const chatbox = document.getElementById("chatbox");
-        const sendButton = document.getElementById("sendButton");
-        
-        if (listeningElement) {
-          listeningElement.remove();
-          listeningElement = null;
-        }
-        
-        const maintenanceDiv = addMessage(
-          'AbidinAI', 
-          formatBoldText('<i class="fas fa-tools"></i> Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'), 
-          'ai-message'
-        );
-        
-        sendButton.disabled = false;
-        
+
+      function updateVoiceButton() {
+        const voiceBtn = document.querySelector('.voice-btn');
         if (isVoiceMode) {
-          readWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
+          voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+          voiceBtn.style.backgroundColor = '#dc2626'; // Red for recording
+          voiceBtn.style.color = 'white';
+        } else {
+          voiceBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
+          voiceBtn.style.backgroundColor = '#f3f4f6';
+          voiceBtn.style.color = '#4b5563';
         }
-        isVoiceMode = false;
-      }
-
-      function displayAIResponse(aiReply) {
-        const chatbox = document.getElementById("chatbox");
-        const sendButton = document.getElementById("sendButton");
-        
-        if (listeningElement) {
-          listeningElement.remove();
-          listeningElement = null;
-        }
-        
-        const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
-        const container = document.createElement("div");
-        container.className = "message ai-message";
-        container.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="message-header">
-              <span class="message-sender">AbidinAI</span>
-              <span class="message-time">${getCurrentTime()}</span>
-            </div>
-            <div class="message-text"></div>
-          </div>
-        `;
-        
-        const messageText = container.querySelector('.message-text');
-        let textToRead = "";
-
-        for (let i = 0; i < parts.length; i++) {
-          if (i % 2 === 0) {
-            const span = document.createElement("span");
-            span.innerHTML = formatBoldText(parts[i]);
-            textToRead += parts[i] + " ";
-            messageText.appendChild(span);
-          } else {
-            const codeContainer = document.createElement("div");
-            codeContainer.className = "code-container";
-            // The styles for position and overflow are now primarily handled by CSS classes
-            // codeContainer.style.position = 'relative'; // Removed, handled by CSS class
-            // codeContainer.style.overflow = 'hidden'; // Removed, handled by CSS class
-
-            const copyButton = document.createElement("button");
-            copyButton.className = "copy-btn";
-            copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
-            copyButton.onclick = () => {
-              navigator.clipboard.writeText(parts[i]).then(() => {
-                copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-                setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
-              });
-            };
-
-            const pre = document.createElement("pre");
-            pre.textContent = parts[i];
-            codeContainer.appendChild(copyButton);
-            codeContainer.appendChild(pre);
-            messageText.appendChild(codeContainer);
-          }
-        }
-
-        chatbox.appendChild(container);
-        chatbox.scrollTop = chatbox.scrollHeight;
-        sendButton.disabled = false;
-
-        if (isVoiceMode) {
-          readWithPauses(textToRead);
-        }
-        isVoiceMode = false;
-      }
-
-      function readWithPauses(text) {
-        if (!('speechSynthesis' in window)) {
-          console.log("Text-to-speech tidak didukung di browser ini");
-          return;
-        }
-        
-        const sentences = text.split(/(?<=[.!?])\s+/);
-        const synth = window.speechSynthesis;
-        synth.cancel();
-
-        function cleanText(t) {
-          return t.replace(/[*"`\-+/:;\\]/g, '');
-        }
-
-        function speakNext(index) {
-          if (index >= sentences.length) return;
-          
-          const cleanSentence = cleanText(sentences[index]).trim();
-          if (!cleanSentence) return speakNext(index + 1);
-          
-          const utter = new SpeechSynthesisUtterance(cleanSentence);
-          utter.lang = 'id-ID';
-          utter.rate = 1.0;
-          utter.pitch = 1.0;
-          utter.volume = 1.0;
-          
-          utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
-          synth.speak(utter);
-        }
-
-        speakNext(0);
       }
     })();
   </script>
