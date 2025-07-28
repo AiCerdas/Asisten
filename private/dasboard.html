@@ -219,7 +219,7 @@
     .message-content {
       flex: 1;
       position: relative;
-      overflow: hidden; 
+      overflow: hidden;
     }
     
     .message-header {
@@ -245,17 +245,17 @@
     }
     
     .code-container {
-      position: relative; /* Ensure position for absolute copy-btn */
+      position: relative; /* Crucial for positioning the copy button */
       margin: 15px 0;
       border-radius: 8px;
-      overflow: hidden; /* Crucial for containing pre with overflow-x: auto */
+      overflow: hidden; /* Ensures content, including button, stays within bounds */
       background: #1e293b;
     }
     
     .copy-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+      position: absolute; /* Positions the button relative to .code-container */
+      top: 10px; /* Distance from the top of .code-container */
+      right: 10px; /* Distance from the right of .code-container */
       background: rgba(79, 70, 229, 0.9);
       color: white;
       border: none;
@@ -263,7 +263,7 @@
       border-radius: 5px;
       font-size: 12px;
       cursor: pointer;
-      z-index: 10; /* Make sure it's above the pre content */
+      z-index: 10; /* Ensures the button is above the code */
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
@@ -277,14 +277,14 @@
     pre {
       background: #1e293b;
       color: #f8fafc;
-      padding: 20px 15px 15px;
+      padding: 20px 15px 15px; /* Adjusted top padding to make space for the button */
       border-radius: 8px;
-      overflow-x: auto; /* Enable horizontal scrolling for long lines */
+      overflow-x: auto; /* Adds horizontal scroll if code is too long */
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
-      white-space: pre-wrap; /* Wrap long lines if possible */
+      white-space: pre-wrap; /* Allows long lines to wrap */
       text-align: left;
-      margin: 0;
+      margin: 0; /* Remove default margin */
     }
     
     .typing-indicator {
@@ -699,9 +699,9 @@
       </div>
       
       <a href="https://wa.me/6283169364879?text=Hallo%20admin" class="menu-item" target="_blank">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span>Lapor Masalah</span>
-      </a>
+       <i class="fas fa-exclamation-triangle"></i>
+       <span>Lapor Masalah</span>
+    </a>
       
       <div class="menu-item" id="musicMenuItem">
         <i class="fas fa-music"></i>
@@ -1285,11 +1285,9 @@
           } else {
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
-            // The following two lines were already correctly applied in the provided code snippet
-            // and are crucial for the copy button to be positioned correctly relative to the code block
-            // and for the code block to handle its own overflow.
-            // codeContainer.style.position = 'relative'; // Already in .code-container CSS
-            // codeContainer.style.overflow = 'hidden';   // Already in .code-container CSS
+            // The styles for position and overflow are now primarily handled by CSS classes
+            // codeContainer.style.position = 'relative'; // Removed, handled by CSS class
+            // codeContainer.style.overflow = 'hidden'; // Removed, handled by CSS class
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-btn";
@@ -1303,7 +1301,6 @@
 
             const pre = document.createElement("pre");
             pre.textContent = parts[i];
-            
             codeContainer.appendChild(copyButton);
             codeContainer.appendChild(pre);
             messageText.appendChild(codeContainer);
