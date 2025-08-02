@@ -210,6 +210,13 @@
         
         document.getElementById(tabName).classList.add("active");
         event.currentTarget.classList.add("active");
+        
+        // Scroll to top when switching tabs
+        if (tabName === 'imageTab') {
+          document.getElementById('imagePromptBox').scrollTop = 0;
+        } else {
+          document.getElementById('chatbox').scrollTop = 0;
+        }
       }
       
       window.handleKeyPress = function(event) {
@@ -256,15 +263,18 @@
         recognition.lang = 'id-ID';
         recognition.start();
 
-        const chatbox = document.getElementById("chatbox");
+        const activeTab = document.querySelector('.tab-content.active');
+        const targetBox = activeTab.id === 'chatTab' ? "chatbox" : "imagePromptBox";
+        
+        const messageBox = document.getElementById(targetBox);
         if (_0xef12) {
           _0xef12.remove();
         }
         _0xef12 = document.createElement("div");
         _0xef12.className = "message user-message";
         _0xef12.innerHTML = `<strong>Sistem:</strong> Mendengarkan...`;
-        chatbox.appendChild(_0xef12);
-        chatbox.scrollTop = chatbox.scrollHeight;
+        messageBox.appendChild(_0xef12);
+        messageBox.scrollTop = messageBox.scrollHeight;
 
         recognition.onresult = function(event) {
           const transcript = event.results[0][0].transcript;
@@ -358,7 +368,10 @@
         
         const promptInput = document.getElementById("imagePromptInput");
         const prompt = promptInput.value.trim();
-        if (!prompt) return;
+        if (!prompt) {
+          alert("Silakan masukkan deskripsi gambar terlebih dahulu!");
+          return;
+        }
 
         const imagePromptBox = document.getElementById("imagePromptBox");
         const generateButton = document.getElementById("generateButton");
@@ -402,13 +415,13 @@
           document.getElementById("imageTypingIndicator").remove();
 
           if (!data.output_url) {
-            _0xDisplayImageError();
+            _0xDisplayImageError("Gagal membuat gambar. Silakan coba lagi dengan deskripsi yang berbeda.");
           } else {
             _0xDisplayGeneratedImage(prompt, data.output_url);
           }
         } catch (error) {
           document.getElementById("imageTypingIndicator").remove();
-          _0xDisplayImageError();
+          _0xDisplayImageError("Terjadi kesalahan saat membuat gambar. Silakan coba lagi nanti.");
           console.error("Error generating image:", error);
         }
 
@@ -436,16 +449,19 @@
             </button>
           </div>
         `;
+        
+        // Scroll to show the generated image
+        imageResultContainer.scrollIntoView({ behavior: 'smooth' });
       }
       
-      function _0xDisplayImageError() {
+      function _0xDisplayImageError(message) {
         const imagePromptBox = document.getElementById("imagePromptBox");
         
         const errorDiv = document.createElement("div");
         errorDiv.className = "message maintenance-message";
         errorDiv.innerHTML = `
           <strong><i class="fas fa-exclamation-triangle"></i> AbidinAI:</strong> 
-          Maaf, terjadi kesalahan saat membuat gambar. Silakan coba lagi dengan deskripsi yang berbeda.
+          ${message || "Maaf, terjadi kesalahan saat membuat gambar. Silakan coba lagi dengan deskripsi yang berbeda."}
         `;
         imagePromptBox.appendChild(errorDiv);
         imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
