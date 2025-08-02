@@ -3,612 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" type="image/jpg" href="https://iili.io/FvxcSaa.jpg"/>
   <title>AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background-color: #f7f7f8;
-      color: #333;
-      display: flex;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* Sidebar Styles */
-    .sidebar {
-      width: 260px;
-      background: #ffffff;
-      border-right: 1px solid #e5e5e6;
-      height: 100vh;
-      position: fixed;
-      padding: 20px 0;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s ease;
-      z-index: 100;
-    }
-
-    .sidebar-header {
-      padding: 0 20px 20px;
-      border-bottom: 1px solid #e5e5e6;
-      margin-bottom: 20px;
-    }
-
-    .sidebar-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: #2d3748;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .sidebar-title i {
-      color: #4f46e5;
-    }
-
-    .sidebar-menu {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 10px;
-    }
-
-    /* menu digital */
-    .menu-badge {
-      margin-left: auto;
-      background: #4f46e5;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 5px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      color: #4a5568;
-    }
-
-    .menu-item:hover {
-      background-color: #f3f4f6;
-      color: #4f46e5;
-    }
-
-    .menu-item.active {
-      background-color: #eef2ff;
-      color: #4f46e5;
-      font-weight: 500;
-    }
-
-    .menu-item i {
-      margin-right: 12px;
-      font-size: 18px;
-      width: 24px;
-      text-align: center;
-    }
-
-    .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid #e5e5e6;
-      margin-top: auto;
-    }
-
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: #eef2ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #4f46e5;
-      font-weight: bold;
-    }
-
-    .user-name {
-      font-weight: 500;
-      font-size: 14px;
-    }
-
-    .user-role {
-      font-size: 12px;
-      color: #718096;
-    }
-
-    /* Main Content Styles */
-    .main-content {
-      flex: 1;
-      margin-left: 260px;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      transition: margin 0.3s ease;
-    }
-
-    .chat-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      max-width: 900px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .chat-header {
-      padding: 20px 0;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .chat-title {
-      font-size: 28px;
-      font-weight: 600;
-      color: #2d3748;
-      margin-bottom: 5px;
-    }
-
-    .chat-subtitle {
-      color: #718096;
-      font-size: 14px;
-    }
-
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 0;
-    }
-
-    .message {
-      margin-bottom: 24px;
-      display: flex;
-      gap: 16px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .user-message {
-      background-color: #ffffff;
-      border: 1px solid #e5e5e6;
-    }
-
-    .ai-message {
-      background-color: #f9fafb;
-    }
-
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: #eef2ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #4f46e5;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-
-    .ai-avatar {
-      background-color: #4f46e5;
-      color: white;
-    }
-
-    .message-content {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .message-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .message-sender {
-      font-weight: 600;
-      margin-right: 8px;
-    }
-
-    .message-time {
-      font-size: 12px;
-      color: #718096;
-    }
-
-    .message-text {
-      line-height: 1.6;
-      white-space: pre-line;
-      position: relative;
-    }
-
-    /* Perubahan di sini untuk .code-container */
-    .code-container {
-      margin: 15px 0;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #1e293b; /* Warna background untuk keseluruhan container */
-      border: 1px solid #374151; /* Border untuk bingkai kode */
-    }
-
-    /* Gaya baru untuk header blok kode */
-    .code-header {
-      background-color: #374151; /* Warna latar belakang header */
-      color: #f8fafc; /* Warna teks di header */
-      padding: 10px 15px;
-      display: flex;
-      justify-content: flex-end; /* Tombol salin di kanan */
-      align-items: center;
-      border-bottom: 1px solid #4a5568; /* Garis pemisah antara header dan kode */
-      font-size: 0.85rem; /* Ukuran font lebih kecil untuk header */
-    }
-
-    /* Gaya baru untuk tombol salin di dalam header kode */
-    .code-container .copy-btn { /* Spesifikasi lebih tinggi agar menimpa gaya umum */
-      position: static; /* Hapus positioning absolut */
-      background: transparent; /* Background transparan */
-      color: #f8fafc; /* Warna teks putih */
-      border: 1px solid #6b7280; /* Border abu-abu */
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 0.8rem; /* Ukuran font lebih kecil */
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .code-container .copy-btn:hover {
-      background: #4f46e5; /* Warna ungu saat hover */
-      border-color: #4f46e5;
-      color: white;
-    }
-
-    pre {
-      background: #1e293b; /* Warna background untuk kode */
-      color: #f8fafc; /* Warna teks kode */
-      padding: 15px;
-      border-radius: 0 0 8px 8px; /* Hilangkan border atas, sesuaikan border bawah */
-      overflow-x: auto;
-      font-family: 'Fira Code', 'Courier New', monospace;
-      font-size: 14px;
-      white-space: pre-wrap;
-      text-align: left;
-      margin: 0;
-    }
-
-    .typing-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #718096;
-      font-style: italic;
-      padding: 12px 16px;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(79, 70, 229, 0.3);
-      border-radius: 50%;
-      border-top-color: #4f46e5;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    .input-container {
-      padding: 20px 0;
-      position: sticky;
-      bottom: 0;
-      background: #f7f7f8;
-      border-top: 1px solid #e5e5e6;
-    }
-
-    .input-box {
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      background: #ffffff;
-      border: 1px solid #e5e5e6;
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    #messageInput {
-      flex: 1;
-      border: none;
-      outline: none;
-      resize: none;
-      min-height: 24px;
-      max-height: 200px;
-      line-height: 1.5;
-      font-size: 16px;
-      background: transparent;
-    }
-
-    .input-buttons {
-      display: flex;
-      gap: 8px;
-    }
-
-    .voice-btn, .send-btn, .ocr-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-    }
-
-    .voice-btn {
-      background-color: #f3f4f6;
-      color: #4b5563;
-    }
-
-    .voice-btn:hover {
-      background-color: #e5e7eb;
-    }
-
-    .ocr-btn {
-      background-color: #f3f4f6;
-      color: #4b5563;
-    }
-
-    .ocr-btn:hover {
-      background-color: #e5e7eb;
-    }
-
-    .send-btn {
-      background-color: #4f46e5;
-      color: white;
-    }
-
-    .send-btn:hover {
-      background-color: #4338ca;
-    }
-
-    .send-btn:disabled {
-      background-color: #a5b4fc;
-      cursor: not-allowed;
-    }
-
-    .mobile-menu-btn {
-      display: none;
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      z-index: 101;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: white;
-      border: 1px solid #e5e5e6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Modal OCR */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #2d3748;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #718096;
-    }
-
-    .upload-area {
-      border: 2px dashed #e5e5e6;
-      border-radius: 8px;
-      padding: 30px;
-      text-align: center;
-      margin-bottom: 20px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .upload-area:hover {
-      border-color: #4f46e5;
-      background-color: #f9fafb;
-    }
-
-    .upload-icon {
-      font-size: 40px;
-      color: #4f46e5;
-      margin-bottom: 10px;
-    }
-
-    .upload-text {
-      margin-bottom: 10px;
-      color: #4a5568;
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .preview-image {
-      max-width: 100%;
-      max-height: 300px;
-      margin: 15px 0;
-      display: none;
-      border-radius: 5px;
-    }
-
-    .process-btn {
-      background-color: #4f46e5;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 500;
-      display: none;
-      margin: 10px auto;
-    }
-
-    .process-btn:hover {
-      background-color: #4338ca;
-    }
-
-    .ocr-result {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f9fafb;
-      border-radius: 8px;
-      display: none;
-    }
-
-    .ocr-progress {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 15px 0;
-      color: #4f46e5;
-      font-weight: 500;
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Warning Overlay */
-    .warning-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 0, 0, 0.9);
-      z-index: 9999;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 24px;
-    }
-
-    .blur-screen {
-      filter: blur(10px) !important;
-    }
-
-    .no-select {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .main-content {
-        margin-left: 0;
-      }
-
-      .mobile-menu-btn {
-        display: flex;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .chat-container {
-        padding: 15px;
-      }
-
-      .message {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .input-box {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .input-buttons {
-        justify-content: flex-end;
-      }
-    }
+    *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;text-align:center;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;overflow-x:hidden}.container{width:100%;max-width:500px;background:rgba(10,15,35,0.8);padding:25px;border-radius:20px;box-shadow:0 0 25px rgba(0,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(0,255,255,0.3);position:relative;overflow:hidden}.container::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(0,255,255,0.1) 0%,rgba(0,0,0,0) 70%);z-index:-1}.header{margin-bottom:20px;position:relative;padding-bottom:15px}.header::after{content:'';position:absolute;bottom:0;left:25%;width:50%;height:2px;background:linear-gradient(to right,transparent,cyan,transparent)}.title{font-size:28px;margin-bottom:10px;background:linear-gradient(90deg,cyan,#00ffaa);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 10px rgba(0,255,255,0.3)}.developer{font-size:16px;color:#ccc;margin-bottom:15px}.developer b{color:cyan}.logo{width:100%;max-width:300px;height:auto;border-radius:15px;border:2px solid cyan;box-shadow:0 0 15px rgba(0,255,255,0.5);margin:0 auto 15px;display:block}.audio-control{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:25px;align-items:center}.audio-btn{background:rgba(0,20,40,0.8);color:cyan;border:2px solid rgba(0,255,255,0.4);padding:14px 16px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,255,255,0.2);text-decoration:none;min-height:48px;backdrop-filter:blur(5px);position:relative;overflow:hidden}.audio-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,255,0.2),transparent);transition:left 0.5s ease}.audio-btn:hover::before{left:100%}.audio-btn:hover{background:rgba(0,255,255,0.15);color:white;border-color:cyan;box-shadow:0 6px 20px rgba(0,255,255,0.4);transform:translateY(-2px);text-decoration:none}.audio-btn:active{transform:translateY(0);box-shadow:0 2px 8px rgba(0,255,255,0.3)}.audio-btn i{font-size:16px;min-width:16px}.chat-container{background:rgba(0,10,20,0.7);border-radius:15px;padding:15px;margin-bottom:20px;border:1px solid rgba(0,255,255,0.3);box-shadow:inset 0 0 10px rgba(0,255,255,0.2)}#chatbox{width:100%;height:300px;padding:15px;overflow-y:auto;text-align:left;background:rgba(0,5,15,0.8);border-radius:10px;white-space:pre-line;border:1px solid rgba(0,255,255,0.2)}#chatbox::-webkit-scrollbar{width:8px}#chatbox::-webkit-scrollbar-track{background:rgba(0,20,40,0.5)}#chatbox::-webkit-scrollbar-thumb{background:cyan;border-radius:4px}.message{margin-bottom:15px;padding:10px;border-radius:10px;animation:fadeIn 0.3s ease}.user-message{background:rgba(0,50,100,0.3);border-left:3px solid #00aaff}.ai-message{background:rgba(0,80,60,0.3);border-left:3px solid #00ffaa}.maintenance-message{background:rgba(255,140,0,0.2);border-left:3px solid #ff8c00}.input-group{display:flex;gap:10px;margin-bottom:15px}#messageInput{flex:1;padding:12px 15px;border-radius:30px;border:none;background:rgba(0,20,40,0.7);color:white;font-size:16px;border:1px solid rgba(0,255,255,0.3)}#messageInput:focus{outline:none;border-color:cyan;box-shadow:0 0 10px rgba(0,255,255,0.5)}#sendButton{padding:12px 25px;border-radius:30px;border:none;background:linear-gradient(45deg,#00ccff,#00ffcc);color:black;font-weight:bold;cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}#sendButton:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,255,255,0.4)}#sendButton:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}.voice-btn{width:100%;padding:12px;border-radius:30px;background:linear-gradient(45deg,#ff00cc,#cc00ff);color:white;font-weight:bold;border:none;cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}.voice-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,0,204,0.4)}.loading{display:inline-block;width:20px;height:20px;border:3px solid rgba(0,255,255,0.3);border-radius:50%;border-top-color:cyan;animation:spin 1s ease-in-out infinite;vertical-align:middle;margin-left:10px}.typing-indicator{color:#aaa;font-style:italic;padding:10px}.code-container{position:relative;margin:15px 0;border-radius:8px;overflow:hidden}.copy-btn{position:absolute;top:10px;right:10px;background:rgba(0,200,255,0.9);color:black;border:none;padding:5px 10px;border-radius:5px;font-size:12px;cursor:pointer;z-index:10;transition:all 0.3s ease;display:flex;align-items:center;gap:5px}.copy-btn:hover{background:cyan;box-shadow:0 0 10px cyan}pre{background:rgba(0,17,34,0.8);color:#0ff;padding:20px 15px 15px;border-radius:8px;overflow-x:auto;font-family:'Fira Code','Courier New',monospace;font-size:14px;white-space:pre-wrap;border:1px solid rgba(0,255,255,0.2);text-align:left}.status{margin-top:15px;font-size:14px;color:#aaa;display:flex;align-items:center;justify-content:center;gap:8px}.image-container{width:100%;margin:10px 0;border-radius:8px;overflow:hidden;border:1px solid rgba(0,255,255,0.3)}.generated-image{max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto}.image-download-btn{display:block;margin:10px auto 0;padding:8px 15px;background:linear-gradient(45deg,#00ccff,#00ffcc);color:black;border:none;border-radius:5px;font-weight:bold;cursor:pointer;transition:all 0.3s ease}.image-download-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,255,255,0.4)}.image-download-btn i{margin-right:5px}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,255,255,0.7)}70%{box-shadow:0 0 0 10px rgba(0,255,255,0)}100%{box-shadow:0 0 0 0 rgba(0,255,255,0)}}.pulse{animation:pulse 2s infinite}@media (max-width:600px){.container{padding:15px;border-radius:15px}.title{font-size:24px}#chatbox{height:250px}.input-group{flex-direction:column}.audio-control{grid-template-columns:1fr;gap:10px;margin-bottom:20px}.audio-btn{padding:12px 16px;font-size:13px;min-height:44px}}@media (max-width:400px){.audio-control{grid-template-columns:1fr}.audio-btn{padding:10px 12px;font-size:12px;min-height:40px}.audio-btn i{font-size:14px}}::-webkit-scrollbar{display:none}html{-ms-overflow-style:none;scrollbar-width:none}.blur-screen{filter:blur(10px) !important}.warning-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,0.9);z-index:9999;display:none;justify-content:center;align-items:center;color:white;font-size:24px}.no-select{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.tab-container{display:flex;margin-bottom:15px;border-bottom:1px solid rgba(0,255,255,0.3)}.tab-button{flex:1;padding:10px;background:rgba(0,20,40,0.5);border:none;color:#ccc;cursor:pointer;transition:all 0.3s ease;border-bottom:2px solid transparent}.tab-button.active{background:rgba(0,50,100,0.3);color:cyan;border-bottom:2px solid cyan}.tab-button:hover{background:rgba(0,50,100,0.2);color:white}.tab-content{display:none}.tab-content.active{display:block}
   </style>
 </head>
 <body class="no-select">
@@ -621,150 +19,64 @@
     </div>
   </div>
 
-  <div class="modal" id="ocrModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-file-image"></i> OCR - Ekstrak Teks dari Gambar
-        </div>
-        <button class="close-btn" id="closeModal">&times;</button>
-      </div>
-
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">
-          <i class="fas fa-cloud-upload-alt"></i>
-        </div>
-        <div class="upload-text">
-          <strong>Klik untuk mengunggah gambar</strong><br>
-          atau seret dan lepas file ke sini
-        </div>
-        <div style="font-size: 12px; color: #718096;">
-          Format yang didukung: JPG, PNG, PDF (maks. 5MB)
-        </div>
-        <input type="file" id="fileInput" class="file-input" accept="image/*,.pdf">
-      </div>
-
-      <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
-
-      <button id="processBtn" class="process-btn">
-        <i class="fas fa-cogs"></i> Proses OCR
+  <div class="container" id="mainContainer">
+    <div class="header">
+      <h1 class="title"><i class="fas fa-robot"></i> AbidinAI</h1>
+      <p class="developer"><b>Developer :</b> Abidin</p>
+      <img src="https://i.imgur.com/SVUQXPj.gif" alt="AbidinAI" class="logo">
+    </div>
+    
+    <div class="audio-control">
+      <button id="playBtn" class="audio-btn" onclick="toggleAudio()">
+        <i class="fas fa-play"></i><span>Putar Musik</span>
       </button>
-
-      <div class="ocr-progress" id="progressContainer" style="display: none;">
-        <div class="loading"></div>
-        <span id="progressText">Memproses gambar...</span>
-      </div>
-
-      <div class="ocr-result" id="ocrResult">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-          <strong>Hasil OCR:</strong>
-          <button class="copy-btn" id="copyResult" style="position: static; padding: 3px 8px;">
-            <i class="fas fa-copy"></i> Salin
-          </button>
-        </div>
-        <div id="resultText" style="white-space: pre-line;"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mobile-menu-btn" id="mobileMenuBtn">
-    <i class="fas fa-bars"></i>
-  </div>
-
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-title">
-        <i class="fas fa-robot"></i>
-        <span>AbidinAI</span>
-      </div>
-    </div>
-
-    <div class="sidebar-menu">
-      <a href="#" class="menu-item active" id="chatMenuItem">
-        <i class="fas fa-comment-dots"></i>
-        <span>Obrolan AI</span>
-      </a>
-
-      <a href="https://lynk.id/abidincerdas" class="menu-item" target="_blank">
-        <i class="fas fa-shopping-cart"></i>
-       <span>Jualan Produk Digital</span>
-       <span class="menu-badge"></span>
-     </a>
-
-     <a href="alarm.html" class="menu-item">
-        <i class="fas fa-bell"></i>
-        <span>Alarm AI</span>
-      </a>
-
-      <a href="obrolan.html" class="menu-item">
-        <i class="fas fa-comments"></i>
-        <span>Obrolan Grup</span>
-      </a>
-
-      <a href="dokter.html" class="menu-item">
-        <i class="fas fa-user-md"></i>
-        <span>Dokter Kesehatan</span>
-      </a>
-
-      <div class="menu-item" id="ocrMenuItem">
-        <i class="fas fa-file-alt"></i>
-        <span>Ekstrak Teks (OCR)</span>
-      </div>
-
-      <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
+      <a href="alarm.html" class="audio-btn"><i class="fas fa-bell"></i><span>Alarm AI</span></a>
+      <a href="obrolan.html" class="audio-btn"><i class="fas fa-comments"></i><span>Obrolan</span></a>
+      <a href="https://wa.me/6283169364879" class="audio-btn" target="_blank">
         <i class="fas fa-exclamation-triangle"></i>
         <span>Lapor Masalah</span>
       </a>
-
-      <div class="menu-item" id="musicMenuItem">
-        <i class="fas fa-music"></i>
-        <span>Putar Musik</span>
-      </div>
+      <a href="dokter.html" class="audio-btn" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background-color: #e0f7fa; color: #00796b; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-family: Arial, sans-serif; font-weight: 600;">
+        <i class="fas fa-user-md"></i>
+        <span>Dokter Kesehatan</span>
+      </a>
     </div>
-
-    <div class="sidebar-footer">
-      <div class="user-profile">
-        <div class="user-avatar">A</div>
-        <div>
-          <div class="user-name">Abidin</div>
-          <div class="user-role">Developer</div>
-        </div>
-      </div>
+    
+    <div class="tab-container">
+      <button class="tab-button active" onclick="openTab('chatTab')"><i class="fas fa-comment"></i> Chat</button>
+      <button class="tab-button" onclick="openTab('imageTab')"><i class="fas fa-image"></i> Buat Gambar</button>
     </div>
-  </div>
-
-  <div class="main-content" id="mainContainer">
-    <div class="chat-container">
-     <div class="chat-header">
-  <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-    <div class="avatar ai-avatar" style="width: 60px; height: 60px; font-size: 2rem;">
-      <i class="fas fa-robot"></i>
-    </div>
-  </div>
-  <h1 class="chat-title">AbidinAI</h1>
-  <p class="chat-subtitle">Asisten AI cerdas AbidinAI</p>
-   <p class="chat-subtitle">Ada yang bisa saya bantu?</p>
-</div>
-
-      <div class="chat-messages" id="chatbox">
-        </div>
-
-      <div class="input-container">
-        <div class="input-box">
-          <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
-          <div class="input-buttons">
-            <button class="ocr-btn" onclick="openOCRModal()">
-              <i class="fas fa-file-image"></i>
-            </button>
-            <button class="voice-btn" onclick="startVoiceRecognition()">
-              <i class="fas fa-microphone-alt"></i>
-            </button>
-            <button class="send-btn" onclick="sendMessage()" id="sendButton">
-              <i class="fas fa-paper-plane"></i>
-            </button>
-          </div>
-        </div>
+    
+    <div id="chatTab" class="tab-content active">
+      <div class="chat-container">
+        <div id="chatbox"></div>
       </div>
+      
+      <div class="input-group">
+        <input type="text" id="messageInput" placeholder="Ketik pesan..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()" id="sendButton"><i class="fas fa-paper-plane"></i> Kirim</button>
+      </div>
+      
+      <button onclick="startVoiceRecognition()" class="voice-btn">
+        <i class="fas fa-microphone-alt"></i> Mulai Percakapan Suara
+      </button>
+    </div>
+    
+    <div id="imageTab" class="tab-content">
+      <div class="chat-container">
+        <div id="imagePromptBox"></div>
+      </div>
+      
+      <div class="input-group">
+        <input type="text" id="imagePromptInput" placeholder="Deskripsikan gambar yang ingin dibuat...">
+        <button onclick="generateImage()" id="generateButton"><i class="fas fa-magic"></i> Buat Gambar</button>
+      </div>
+      
+      <div id="imageResultContainer" style="display:none; margin-top:15px;"></div>
+    </div>
+    
+    <div class="status">
+      <i class="fas fa-plug"></i><span>Terhubung ke Server AbidinAI</span>
     </div>
   </div>
 
@@ -773,7 +85,506 @@
   </audio>
 
   <script>
-   (function(_0x3a7e3a,_0x3d62c1){const _0x2b65fc=_0x51cb,_0x77b94d=_0x3a7e3a();while(!![]){try{const _0x1fad7b=-parseInt(_0x2b65fc(0x264))/0x1*(parseInt(_0x2b65fc(0x27c))/0x2)+-parseInt(_0x2b65fc(0x21d))/0x3*(-parseInt(_0x2b65fc(0x215))/0x4)+parseInt(_0x2b65fc(0x23c))/0x5+parseInt(_0x2b65fc(0x265))/0x6*(parseInt(_0x2b65fc(0x1e7))/0x7)+-parseInt(_0x2b65fc(0x250))/0x8*(parseInt(_0x2b65fc(0x1e9))/0x9)+-parseInt(_0x2b65fc(0x26b))/0xa+-parseInt(_0x2b65fc(0x20c))/0xb*(-parseInt(_0x2b65fc(0x242))/0xc);if(_0x1fad7b===_0x3d62c1)break;else _0x77b94d['push'](_0x77b94d['shift']());}catch(_0x215519){_0x77b94d['push'](_0x77b94d['shift']());}}}(_0x3723,0xccd10),(function(){const _0x497803=_0x51cb,_0x21bdcb=(function(){let _0x416712=!![];return function(_0x50b088,_0x53a243){const _0x1efc75=_0x416712?function(){if(_0x53a243){const _0x1b1290=_0x53a243['apply'](_0x50b088,arguments);return _0x53a243=null,_0x1b1290;}}:function(){};return _0x416712=![],_0x1efc75;};}()),_0x4edb4e=_0x21bdcb(this,function(){const _0x280e2f=_0x51cb;return _0x4edb4e[_0x280e2f(0x1f1)]()[_0x280e2f(0x22c)]('(((.+)+)+)+$')[_0x280e2f(0x1f1)]()['constructor'](_0x4edb4e)[_0x280e2f(0x22c)](_0x280e2f(0x20e));});_0x4edb4e();const _0x3ceb10=(function(){let _0x13c42e=!![];return function(_0x277a5c,_0x56791a){const _0x243604=_0x13c42e?function(){const _0xffb20=_0x51cb;if(_0x56791a){const _0x2319b3=_0x56791a[_0xffb20(0x277)](_0x277a5c,arguments);return _0x56791a=null,_0x2319b3;}}:function(){};return _0x13c42e=![],_0x243604;};}()),_0x1bd146=_0x3ceb10(this,function(){const _0x544484=_0x51cb,_0x1f43be=function(){const _0x388829=_0x51cb;let _0x1a83c8;try{_0x1a83c8=Function('return\x20(function()\x20'+_0x388829(0x268)+');')();}catch(_0x5c5b86){_0x1a83c8=window;}return _0x1a83c8;},_0x883351=_0x1f43be(),_0x2e044a=_0x883351[_0x544484(0x1e0)]=_0x883351[_0x544484(0x1e0)]||{},_0x58304f=[_0x544484(0x228),_0x544484(0x27f),_0x544484(0x202),_0x544484(0x223),'exception',_0x544484(0x273),'trace'];for(let _0x4b7048=0x0;_0x4b7048<_0x58304f['length'];_0x4b7048++){const _0xb2df71=_0x3ceb10[_0x544484(0x24c)][_0x544484(0x1e1)][_0x544484(0x1cb)](_0x3ceb10),_0x421f86=_0x58304f[_0x4b7048],_0x40df70=_0x2e044a[_0x421f86]||_0xb2df71;_0xb2df71[_0x544484(0x283)]=_0x3ceb10['bind'](_0x3ceb10),_0xb2df71['toString']=_0x40df70[_0x544484(0x1f1)][_0x544484(0x1cb)](_0x40df70),_0x2e044a[_0x421f86]=_0xb2df71;}});_0x1bd146();'use strict';let _0x498f9f=![],_0x15df67=null,_0x2a6517=![],_0x1e507a=null;const _0x71ffde={'open':![],'orientation':null},_0x11d347=0xa0;document['addEventListener'](_0x497803(0x200),_0x113daf=>_0x113daf[_0x497803(0x224)]()),document[_0x497803(0x22f)](_0x497803(0x22e),_0x5684c7=>_0x5684c7[_0x497803(0x224)]()),document[_0x497803(0x22f)](_0x497803(0x281),_0x293127=>_0x293127[_0x497803(0x224)]()),document[_0x497803(0x22f)](_0x497803(0x256),function(_0xc6ca7c){const _0x24eeee=_0x497803;if(_0xc6ca7c[_0x24eeee(0x1eb)]===_0x24eeee(0x1f4)||_0xc6ca7c[_0x24eeee(0x1de)]&&_0xc6ca7c[_0x24eeee(0x1dd)]&&_0xc6ca7c[_0x24eeee(0x1eb)]==='I'||_0xc6ca7c['ctrlKey']&&_0xc6ca7c[_0x24eeee(0x1dd)]&&_0xc6ca7c[_0x24eeee(0x1eb)]==='C'||_0xc6ca7c['ctrlKey']&&_0xc6ca7c[_0x24eeee(0x1dd)]&&_0xc6ca7c[_0x24eeee(0x1eb)]==='J'||_0xc6ca7c[_0x24eeee(0x1de)]&&_0xc6ca7c[_0x24eeee(0x1eb)]==='U'||_0xc6ca7c[_0x24eeee(0x1de)]&&_0xc6ca7c[_0x24eeee(0x1eb)]==='S'||_0xc6ca7c[_0x24eeee(0x1eb)]==='F5'||_0xc6ca7c[_0x24eeee(0x1de)]&&_0xc6ca7c[_0x24eeee(0x1eb)]==='r')return _0xc6ca7c[_0x24eeee(0x224)](),_0xc6ca7c[_0x24eeee(0x210)](),_0x3fdfb3(),![];});const _0x42f919=()=>{const _0x3fa47c=_0x497803;window[_0x3fa47c(0x25f)]-window[_0x3fa47c(0x231)]>_0x11d347||window[_0x3fa47c(0x1c8)]-window[_0x3fa47c(0x201)]>_0x11d347?!_0x71ffde[_0x3fa47c(0x26c)]&&(_0x71ffde[_0x3fa47c(0x26c)]=!![],_0x3fdfb3()):_0x71ffde[_0x3fa47c(0x26c)]&&(_0x71ffde[_0x3fa47c(0x26c)]=![],_0x5cf698());};setInterval(_0x42f919,0x12c);const _0x13cbbb=()=>{const _0x1c9693=_0x497803;typeof console!==_0x1c9693(0x1d1)&&(console[_0x1c9693(0x1da)](),console[_0x1c9693(0x228)](_0x1c9693(0x227),_0x1c9693(0x267)),console[_0x1c9693(0x228)](_0x1c9693(0x245),_0x1c9693(0x216)),console[_0x1c9693(0x228)](_0x1c9693(0x27e),'color:\x20red;\x20font-size:\x2014px;'));};setInterval(_0x13cbbb,0x3e8),_0x13cbbb();function _0x3fdfb3(){const _0x5c9e86=_0x497803,_0x762093=document[_0x5c9e86(0x24b)](_0x5c9e86(0x1d8)),_0x266a6f=document['getElementById']('mainContainer');_0x762093&&_0x266a6f&&(_0x762093[_0x5c9e86(0x1f7)][_0x5c9e86(0x262)]=_0x5c9e86(0x22d),_0x266a6f['classList'][_0x5c9e86(0x203)](_0x5c9e86(0x1fa)),document[_0x5c9e86(0x269)][_0x5c9e86(0x1f7)][_0x5c9e86(0x1c9)]='hidden');}function _0x5cf698(){const _0x46d153=_0x497803,_0x1ca6d7=document[_0x46d153(0x24b)](_0x46d153(0x1d8)),_0x524a22=document[_0x46d153(0x24b)](_0x46d153(0x257));_0x1ca6d7&&_0x524a22&&(_0x1ca6d7[_0x46d153(0x1f7)]['display']=_0x46d153(0x241),_0x524a22['classList'][_0x46d153(0x271)](_0x46d153(0x1fa)),document[_0x46d153(0x269)]['style']['overflow']='auto');}((()=>{const _0x192004=()=>{debugger;};setInterval(_0x192004,0x64);})()),window[_0x497803(0x22f)](_0x497803(0x1c5),_0x13cbbb),window[_0x497803(0x22f)](_0x497803(0x1e8),_0x13cbbb),window[_0x497803(0x22f)](_0x497803(0x255),_0x42f919),document['getElementById'](_0x497803(0x244))[_0x497803(0x22f)](_0x497803(0x27d),function(){const _0x214584=_0x497803;document[_0x214584(0x24b)]('sidebar')['classList'][_0x214584(0x206)](_0x214584(0x26c));});function _0x2ad27a(_0x41cc94){const _0x3d1788=_0x497803;return _0x41cc94[_0x3d1788(0x1cd)](/\*\*(.*?)\*\*/g,_0x3d1788(0x24a));}document[_0x497803(0x22f)](_0x497803(0x25a),function(){const _0x241621=_0x497803;if(_0x71ffde[_0x241621(0x26c)]){_0x3fdfb3();return;}const _0x52a629=document[_0x241621(0x24b)](_0x241621(0x23b)),_0x4a94e3=document['createElement'](_0x241621(0x240));_0x4a94e3[_0x241621(0x1fc)]=_0x241621(0x20f),_0x52a629['appendChild'](_0x4a94e3),_0x52a629[_0x241621(0x23d)]=_0x52a629[_0x241621(0x214)];const _0x1665e6=document[_0x241621(0x24b)]('messageInput');_0x1665e6[_0x241621(0x22f)]('input',function(){const _0x1b546e=_0x241621;this[_0x1b546e(0x1f7)][_0x1b546e(0x24f)]=_0x1b546e(0x1fd),this[_0x1b546e(0x1f7)]['height']=this[_0x1b546e(0x214)]+'px';}),document[_0x241621(0x24b)]('musicMenuItem')[_0x241621(0x22f)](_0x241621(0x27d),_0x411e26),document[_0x241621(0x24b)](_0x241621(0x1e5))[_0x241621(0x22f)](_0x241621(0x27d),openOCRModal),_0x2ece04();});function _0x2d4e3b(){const _0x2608ab=_0x497803,_0x5f0d0f=new Date();return _0x5f0d0f['toLocaleTimeString']([],{'hour':'2-digit','minute':_0x2608ab(0x251)});}window[_0x497803(0x25b)]=function(_0x59ad0f){const _0x11aa47=_0x497803;if(_0x71ffde[_0x11aa47(0x26c)])return _0x3fdfb3(),![];_0x59ad0f['key']===_0x11aa47(0x205)&&!_0x59ad0f['shiftKey']&&(_0x59ad0f[_0x11aa47(0x224)](),sendMessage());};function _0x411e26(){const _0x43abf6=_0x497803;if(_0x71ffde['open'])return _0x3fdfb3(),![];const _0x553630=document[_0x43abf6(0x24b)](_0x43abf6(0x21b)),_0x2af2ae=document[_0x43abf6(0x24b)](_0x43abf6(0x21c));_0x553630[_0x43abf6(0x230)]?(_0x553630[_0x43abf6(0x25c)](),_0x2af2ae[_0x43abf6(0x1fc)]=_0x43abf6(0x1d4),_0x2a6517=!![]):(_0x553630[_0x43abf6(0x1ea)](),_0x2af2ae['innerHTML']=_0x43abf6(0x280),_0x2a6517=![]);};function _0x2ece04(){const _0x36a14a=_0x497803,_0x4f68da=document[_0x36a14a(0x24b)](_0x36a14a(0x220)),_0x5a9f76=document[_0x36a14a(0x24b)](_0x36a14a(0x270)),_0x590995=document[_0x36a14a(0x24b)](_0x36a14a(0x284)),_0x58924b=document[_0x36a14a(0x24b)](_0x36a14a(0x211)),_0x417722=document[_0x36a14a(0x24b)](_0x36a14a(0x1ee)),_0x255c01=document[_0x36a14a(0x24b)]('processBtn'),_0x53d2bd=document[_0x36a14a(0x24b)](_0x36a14a(0x217)),_0x9b2202=document[_0x36a14a(0x24b)](_0x36a14a(0x23f)),_0x195537=document['getElementById'](_0x36a14a(0x1e2)),_0x42cdf6=document[_0x36a14a(0x24b)]('progressText'),_0x10267a=document[_0x36a14a(0x24b)](_0x36a14a(0x282));_0x5a9f76[_0x36a14a(0x22f)](_0x36a14a(0x27d),()=>_0x4f68da['style'][_0x36a14a(0x262)]='none'),_0x4f68da[_0x36a14a(0x22f)](_0x36a14a(0x27d),_0x381bb0=>{const _0x39d568=_0x36a14a;if(_0x381bb0[_0x39d568(0x248)]===_0x4f68da)_0x4f68da['style'][_0x39d568(0x262)]=_0x39d568(0x241);}),_0x590995[_0x36a14a(0x22f)](_0x36a14a(0x27d),()=>_0x58924b['click']()),_0x590995[_0x36a14a(0x22f)](_0x36a14a(0x1f0),_0x55f520=>{const _0x4f7d7a=_0x36a14a;_0x55f520['preventDefault'](),_0x590995[_0x4f7d7a(0x1f7)][_0x4f7d7a(0x279)]='#4f46e5',_0x590995['style'][_0x4f7d7a(0x20b)]=_0x4f7d7a(0x26f);}),_0x590995['addEventListener'](_0x36a14a(0x260),()=>{const _0x174abd=_0x36a14a;_0x590995[_0x174abd(0x1f7)][_0x174abd(0x279)]='#e5e5e6',_0x590995['style'][_0x174abd(0x20b)]=_0x174abd(0x25d);}),_0x590995[_0x36a14a(0x22f)](_0x36a14a(0x1d2),_0x2528e7=>{const _0x104e6b=_0x36a14a;_0x2528e7[_0x104e6b(0x224)](),_0x590995[_0x104e6b(0x1f7)][_0x104e6b(0x279)]=_0x104e6b(0x1cf),_0x590995['style']['backgroundColor']='transparent',_0x2528e7[_0x104e6b(0x1fb)]['files']['length']&&(_0x58924b[_0x104e6b(0x1ef)]=_0x2528e7[_0x104e6b(0x1fb)][_0x104e6b(0x1ef)],_0x3893f4(_0x58924b[_0x104e6b(0x1ef)][0x0]));}),_0x58924b[_0x36a14a(0x22f)](_0x36a14a(0x20a),()=>{const _0x24d6a9=_0x36a14a;_0x58924b[_0x24d6a9(0x1ef)][_0x24d6a9(0x1d5)]&&_0x3893f4(_0x58924b[_0x24d6a9(0x1ef)][0x0]);}),_0x255c01['addEventListener'](_0x36a14a(0x27d),_0x6fa9eb),_0x53d2bd[_0x36a14a(0x22f)]('click',()=>{const _0x150f26=_0x36a14a;navigator['clipboard'][_0x150f26(0x254)](_0x9b2202[_0x150f26(0x272)])[_0x150f26(0x252)](()=>{const _0x2eebba=_0x150f26;_0x53d2bd['innerHTML']=_0x2eebba(0x23e),setTimeout(()=>{const _0xb2bab3=_0x2eebba;_0x53d2bd['innerHTML']=_0xb2bab3(0x1ec);},0x5dc);});});function _0x3893f4(_0x3a6dcf){const _0x5ef5d8=_0x36a14a;if(!_0x3a6dcf[_0x5ef5d8(0x22b)][_0x5ef5d8(0x275)]('image.*')&&_0x3a6dcf[_0x5ef5d8(0x22b)]!==_0x5ef5d8(0x204)){alert('Hanya\x20file\x20gambar\x20(JPG,\x20PNG)\x20atau\x20PDF\x20yang\x20didukung!');return;}if(_0x3a6dcf[_0x5ef5d8(0x213)]>0x5*0x400*0x400){alert(_0x5ef5d8(0x1d6));return;}if(_0x3a6dcf['type']['match']('image.*')){const _0x28b7e2=new FileReader();_0x28b7e2[_0x5ef5d8(0x246)]=_0x33a9e1=>{const _0x4288b2=_0x5ef5d8;_0x417722[_0x4288b2(0x237)]=_0x33a9e1[_0x4288b2(0x248)][_0x4288b2(0x236)],_0x417722[_0x4288b2(0x1f7)][_0x4288b2(0x262)]=_0x4288b2(0x258),_0x255c01[_0x4288b2(0x1f7)][_0x4288b2(0x262)]=_0x4288b2(0x258),_0x10267a[_0x4288b2(0x1f7)][_0x4288b2(0x262)]=_0x4288b2(0x241);},_0x28b7e2['readAsDataURL'](_0x3a6dcf);}else _0x417722[_0x5ef5d8(0x1f7)][_0x5ef5d8(0x262)]=_0x5ef5d8(0x241),_0x255c01['style'][_0x5ef5d8(0x262)]='block',_0x10267a[_0x5ef5d8(0x1f7)][_0x5ef5d8(0x262)]=_0x5ef5d8(0x241);}function _0x6fa9eb(){const _0xeae2cc=_0x36a14a,_0x42aaec=_0x58924b[_0xeae2cc(0x1ef)][0x0];if(!_0x42aaec)return;_0x255c01[_0xeae2cc(0x1f7)]['display']='none',_0x195537['style'][_0xeae2cc(0x262)]=_0xeae2cc(0x22d),Tesseract[_0xeae2cc(0x1e6)](_0x42aaec,_0xeae2cc(0x209),{'logger':_0x55d0d4=>{const _0x384cb2=_0xeae2cc;_0x55d0d4[_0x384cb2(0x1f2)]===_0x384cb2(0x1ce)&&(_0x42cdf6['textContent']=_0x384cb2(0x1f6)+Math['round'](_0x55d0d4[_0x384cb2(0x1c6)]*0x64)+'%');}})[_0xeae2cc(0x252)](({data:{text:_0x565f14}})=>{const _0x5d8ad4=_0xeae2cc;_0x9b2202[_0x5d8ad4(0x272)]=_0x565f14,_0x10267a[_0x5d8ad4(0x1f7)]['display']=_0x5d8ad4(0x258),_0x195537[_0x5d8ad4(0x1f7)]['display']='none',_0x10267a[_0x5d8ad4(0x276)]({'behavior':'smooth'});})[_0xeae2cc(0x238)](_0x274a90=>{const _0x80c93c=_0xeae2cc;console[_0x80c93c(0x223)]('OCR\x20Error:',_0x274a90),_0x42cdf6[_0x80c93c(0x272)]='Error\x20saat\x20memproses\x20gambar',setTimeout(()=>{const _0x32d7b9=_0x80c93c;_0x195537[_0x32d7b9(0x1f7)]['display']=_0x32d7b9(0x241),_0x255c01[_0x32d7b9(0x1f7)]['display']='block';},0x7d0);});}}window['openOCRModal']=function(){const _0xb18790=_0x497803;if(_0x71ffde[_0xb18790(0x26c)])return _0x3fdfb3(),![];const _0x3622a5=document[_0xb18790(0x24b)](_0xb18790(0x220));_0x3622a5[_0xb18790(0x1f7)][_0xb18790(0x262)]=_0xb18790(0x22d),document['getElementById']('previewImage')[_0xb18790(0x1f7)][_0xb18790(0x262)]=_0xb18790(0x241),document[_0xb18790(0x24b)](_0xb18790(0x219))[_0xb18790(0x1f7)][_0xb18790(0x262)]=_0xb18790(0x241),document[_0xb18790(0x24b)](_0xb18790(0x1e2))[_0xb18790(0x1f7)]['display']='none',document[_0xb18790(0x24b)](_0xb18790(0x282))[_0xb18790(0x1f7)]['display']=_0xb18790(0x241),document[_0xb18790(0x24b)](_0xb18790(0x211))['value']='';},window['startVoiceRecognition']=function(){const _0x48722a=_0x497803;if(_0x71ffde[_0x48722a(0x26c)])return _0x3fdfb3(),![];if(!(_0x48722a(0x249)in window)){_0x44c70c(_0x48722a(0x1cc),'Browser\x20Anda\x20tidak\x20mendukung\x20pengenalan\x20suara.\x20Silakan\x20gunakan\x20Chrome\x20atau\x20Edge.',_0x48722a(0x235));return;}const _0x541366=new(window[(_0x48722a(0x222))]||window[(_0x48722a(0x249))])();_0x541366[_0x48722a(0x233)]='id-ID',_0x541366[_0x48722a(0x239)]();const _0x406b70=document[_0x48722a(0x24b)](_0x48722a(0x23b));_0x15df67&&_0x15df67['remove'](),_0x15df67=document['createElement'](_0x48722a(0x240)),_0x15df67['className']=_0x48722a(0x1db),_0x15df67['innerHTML']=_0x48722a(0x1e3)+_0x2d4e3b()+_0x48722a(0x24d),_0x406b70[_0x48722a(0x232)](_0x15df67),_0x406b70[_0x48722a(0x23d)]=_0x406b70[_0x48722a(0x214)],_0x541366[_0x48722a(0x1d7)]=function(_0x14d4fa){const _0x44f9c3=_0x48722a,_0x1eafa4=_0x14d4fa['results'][0x0][0x0]['transcript'];document['getElementById']('messageInput')[_0x44f9c3(0x1ff)]=_0x1eafa4,_0x498f9f=!![],sendMessage();},_0x541366[_0x48722a(0x218)]=function(_0x512ac1){const _0x1dc6fb=_0x48722a;_0x15df67&&(_0x15df67[_0x1dc6fb(0x271)](),_0x15df67=null),_0x512ac1[_0x1dc6fb(0x223)]!==_0x1dc6fb(0x253)&&_0x44c70c('Sistem',_0x1dc6fb(0x24e)+_0x512ac1[_0x1dc6fb(0x223)],_0x1dc6fb(0x235));};};function _0x44c70c(_0x1ce1c2,_0x153cca,_0x45dc34){const _0x33dbee=_0x497803,_0x3e5458=document[_0x33dbee(0x24b)](_0x33dbee(0x23b)),_0x3dd8c8=document[_0x33dbee(0x1f9)](_0x33dbee(0x240));return _0x3dd8c8[_0x33dbee(0x1d9)]=_0x33dbee(0x266)+_0x45dc34,_0x3dd8c8[_0x33dbee(0x1fc)]=_0x33dbee(0x221)+(_0x45dc34===_0x33dbee(0x235)?_0x33dbee(0x229):'')+_0x33dbee(0x1f3)+(_0x45dc34===_0x33dbee(0x235)?'<i\x20class=\x22fas\x20fa-robot\x22></i>':_0x1ce1c2[_0x33dbee(0x1d3)](0x0))+_0x33dbee(0x27a)+_0x1ce1c2+_0x33dbee(0x212)+_0x2d4e3b()+_0x33dbee(0x1ed)+_0x153cca+_0x33dbee(0x1f5),_0x3e5458['appendChild'](_0x3dd8c8),_0x3e5458[_0x33dbee(0x23d)]=_0x3e5458[_0x33dbee(0x214)],_0x3dd8c8;}window[_0x497803(0x243)]=async function(){const _0x1c040d=_0x497803;if(_0x71ffde['open'])return _0x3fdfb3(),![];const _0x674866=document[_0x1c040d(0x24b)](_0x1c040d(0x226)),_0x3456d0=_0x674866['value'][_0x1c040d(0x274)]();if(!_0x3456d0)return;const _0x3206f2=document['getElementById']('chatbox'),_0x5d0d1d=document[_0x1c040d(0x24b)](_0x1c040d(0x23a)),_0x492a31=_0x44c70c(_0x1c040d(0x1f8),_0x3456d0,_0x1c040d(0x263)),_0x2bf063=document[_0x1c040d(0x1f9)](_0x1c040d(0x240));_0x2bf063['className']=_0x1c040d(0x1db),_0x2bf063[_0x1c040d(0x1fc)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22avatar\x20ai-avatar\x22><i\x20class=\x22fas\x20fa-robot\x22></i></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22typing-indicator\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22loading\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20AbidinAI\x20sedang\x20mengetik...\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',_0x3206f2['appendChild'](_0x2bf063),_0x3206f2[_0x1c040d(0x23d)]=_0x3206f2[_0x1c040d(0x214)],_0x5d0d1d['disabled']=!![],_0x674866['value']='',_0x674866[_0x1c040d(0x1f7)][_0x1c040d(0x24f)]=_0x1c040d(0x1fd);try{const _0x149575=await fetch(_0x1c040d(0x20d),{'method':_0x1c040d(0x27b),'headers':{'Content-Type':_0x1c040d(0x1dc)},'body':JSON[_0x1c040d(0x1ca)]({'message':_0x3456d0})});if(!_0x149575['ok'])throw new Error('Error:\x20'+_0x149575[_0x1c040d(0x1f2)]+'\x20-\x20'+_0x149575['statusText']);const _0x185434=await _0x149575[_0x1c040d(0x21a)]();let _0xd47114=_0x185434[_0x1c040d(0x1c7)];_0x2bf063[_0x1c040d(0x271)](),!_0xd47114||_0xd47114[_0x1c040d(0x274)]()===''?_0x21cf23():_0x4baed2(_0xd47114);}catch(_0x270f6b){_0x2bf063[_0x1c040d(0x271)](),_0x21cf23(),console[_0x1c040d(0x223)]('Error:',_0x270f6b),_0x5d0d1d[_0x1c040d(0x26d)]=![];}};function _0x21cf23(){const _0x3e0035=_0x497803,_0x386a5f=document[_0x3e0035(0x24b)]('chatbox'),_0x2c7b2a=document['getElementById'](_0x3e0035(0x23a));_0x15df67&&(_0x15df67['remove'](),_0x15df67=null);const _0x3ae340=_0x44c70c('AbidinAI',_0x2ad27a(_0x3e0035(0x21f)),_0x3e0035(0x235));_0x2c7b2a[_0x3e0035(0x26d)]=![],_0x498f9f&&_0x2edd17('Maaf,\x20server\x20AI\x20sedang\x20dalam\x20proses\x20perbaikan\x20dan\x20pemeliharaan.\x20Silakan\x20coba\x20lagi\x20dalam\x20beberapa\x20saat.'),_0x498f9f=![];}function _0x4baed2(_0x3e61f1){const _0x34ed86=_0x497803,_0x4ed5bb=document[_0x34ed86(0x24b)]('chatbox'),_0x15aa0b=document['getElementById'](_0x34ed86(0x23a));_0x15df67&&(_0x15df67[_0x34ed86(0x271)](),_0x15df67=null);const _0x495149=_0x3e61f1['split'](/```(?:\w+)?\n?([\s\S]*?)```/g),_0x2049f8=document[_0x34ed86(0x1f9)](_0x34ed86(0x240));_0x2049f8[_0x34ed86(0x1d9)]=_0x34ed86(0x1db),_0x2049f8[_0x34ed86(0x1fc)]=_0x34ed86(0x22a)+_0x2d4e3b()+_0x34ed86(0x259);const _0x3e70c5=_0x2049f8[_0x34ed86(0x1fe)](_0x34ed86(0x26e));let _0x2f4f30='';for(let _0x75a5bf=0x0;_0x75a5bf<_0x495149['length'];_0x75a5bf++){if(_0x75a5bf%0x2===0x0){const _0x47cefe=document[_0x34ed86(0x1f9)](_0x34ed86(0x225));_0x47cefe[_0x34ed86(0x1fc)]=_0x2ad27a(_0x495149[_0x75a5bf]),_0x2f4f30+=_0x495149[_0x75a5bf]+'\x20',_0x3e70c5[_0x34ed86(0x232)](_0x47cefe);}else{const _0x52b6d0=document[_0x34ed86(0x1f9)]('div');_0x52b6d0[_0x34ed86(0x1d9)]='code-container';const _0x410fa9=document['createElement'](_0x34ed86(0x240));_0x410fa9['className']='code-header';const _0x4f52af=document[_0x34ed86(0x1f9)](_0x34ed86(0x278));_0x4f52af[_0x34ed86(0x1d9)]=_0x34ed86(0x1e4),_0x4f52af[_0x34ed86(0x1fc)]=_0x34ed86(0x1ec),_0x4f52af[_0x34ed86(0x21e)]=()=>{const _0x1121dd=_0x34ed86;navigator['clipboard'][_0x1121dd(0x254)](_0x495149[_0x75a5bf])['then'](()=>{const _0x1a573d=_0x1121dd;_0x4f52af['innerHTML']='<i\x20class=\x22fas\x20fa-check\x22></i>\x20Tersalin!',setTimeout(()=>_0x4f52af[_0x1a573d(0x1fc)]=_0x1a573d(0x1ec),0x5dc);});},_0x410fa9[_0x34ed86(0x232)](_0x4f52af);const _0x4ae422=document['createElement']('pre');_0x4ae422[_0x34ed86(0x272)]=_0x495149[_0x75a5bf],_0x52b6d0[_0x34ed86(0x232)](_0x410fa9),_0x52b6d0[_0x34ed86(0x232)](_0x4ae422),_0x3e70c5[_0x34ed86(0x232)](_0x52b6d0);}}_0x4ed5bb[_0x34ed86(0x232)](_0x2049f8),_0x4ed5bb[_0x34ed86(0x23d)]=_0x4ed5bb['scrollHeight'],_0x15aa0b[_0x34ed86(0x26d)]=![],_0x498f9f&&_0x2edd17(_0x2f4f30),_0x498f9f=![];}function _0x2edd17(_0xa37ebe){const _0x4bcaff=_0x497803;if(!(_0x4bcaff(0x261)in window)){console[_0x4bcaff(0x228)](_0x4bcaff(0x1df));return;}const _0x2b35d1=_0xa37ebe['split'](/(?<=[.!?])\s+/),_0xb69eab=window[_0x4bcaff(0x261)];_0xb69eab[_0x4bcaff(0x207)]();function _0x27fdf1(_0x1b3fc6){const _0xf9e26b=_0x4bcaff;return _0x1b3fc6[_0xf9e26b(0x1cd)](/[*"`\-+/:;\\]/g,'');}function _0x4d4781(_0x3f1a0c){const _0x3bd62b=_0x4bcaff;if(_0x3f1a0c>=_0x2b35d1['length'])return;const _0x39de68=_0x27fdf1(_0x2b35d1[_0x3f1a0c])[_0x3bd62b(0x274)]();if(!_0x39de68)return _0x4d4781(_0x3f1a0c+0x1);const _0x4ae1db=new SpeechSynthesisUtterance(_0x39de68);_0x4ae1db[_0x3bd62b(0x233)]=_0x3bd62b(0x208),_0x4ae1db[_0x3bd62b(0x247)]=0x1,_0x4ae1db[_0x3bd62b(0x26a)]=0x1,_0x4ae1db[_0x3bd62b(0x25e)]=0x1,_0x4ae1db[_0x3bd62b(0x234)]=()=>setTimeout(()=>_0x4d4781(_0x3f1a0c+0x1),0x12c),_0xb69eab[_0x3bd62b(0x1d0)](_0x4ae1db);}_0x4d4781(0x0);}}()));function _0x51cb(_0x58b8f0,_0x184e40){const _0x580f0a=_0x3723();return _0x51cb=function(_0x5017fc,_0x179b8e){_0x5017fc=_0x5017fc-0x1c5;let _0x38ff6d=_0x580f0a[_0x5017fc];return _0x38ff6d;},_0x51cb(_0x58b8f0,_0x184e40);}function _0x3723(){const _0x41dc0b=['scrollIntoView','apply','button','borderColor','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22message-sender\x22>','POST','2aOPWpK','click','%cHalaman\x20ini\x20dilindungi\x20sistem\x20keamanan\x20AbidinAI.\x20Akses\x20tidak\x20sah\x20akan\x20diblokir!','warn','<i\x20class=\x22fas\x20fa-music\x22></i><span>Putar\x20Musik</span>','dragstart','ocrResult','__proto__','uploadArea','blur','progress','reply','outerWidth','overflow','stringify','bind','Sistem','replace','recognizing\x20text','#e5e5e6','speak','undefined','drop','charAt','<i\x20class=\x22fas\x20fa-music\x22></i><span>Jeda\x20Musik</span>','length','Ukuran\x20file\x20maksimal\x205MB!','onresult','warningOverlay','className','clear','message\x20ai-message','application/json','shiftKey','ctrlKey','Text-to-speech\x20tidak\x20didukung\x20di\x20browser\x20ini','console','prototype','progressContainer','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22avatar\x20ai-avatar\x22><i\x20class=\x22fas\x20fa-robot\x22></i></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22message-sender\x22>Sistem</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22message-time\x22>','copy-btn','ocrMenuItem','recognize','20153WLeAne','focus','9zSQRJm','pause','key','<i\x20class=\x22fas\x20fa-copy\x22></i>\x20Salin','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-text\x22>','previewImage','files','dragover','toString','status','\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','F12','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','Memproses:\x20','style','Anda','createElement','blur-screen','dataTransfer','innerHTML','auto','querySelector','value','contextmenu','innerWidth','info','add','application/pdf','Enter','toggle','cancel','id-ID','ind','change','backgroundColor','11iSMQtc','/api/chat','(((.+)+)+)+$','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','stopPropagation','fileInput','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22message-time\x22>','size','scrollHeight','2399692MPQdBK','color:\x20red;\x20font-size:\x2020px;\x20font-weight:\x20bold;','copyResult','onerror','processBtn','json','audioPlayer','musicMenuItem','3MnGBVG','onclick','<i\x20class=\x22fas\x20fa-tools\x22></i>\x20Maaf,\x20server\x20AbidinAI\x20sedang\x20dalam\x20proses\x20perbaikan\x20dan\x20pemeliharaan.\x20Silakan\x20coba\x20lagi\x20dalam\x20beberapa\x20saat.\x20Terima\x20kasih\x20atas\x20pengertiannya!\x20🔧','ocrModal','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22avatar\x20','SpeechRecognition','error','preventDefault','span','messageInput','%c🚫\x20STOP!','log','ai-avatar','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22avatar\x20ai-avatar\x22><i\x20class=\x22fas\x20fa-robot\x22></i></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22message-sender\x22>AbidinAI</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22message-time\x22>','type','search','flex','selectstart','addEventListener','paused','innerHeight','appendChild','lang','onend','ai-message','result','src','catch','start','sendButton','chatbox','1892260YThHPI','scrollTop','<i\x20class=\x22fas\x20fa-check\x22></i>\x20Tersalin!','resultText','div','none','22589940FbNOhc','sendMessage','mobileMenuBtn','%c⚠️\x20PERINGATAN\x20KEAMANAN!','onload','rate','target','webkitSpeechRecognition','<strong>$1</strong>','getElementById','constructor','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-text\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22typing-indicator\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22loading\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Mendengarkan...\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','Error:\x20','height','2953432LcrCxb','2-digit','then','no-speech','writeText','resize','keydown','mainContainer','block','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22message-text\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','DOMContentLoaded','handleKeyPress','play','transparent','volume','outerHeight','dragleave','speechSynthesis','display','user-message','1135087PaQxzq','1086RDFewq','message\x20','color:\x20red;\x20font-size:\x2050px;\x20font-weight:\x20bold;','{}.constructor(\x22return\x20this\x22)(\x20)','body','pitch','10387750EOGOWw','open','disabled','.message-text','#f9fafb','closeModal','remove','textContent','table','trim','match'];_0x3723=function(){return _0x41dc0b;};return _0x3723();}
+    (function() {
+      'use strict';
+      
+      let _0x5e6f = false;
+      let _0x7890 = null;
+      let _0xabcd = false;
+      let _0xef12 = null;
+      
+      const _0x3456 = {open: false, orientation: null};
+      const _0x7890_threshold = 160;
+      
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('selectstart', e => e.preventDefault());
+      document.addEventListener('dragstart', e => e.preventDefault());
+      
+      document.addEventListener('keydown', function(e) {
+        if (
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+          (e.ctrlKey && e.key === 'U') ||
+          (e.ctrlKey && e.key === 'S') ||
+          e.key === 'F5' ||
+          (e.ctrlKey && e.key === 'r')
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          _0xShowWarning();
+          return false;
+        }
+      });
+    
+      const _0xDetectDevTools = () => {
+        if (window.outerHeight - window.innerHeight > _0x7890_threshold || 
+            window.outerWidth - window.innerWidth > _0x7890_threshold) {
+          if (!_0x3456.open) {
+            _0x3456.open = true;
+            _0xShowWarning();
+          }
+        } else {
+          if (_0x3456.open) {
+            _0x3456.open = false;
+            _0xHideWarning();
+          }
+        }
+      };
+      
+      setInterval(_0xDetectDevTools, 300);
+      
+      const _0xClearConsole = () => {
+        if (typeof console !== 'undefined') {
+          console.clear();
+          console.log('%c🚫 STOP!', 'color: red; font-size: 50px; font-weight: bold;');
+          console.log('%c⚠️ PERINGATAN KEAMANAN!', 'color: red; font-size: 20px; font-weight: bold;');
+          console.log('%cHalaman ini dilindungi sistem keamanan AbidinAI. Akses tidak sah akan diblokir!', 'color: red; font-size: 14px;');
+        }
+      };
+      
+      setInterval(_0xClearConsole, 1000);
+      _0xClearConsole();
+    
+      function _0xShowWarning() {
+        const overlay = document.getElementById('warningOverlay');
+        const container = document.getElementById('mainContainer');
+        if (overlay && container) {
+          overlay.style.display = 'flex';
+          container.classList.add('blur-screen');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+      
+      function _0xHideWarning() {
+        const overlay = document.getElementById('warningOverlay');
+        const container = document.getElementById('mainContainer');
+        if (overlay && container) {
+          overlay.style.display = 'none';
+          container.classList.remove('blur-screen');
+          document.body.style.overflow = 'auto';
+        }
+      }
+    
+      (() => {
+        const _0xDebugTrap = () => {
+          debugger;
+        };
+        setInterval(_0xDebugTrap, 100);
+      })();
+      
+      window.addEventListener('blur', _0xClearConsole);
+      window.addEventListener('focus', _0xClearConsole);
+      window.addEventListener('resize', _0xDetectDevTools);
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        // Security check
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return;
+        }
+        
+        const chatbox = document.getElementById("chatbox");
+        const welcomeMsg = document.createElement("div");
+        welcomeMsg.className = "message ai-message";
+        welcomeMsg.innerHTML = `
+          <strong>AbidinAI:</strong> Halo! Saya AbidinAI, asisten cerdas buatan Abidin. 
+          Ada yang bisa saya bantu? Anda bisa mengetik pesan atau menggunakan tombol mikrofon untuk berbicara.
+          <br><br>
+          <strong>Fitur Baru:</strong> Sekarang Anda bisa membuat gambar dengan AI! Klik tab "Buat Gambar" untuk mencoba.
+        `;
+        chatbox.appendChild(welcomeMsg);
+      });
+      
+      function openTab(tabName) {
+        const tabContents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabContents.length; i++) {
+          tabContents[i].classList.remove("active");
+        }
+        
+        const tabButtons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < tabButtons.length; i++) {
+          tabButtons[i].classList.remove("active");
+        }
+        
+        document.getElementById(tabName).classList.add("active");
+        event.currentTarget.classList.add("active");
+      }
+      
+      window.handleKeyPress = function(event) {
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return false;
+        }
+        if (event.key === 'Enter') {
+          const activeTab = document.querySelector('.tab-content.active');
+          if (activeTab.id === 'chatTab') {
+            sendMessage();
+          } else if (activeTab.id === 'imageTab') {
+            generateImage();
+          }
+        }
+      };
+      
+      window.toggleAudio = function() {
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return false;
+        }
+        
+        const player = document.getElementById("audioPlayer");
+        const btn = document.getElementById("playBtn");
+        if (player.paused) {
+          player.play();
+          btn.innerHTML = '<i class="fas fa-pause"></i><span>Jeda Musik</span>';
+          btn.classList.add("pulse");
+        } else {
+          player.pause();
+          btn.innerHTML = '<i class="fas fa-play"></i><span>Putar Musik</span>';
+          btn.classList.remove("pulse");
+        }
+      };
+      
+      window.startVoiceRecognition = function() {
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return false;
+        }
+        
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'id-ID';
+        recognition.start();
+
+        const chatbox = document.getElementById("chatbox");
+        if (_0xef12) {
+          _0xef12.remove();
+        }
+        _0xef12 = document.createElement("div");
+        _0xef12.className = "message user-message";
+        _0xef12.innerHTML = `<strong>Sistem:</strong> Mendengarkan...`;
+        chatbox.appendChild(_0xef12);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        recognition.onresult = function(event) {
+          const transcript = event.results[0][0].transcript;
+          const activeTab = document.querySelector('.tab-content.active');
+          if (activeTab.id === 'chatTab') {
+            document.getElementById("messageInput").value = transcript;
+            _0x5e6f = true;
+            sendMessage();
+          } else if (activeTab.id === 'imageTab') {
+            document.getElementById("imagePromptInput").value = transcript;
+            generateImage();
+          }
+        };
+
+        recognition.onerror = function(event) {
+          if (_0xef12) {
+            _0xef12.remove();
+            _0xef12 = null;
+          }
+          console.error("Error in speech recognition:", event.error);
+        };
+      };
+      
+      window.sendMessage = async function() {
+        // Security check
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return false;
+        }
+        
+        const input = document.getElementById("messageInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chatbox = document.getElementById("chatbox");
+        const sendButton = document.getElementById("sendButton");
+
+        // Show user message
+        const userDiv = document.createElement("div");
+        userDiv.className = "message user-message";
+        userDiv.innerHTML = `<strong>Anda:</strong> ${text}`;
+        chatbox.appendChild(userDiv);
+
+        const typingIndicator = document.createElement("div");
+        typingIndicator.className = "message ai-message typing-indicator";
+        typingIndicator.id = "typingIndicator";
+        typingIndicator.innerHTML = `<strong>AbidinAI:</strong> <span class="loading"></span> Mengetik...`;
+        chatbox.appendChild(typingIndicator);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        
+        sendButton.disabled = true;
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: text })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          let aiReply = data.reply;
+          
+          document.getElementById("typingIndicator").remove();
+
+          if (!aiReply || aiReply.trim() === "") {
+            _0xDisplayMaintenanceMessage();
+          } else {
+            _0xDisplayAIResponse(aiReply);
+          }
+        } catch (error) {
+          document.getElementById("typingIndicator").remove();
+          _0xDisplayMaintenanceMessage();
+          console.error("Error:", error);
+          sendButton.disabled = false;
+        }
+
+        input.value = "";
+      };
+      
+      async function generateImage() {
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return false;
+        }
+        
+        const promptInput = document.getElementById("imagePromptInput");
+        const prompt = promptInput.value.trim();
+        if (!prompt) return;
+
+        const imagePromptBox = document.getElementById("imagePromptBox");
+        const generateButton = document.getElementById("generateButton");
+        const imageResultContainer = document.getElementById("imageResultContainer");
+
+        // Clear previous results
+        imageResultContainer.innerHTML = "";
+        imageResultContainer.style.display = "none";
+
+        // Show user prompt
+        const userDiv = document.createElement("div");
+        userDiv.className = "message user-message";
+        userDiv.innerHTML = `<strong>Anda:</strong> ${prompt}`;
+        imagePromptBox.appendChild(userDiv);
+
+        const typingIndicator = document.createElement("div");
+        typingIndicator.className = "message ai-message typing-indicator";
+        typingIndicator.id = "imageTypingIndicator";
+        typingIndicator.innerHTML = `<strong>AbidinAI:</strong> <span class="loading"></span> Membuat gambar...`;
+        imagePromptBox.appendChild(typingIndicator);
+        imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
+        
+        generateButton.disabled = true;
+
+        try {
+          // Use your backend API for image generation
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: prompt })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          
+          document.getElementById("imageTypingIndicator").remove();
+
+          if (!data.output_url) {
+            _0xDisplayImageError();
+          } else {
+            _0xDisplayGeneratedImage(prompt, data.output_url);
+          }
+        } catch (error) {
+          document.getElementById("imageTypingIndicator").remove();
+          _0xDisplayImageError();
+          console.error("Error generating image:", error);
+        }
+
+        generateButton.disabled = false;
+        promptInput.value = "";
+      }
+      
+      function _0xDisplayGeneratedImage(prompt, imageUrl) {
+        const imagePromptBox = document.getElementById("imagePromptBox");
+        const imageResultContainer = document.getElementById("imageResultContainer");
+        
+        const aiDiv = document.createElement("div");
+        aiDiv.className = "message ai-message";
+        aiDiv.innerHTML = `<strong>AbidinAI:</strong> Berikut gambar yang saya buat berdasarkan deskripsi Anda:`;
+        imagePromptBox.appendChild(aiDiv);
+        imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
+        
+        // Display the generated image
+        imageResultContainer.style.display = "block";
+        imageResultContainer.innerHTML = `
+          <div class="image-container">
+            <img src="${imageUrl}" alt="Generated image from prompt: ${prompt}" class="generated-image">
+            <button onclick="downloadImage('${imageUrl}', 'abidinAI-${Date.now()}.jpg')" class="image-download-btn">
+              <i class="fas fa-download"></i> Unduh Gambar
+            </button>
+          </div>
+        `;
+      }
+      
+      function _0xDisplayImageError() {
+        const imagePromptBox = document.getElementById("imagePromptBox");
+        
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "message maintenance-message";
+        errorDiv.innerHTML = `
+          <strong><i class="fas fa-exclamation-triangle"></i> AbidinAI:</strong> 
+          Maaf, terjadi kesalahan saat membuat gambar. Silakan coba lagi dengan deskripsi yang berbeda.
+        `;
+        imagePromptBox.appendChild(errorDiv);
+        imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
+      }
+      
+      window.downloadImage = function(url, filename) {
+        if (_0x3456.open) {
+          _0xShowWarning();
+          return false;
+        }
+        
+        fetch(url)
+          .then(response => response.blob())
+          .then(blob => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+          })
+          .catch(err => {
+            console.error("Error downloading image:", err);
+            alert("Gagal mengunduh gambar. Silakan coba lagi.");
+          });
+      };
+      
+      function _0xDisplayMaintenanceMessage() {
+        const chatbox = document.getElementById("chatbox");
+        const sendButton = document.getElementById("sendButton");
+        
+        if (_0xef12) {
+          _0xef12.remove();
+          _0xef12 = null;
+        }
+        
+        const maintenanceDiv = document.createElement("div");
+        maintenanceDiv.className = "message maintenance-message";
+        maintenanceDiv.innerHTML = `
+          <strong><i class="fas fa-tools"></i> AbidinAI:</strong> 
+          Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. 
+          Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧
+        `;
+        chatbox.appendChild(maintenanceDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        
+        sendButton.disabled = false;
+        
+        if (_0x5e6f) {
+          _0xReadWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
+        }
+        _0x5e6f = false;
+      }
+
+      function _0xDisplayAIResponse(aiReply) {
+        const chatbox = document.getElementById("chatbox");
+        const sendButton = document.getElementById("sendButton");
+        
+        if (_0xef12) {
+          _0xef12.remove();
+          _0xef12 = null;
+        }
+        
+        const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
+        const container = document.createElement("div");
+        container.className = "message ai-message";
+        container.innerHTML = `<strong>AbidinAI:</strong><br>`;
+        let textToRead = "";
+
+        for (let i = 0; i < parts.length; i++) {
+          if (i % 2 === 0) {
+            const span = document.createElement("span");
+            span.textContent = parts[i];
+            textToRead += parts[i] + " ";
+            container.appendChild(span);
+          } else {
+            const codeContainer = document.createElement("div");
+            codeContainer.className = "code-container";
+
+            const copyButton = document.createElement("button");
+            copyButton.className = "copy-btn";
+            copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            copyButton.onclick = () => {
+              navigator.clipboard.writeText(parts[i]).then(() => {
+                copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+                setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
+              });
+            };
+
+            const pre = document.createElement("pre");
+            pre.textContent = parts[i];
+            codeContainer.appendChild(copyButton);
+            codeContainer.appendChild(pre);
+            container.appendChild(codeContainer);
+          }
+        }
+
+        chatbox.appendChild(container);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        sendButton.disabled = false;
+
+        if (_0x5e6f) {
+          _0xReadWithPauses(textToRead);
+        }
+        _0x5e6f = false;
+      }
+
+      function _0xReadWithPauses(text) {
+        if (!('speechSynthesis' in window)) {
+          console.log("Text-to-speech tidak didukung di browser ini");
+          return;
+        }
+        
+        const sentences = text.split(/(?<=[.!?])\s+/);
+        const synth = window.speechSynthesis;
+        synth.cancel();
+
+        function cleanText(t) {
+          return t.replace(/[*"`\-+/:;\\]/g, '');
+        }
+
+        function speakNext(index) {
+          if (index >= sentences.length) return;
+          
+          const cleanSentence = cleanText(sentences[index]).trim();
+          if (!cleanSentence) return speakNext(index + 1);
+          
+          const utter = new SpeechSynthesisUtterance(cleanSentence);
+          utter.lang = 'id-ID';
+          utter.rate = 1.0;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
+          
+          utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
+          synth.speak(utter);
+        }
+
+        speakNext(0);
+      }
+      
+    })();
   </script>
 </body>
 </html>
