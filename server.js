@@ -82,6 +82,29 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
+// === ✅ API Tambahan untuk DeepAI Text-to-Image ===
+app.post('/api/generate', async (req, res) => {
+  const { text } = req.body;
+
+  if (!text) return res.status(400).json({ error: "Prompt kosong" });
+
+  try {
+    const response = await fetch('https://api.deepai.org/api/text2img', {
+      method: 'POST',
+      headers: {
+        'Api-Key': process.env.DEEPAI_API_KEY,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ text })
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // === Serve file statis ===
 app.use(express.static(path.join(__dirname)));
 
