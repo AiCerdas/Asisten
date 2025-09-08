@@ -7,7 +7,6 @@ const multer = require('multer');
 const Tesseract = require('tesseract.js');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -176,4 +175,5 @@ app.use((req, res) => {
   res.redirect('/');
 });
 
-app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
+// === Export untuk Vercel ===
+module.exports = app;
