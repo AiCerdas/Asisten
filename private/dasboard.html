@@ -3,80 +3,841 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/jpg" href="https://iili.io/FvxcSaa.jpg"/>
   <title>AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;text-align:center;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;overflow-x:hidden}.container{width:100%;max-width:500px;background:rgba(10,15,35,0.8);padding:25px;border-radius:20px;box-shadow:0 0 25px rgba(0,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(0,255,255,0.3);position:relative;overflow:hidden}.container::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(0,255,255,0.1) 0%,rgba(0,0,0,0) 70%);z-index:-1}.header{margin-bottom:20px;position:relative;padding-bottom:15px}.header::after{content:'';position:absolute;bottom:0;left:25%;width:50%;height:2px;background:linear-gradient(to right,transparent,cyan,transparent)}.title{font-size:28px;margin-bottom:10px;background:linear-gradient(90deg,cyan,#00ffaa);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 10px rgba(0,255,255,0.3)}.developer{font-size:16px;color:#ccc;margin-bottom:15px}.developer b{color:cyan}.logo{width:100%;max-width:300px;height:auto;border-radius:15px;border:2px solid cyan;box-shadow:0 0 15px rgba(0,255,255,0.5);margin:0 auto 15px;display:block}.audio-control{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:25px;align-items:center}.audio-btn{background:rgba(0,20,40,0.8);color:cyan;border:2px solid rgba(0,255,255,0.4);padding:14px 16px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,255,255,0.2);text-decoration:none;min-height:48px;backdrop-filter:blur(5px);position:relative;overflow:hidden}.audio-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,255,0.2),transparent);transition:left 0.5s ease}.audio-btn:hover::before{left:100%}.audio-btn:hover{background:rgba(0,255,255,0.15);color:white;border-color:cyan;box-shadow:0 6px 20px rgba(0,255,255,0.4);transform:translateY(-2px);text-decoration:none}.audio-btn:active{transform:translateY(0);box-shadow:0 2px 8px rgba(0,255,255,0.3)}.audio-btn i{font-size:16px;min-width:16px}.chat-container{background:rgba(0,10,20,0.7);border-radius:15px;padding:15px;margin-bottom:20px;border:1px solid rgba(0,255,255,0.3);box-shadow:inset 0 0 10px rgba(0,255,255,0.2)}#chatbox{width:100%;height:300px;padding:15px;overflow-y:auto;text-align:left;background:rgba(0,5,15,0.8);border-radius:10px;white-space:pre-line;border:1px solid rgba(0,255,255,0.2)}#chatbox::-webkit-scrollbar{width:8px}#chatbox::-webkit-scrollbar-track{background:rgba(0,20,40,0.5)}#chatbox::-webkit-scrollbar-thumb{background:cyan;border-radius:4px}.message{margin-bottom:15px;padding:10px;border-radius:10px;animation:fadeIn 0.3s ease}.user-message{background:rgba(0,50,100,0.3);border-left:3px solid #00aaff}.ai-message{background:rgba(0,80,60,0.3);border-left:3px solid #00ffaa}.maintenance-message{background:rgba(255,140,0,0.2);border-left:3px solid #ff8c00}.input-group{display:flex;gap:10px;margin-bottom:15px}#messageInput{flex:1;padding:12px 15px;border-radius:30px;border:none;background:rgba(0,20,40,0.7);color:white;font-size:16px;border:1px solid rgba(0,255,255,0.3)}#messageInput:focus{outline:none;border-color:cyan;box-shadow:0 0 10px rgba(0,255,255,0.5)}#sendButton{padding:12px 25px;border-radius:30px;border:none;background:linear-gradient(45deg,#00ccff,#00ffcc);color:black;font-weight:bold;cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}#sendButton:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,255,255,0.4)}#sendButton:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}.voice-btn{width:100%;padding:12px;border-radius:30px;background:linear-gradient(45deg,#ff00cc,#cc00ff);color:white;font-weight:bold;border:none;cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}.voice-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,0,204,0.4)}.loading{display:inline-block;width:20px;height:20px;border:3px solid rgba(0,255,255,0.3);border-radius:50%;border-top-color:cyan;animation:spin 1s ease-in-out infinite;vertical-align:middle;margin-left:10px}.typing-indicator{color:#aaa;font-style:italic;padding:10px}.code-container{position:relative;margin:15px 0;border-radius:8px;overflow:hidden}.copy-btn{position:absolute;top:10px;right:10px;background:rgba(0,200,255,0.9);color:black;border:none;padding:5px 10px;border-radius:5px;font-size:12px;cursor:pointer;z-index:10;transition:all 0.3s ease;display:flex;align-items:center;gap:5px}.copy-btn:hover{background:cyan;box-shadow:0 0 10px cyan}pre{background:rgba(0,17,34,0.8);color:#0ff;padding:20px 15px 15px;border-radius:8px;overflow-x:auto;font-family:'Fira Code','Courier New',monospace;font-size:14px;white-space:pre-wrap;border:1px solid rgba(0,255,255,0.2);text-align:left}.status{margin-top:15px;font-size:14px;color:#aaa;display:flex;align-items:center;justify-content:center;gap:8px}.image-container{width:100%;margin:10px 0;border-radius:8px;overflow:hidden;border:1px solid rgba(0,255,255,0.3)}.generated-image{max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto}.image-download-btn{display:block;margin:10px auto 0;padding:8px 15px;background:linear-gradient(45deg,#00ccff,#00ffcc);color:black;border:none;border-radius:5px;font-weight:bold;cursor:pointer;transition:all 0.3s ease}.image-download-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,255,255,0.4)}.image-download-btn i{margin-right:5px}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,255,255,0.7)}70%{box-shadow:0 0 0 10px rgba(0,255,255,0)}100%{box-shadow:0 0 0 0 rgba(0,255,255,0)}}.pulse{animation:pulse 2s infinite}@media (max-width:600px){.container{padding:15px;border-radius:15px}.title{font-size:24px}#chatbox{height:250px}.input-group{flex-direction:column}.audio-control{grid-template-columns:1fr;gap:10px;margin-bottom:20px}.audio-btn{padding:12px 16px;font-size:13px;min-height:44px}}@media (max-width:400px){.audio-control{grid-template-columns:1fr}.audio-btn{padding:10px 12px;font-size:12px;min-height:40px}.audio-btn i{font-size:14px}}::-webkit-scrollbar{display:none}html{-ms-overflow-style:none;scrollbar-width:none}.blur-screen{filter:blur(10px) !important}.warning-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,0.9);z-index:9999;display:none;justify-content:center;align-items:center;color:white;font-size:24px}.no-select{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.tab-container{display:flex;margin-bottom:15px;border-bottom:1px solid rgba(0,255,255,0.3)}.tab-button{flex:1;padding:10px;background:rgba(0,20,40,0.5);border:none;color:#ccc;cursor:pointer;transition:all 0.3s ease;border-bottom:2px solid transparent}.tab-button.active{background:rgba(0,50,100,0.3);color:cyan;border-bottom:2px solid cyan}.tab-button:hover{background:rgba(0,50,100,0.2);color:white}.tab-content{display:none}.tab-content.active{display:block}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f7f7f8;
+      color: #333;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e5e5e6;
+      height: 100vh;
+      position: fixed;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid #e5e5e6;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-title i {
+      color: #4f46e5;
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 10px;
+    }
+
+    /* menu digital */
+    .menu-badge {
+      margin-left: auto;
+      background: #4f46e5;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: #4a5568;
+    }
+
+    .menu-item:hover {
+      background-color: #f3f4f6;
+      color: #4f46e5;
+    }
+
+    .menu-item.active {
+      background-color: #eef2ff;
+      color: #4f46e5;
+      font-weight: 500;
+    }
+
+    .menu-item i {
+      margin-right: 12px;
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid #e5e5e6;
+      margin-top: auto;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #eef2ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4f46e5;
+      font-weight: bold;
+    }
+
+    .user-name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #718096;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: margin 0.3s ease;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .chat-header {
+      padding: 20px 0;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .chat-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 5px;
+    }
+
+    .chat-subtitle {
+      color: #718096;
+      font-size: 14px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+
+    .message {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .user-message {
+      background-color: #ffffff;
+      border: 1px solid #e5e5e6;
+    }
+
+    .ai-message {
+      background-color: #f9fafb;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #eef2ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4f46e5;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .ai-avatar {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .message-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .message-sender {
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .message-time {
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .message-text {
+      line-height: 1.6;
+      white-space: pre-line;
+      position: relative;
+    }
+
+    /* Perubahan di sini untuk .code-container */
+    .code-container {
+      margin: 15px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1e293b; /* Warna background untuk keseluruhan container */
+      border: 1px solid #374151; /* Border untuk bingkai kode */
+    }
+
+    /* Gaya baru untuk header blok kode */
+    .code-header {
+      background-color: #374151; /* Warna latar belakang header */
+      color: #f8fafc; /* Warna teks di header */
+      padding: 10px 15px;
+      display: flex;
+      justify-content: flex-end; /* Tombol salin di kanan */
+      align-items: center;
+      border-bottom: 1px solid #4a5568; /* Garis pemisah antara header dan kode */
+      font-size: 0.85rem; /* Ukuran font lebih kecil untuk header */
+    }
+
+    /* Gaya baru untuk tombol salin di dalam header kode */
+    .code-container .copy-btn { /* Spesifikasi lebih tinggi agar menimpa gaya umum */
+      position: static; /* Hapus positioning absolut */
+      background: transparent; /* Background transparan */
+      color: #f8fafc; /* Warna teks putih */
+      border: 1px solid #6b7280; /* Border abu-abu */
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.8rem; /* Ukuran font lebih kecil */
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .code-container .copy-btn:hover {
+      background: #4f46e5; /* Warna ungu saat hover */
+      border-color: #4f46e5;
+      color: white;
+    }
+
+    pre {
+      background: #1e293b; /* Warna background untuk kode */
+      color: #f8fafc; /* Warna teks kode */
+      padding: 15px;
+      border-radius: 0 0 8px 8px; /* Hilangkan border atas, sesuaikan border bawah */
+      overflow-x: auto;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      text-align: left;
+      margin: 0;
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #718096;
+      font-style: italic;
+      padding: 12px 16px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(79, 70, 229, 0.3);
+      border-radius: 50%;
+      border-top-color: #4f46e5;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    .input-container {
+      padding: 20px 0;
+      position: sticky;
+      bottom: 0;
+      background: #f7f7f8;
+      border-top: 1px solid #e5e5e6;
+    }
+
+    .input-box {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      background: #ffffff;
+      border: 1px solid #e5e5e6;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    #messageInput {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      min-height: 24px;
+      max-height: 200px;
+      line-height: 1.5;
+      font-size: 16px;
+      background: transparent;
+    }
+
+    .input-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .voice-btn, .send-btn, .ocr-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .voice-btn {
+      background-color: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .voice-btn:hover {
+      background-color: #e5e7eb;
+    }
+
+    .ocr-btn {
+      background-color: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .ocr-btn:hover {
+      background-color: #e5e7eb;
+    }
+
+    .send-btn {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .send-btn:hover {
+      background-color: #4338ca;
+    }
+
+    .send-btn:disabled {
+      background-color: #a5b4fc;
+      cursor: not-allowed;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 101;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: white;
+      border: 1px solid #e5e5e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Modal OCR */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #718096;
+    }
+
+    .upload-area {
+      border: 2px dashed #e5e5e6;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upload-area:hover {
+      border-color: #4f46e5;
+      background-color: #f9fafb;
+    }
+
+    .upload-icon {
+      font-size: 40px;
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      margin-bottom: 10px;
+      color: #4a5568;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 15px 0;
+      display: none;
+      border-radius: 5px;
+    }
+
+    .process-btn {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      display: none;
+      margin: 10px auto;
+    }
+
+    .process-btn:hover {
+      background-color: #4338ca;
+    }
+
+    .ocr-result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9fafb;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .ocr-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+      color: #4f46e5;
+      font-weight: 500;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Warning Overlay */
+    .warning-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 0, 0, 0.9);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    .blur-screen {
+      filter: blur(10px) !important;
+    }
+
+    /* Hapus kelas no-select dan ganti dengan selectable */
+    .selectable {
+      -webkit-touch-callout: text;
+      -webkit-user-select: text;
+      -khtml-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chat-container {
+        padding: 15px;
+      }
+
+      .message {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .input-box {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .input-buttons {
+        justify-content: flex-end;
+      }
+    }
+
+    /* New styles for memory controls */
+    .memory-controls {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 0;
+      margin-bottom: 10px;
+    }
+
+    .memory-btn {
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .memory-btn:hover {
+      background-color: #e5e7eb;
+    }
+
+    .memory-btn.clear {
+      color: #ef4444;
+    }
+
+    .memory-btn.clear:hover {
+      background-color: #fee2e2;
+    }
+
+    /* Gaya untuk tombol aksi pesan */
+    .message-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .action-btn {
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background-color: #e5e7eb;
+    }
+
+    .action-btn.copy {
+      color: #4f46e5;
+    }
+
+    .action-btn.regenerate {
+      color: #10b981;
+    }
   </style>
 </head>
-<body class="no-select">
+<body class="selectable"> <!-- Mengganti no-select dengan selectable -->
   <div class="warning-overlay" id="warningOverlay">
     <div style="text-align: center;">
       <i class="fas fa-shield-alt" style="font-size: 48px; margin-bottom: 20px; color: #ff0000;"></i>
       <h2>🚫 AKSES TERDETEKSI!</h2>
       <p>Developer Tools terdeteksi. Halaman akan diblokir!</p>
-      <p style="font-size: 16px; margin-top: 10px;">Tutup DevTools untuk melanjutkan.</p>
+      <p>Silakan tutup Developer Tools untuk melanjutkan.</p>
     </div>
   </div>
 
-  <div class="container" id="mainContainer">
-    <div class="header">
-      <h1 class="title"><i class="fas fa-robot"></i> AbidinAI</h1>
-      <p class="developer"><b>Developer :</b> Abidin</p>
-      <img src="https://i.imgur.com/SVUQXPj.gif" alt="AbidinAI" class="logo">
-    </div>
-    
-    <div class="audio-control">
-      <button id="playBtn" class="audio-btn" onclick="toggleAudio()">
-        <i class="fas fa-play"></i><span>Putar Musik</span>
+  <div class="modal" id="ocrModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-file-image"></i> OCR - Ekstrak Teks dari Gambar
+        </div>
+        <button class="close-btn" id="closeModal">&times;</button>
+      </div>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <div class="upload-text">
+          <strong>Klik untuk mengunggah gambar</strong><br>
+          atau seret dan lepas file ke sini
+        </div>
+        <div style="font-size: 12px; color: #718096;">
+          Format yang didukung: JPG, PNG, PDF (maks. 5MB)
+        </div>
+        <input type="file" id="fileInput" class="file-input" accept="image/*,.pdf">
+      </div>
+
+      <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
+
+      <button id="processBtn" class="process-btn">
+        <i class="fas fa-cogs"></i> Proses OCR
       </button>
-      <a href="alarm.html" class="audio-btn"><i class="fas fa-bell"></i><span>Alarm AI</span></a>
-      <a href="obrolan.html" class="audio-btn"><i class="fas fa-comments"></i><span>Obrolan</span></a>
-      <a href="https://wa.me/6283169364879" class="audio-btn" target="_blank">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>Lapor Masalah</span>
+
+      <div class="ocr-progress" id="progressContainer" style="display: none;">
+        <div class="loading"></div>
+        <span id="progressText">Memproses gambar...</span>
+      </div>
+
+      <div class="ocr-result" id="ocrResult">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <strong>Hasil OCR:</strong>
+          <button class="copy-btn" id="copyResult" style="position: static; padding: 3px 8px;">
+            <i class="fas fa-copy"></i> Salin
+          </button>
+        </div>
+        <div id="resultText" style="white-space: pre-line;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-menu-btn" id="mobileMenuBtn">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <i class="fas fa-robot"></i>
+        <span>AbidinAI</span>
+      </div>
+    </div>
+
+    <div class="sidebar-menu">
+      <a href="#" class="menu-item active" id="chatMenuItem">
+        <i class="fas fa-comment-dots"></i>
+        <span>Obrolan AI</span>
       </a>
-      <a href="dokter.html" class="audio-btn" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background-color: #e0f7fa; color: #00796b; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-family: Arial, sans-serif; font-weight: 600;">
+
+      <a href="https://lynk.id/abidincerdas" class="menu-item" target="_blank">
+        <i class="fas fa-shopping-cart"></i>
+       <span>Jualan Produk Digital</span>
+       <span class="menu-badge"></span>
+     </a>
+
+     <a href="alarm.html" class="menu-item">
+        <i class="fas fa-bell"></i>
+        <span>Alarm AI</span>
+      </a>
+
+      <a href="obrolan.html" class="menu-item">
+        <i class="fas fa-comments"></i>
+        <span>Obrolan Grup</span>
+      </a>
+
+      <a href="dokter.html" class="menu-item">
         <i class="fas fa-user-md"></i>
         <span>Dokter Kesehatan</span>
       </a>
-    </div>
-    
-    <div class="tab-container">
-      <button class="tab-button active" onclick="openTab('chatTab')"><i class="fas fa-comment"></i> Chat</button>
-      <button class="tab-button" onclick="openTab('imageTab')"><i class="fas fa-image"></i> Buat Gambar</button>
-    </div>
-    
-    <div id="chatTab" class="tab-content active">
-      <div class="chat-container">
-        <div id="chatbox"></div>
+
+      <div class="menu-item" id="ocrMenuItem">
+        <i class="fas fa-file-alt"></i>
+        <span>Ekstrak Teks (OCR)</span>
       </div>
-      
-      <div class="input-group">
-        <input type="text" id="messageInput" placeholder="Ketik pesan..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()" id="sendButton"><i class="fas fa-paper-plane"></i> Kirim</button>
+
+      <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Lapor Masalah</span>
+      </a>
+
+      <div class="menu-item" id="musicMenuItem">
+        <i class="fas fa-music"></i>
+        <span>Putar Musik</span>
       </div>
-      
-      <button onclick="startVoiceRecognition()" class="voice-btn">
-        <i class="fas fa-microphone-alt"></i> Mulai Percakapan Suara
-      </button>
     </div>
-    
-    <div id="imageTab" class="tab-content">
-      <div class="chat-container">
-        <div id="imagePromptBox"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">A</div>
+        <div>
+          <div class="user-name">Abidin</div>
+          <div class="user-role">Developer</div>
+        </div>
       </div>
-      
-      <div class="input-group">
-        <input type="text" id="imagePromptInput" placeholder="Deskripsikan gambar yang ingin dibuat...">
-        <button onclick="generateImage()" id="generateButton"><i class="fas fa-magic"></i> Buat Gambar</button>
-      </div>
-      
-      <div id="imageResultContainer" style="display:none; margin-top:15px;"></div>
     </div>
-    
-    <div class="status">
-      <i class="fas fa-plug"></i><span>Terhubung ke Server AbidinAI</span>
+  </div>
+
+  <div class="main-content" id="mainContainer">
+    <div class="chat-container">
+     <div class="chat-header">
+  <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+    <div class="avatar ai-avatar" style="width: 60px; height: 60px; font-size: 2rem;">
+      <i class="fas fa-robot"></i>
+    </div>
+  </div>
+  <h1 class="chat-title">AbidinAI</h1>
+  <p class="chat-subtitle">Asisten AI cerdas AbidinAI</p>
+   <p class="chat-subtitle">Ada yang bisa saya bantu?</p>
+</div>
+
+      <div class="memory-controls">
+        <button class="memory-btn clear" id="clearMemoryBtn">
+          <i class="fas fa-trash"></i> Hapus Memori
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chatbox">
+        </div>
+
+      <div class="input-container">
+        <div class="input-box">
+          <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+          <div class="input-buttons">
+            <button class="ocr-btn" onclick="openOCRModal()">
+              <i class="fas fa-file-image"></i>
+            </button>
+            <button class="voice-btn" onclick="startVoiceRecognition()">
+              <i class="fas fa-microphone-alt"></i>
+            </button>
+            <button class="send-btn" onclick="sendMessage()" id="sendButton">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -87,19 +848,22 @@
   <script>
     (function() {
       'use strict';
-      
-      let _0x5e6f = false;
-      let _0x7890 = null;
-      let _0xabcd = false;
-      let _0xef12 = null;
-      
-      const _0x3456 = {open: false, orientation: null};
-      const _0x7890_threshold = 160;
-      
+
+      let isVoiceMode = false;
+      let listeningElement = null;
+      let isMusicPlaying = false;
+      let lastTypingElement = null;
+      let db = null; // Variabel untuk database IndexedDB
+      let ocrExtractedText = ''; // Variabel untuk menyimpan teks hasil OCR
+
+      const devToolsState = {open: false, orientation: null};
+      const devToolsThreshold = 160;
+
+      // Security event listeners
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('selectstart', e => e.preventDefault());
       document.addEventListener('dragstart', e => e.preventDefault());
-      
+
       document.addEventListener('keydown', function(e) {
         if (
           e.key === 'F12' ||
@@ -113,29 +877,31 @@
         ) {
           e.preventDefault();
           e.stopPropagation();
-          _0xShowWarning();
+          showWarning();
           return false;
         }
       });
-    
-      const _0xDetectDevTools = () => {
-        if (window.outerHeight - window.innerHeight > _0x7890_threshold || 
-            window.outerWidth - window.innerWidth > _0x7890_threshold) {
-          if (!_0x3456.open) {
-            _0x3456.open = true;
-            _0xShowWarning();
+
+      // DevTools detection
+      const detectDevTools = () => {
+        if (window.outerHeight - window.innerHeight > devToolsThreshold ||
+            window.outerWidth - window.innerWidth > devToolsThreshold) {
+          if (!devToolsState.open) {
+            devToolsState.open = true;
+            showWarning();
           }
         } else {
-          if (_0x3456.open) {
-            _0x3456.open = false;
-            _0xHideWarning();
+          if (devToolsState.open) {
+            devToolsState.open = false;
+            hideWarning();
           }
         }
       };
-      
-      setInterval(_0xDetectDevTools, 300);
-      
-      const _0xClearConsole = () => {
+
+      setInterval(detectDevTools, 300);
+
+      // Console protection
+      const clearConsole = () => {
         if (typeof console !== 'undefined') {
           console.clear();
           console.log('%c🚫 STOP!', 'color: red; font-size: 50px; font-weight: bold;');
@@ -143,11 +909,11 @@
           console.log('%cHalaman ini dilindungi sistem keamanan AbidinAI. Akses tidak sah akan diblokir!', 'color: red; font-size: 14px;');
         }
       };
-      
-      setInterval(_0xClearConsole, 1000);
-      _0xClearConsole();
-    
-      function _0xShowWarning() {
+
+      setInterval(clearConsole, 1000);
+      clearConsole();
+
+      function showWarning() {
         const overlay = document.getElementById('warningOverlay');
         const container = document.getElementById('mainContainer');
         if (overlay && container) {
@@ -156,8 +922,8 @@
           document.body.style.overflow = 'hidden';
         }
       }
-      
-      function _0xHideWarning() {
+
+      function hideWarning() {
         const overlay = document.getElementById('warningOverlay');
         const container = document.getElementById('mainContainer');
         if (overlay && container) {
@@ -166,145 +932,672 @@
           document.body.style.overflow = 'auto';
         }
       }
-    
+
+      // Debugger trap
       (() => {
-        const _0xDebugTrap = () => {
+        const debugTrap = () => {
           debugger;
         };
-        setInterval(_0xDebugTrap, 100);
+        setInterval(debugTrap, 100);
       })();
-      
-      window.addEventListener('blur', _0xClearConsole);
-      window.addEventListener('focus', _0xClearConsole);
-      window.addEventListener('resize', _0xDetectDevTools);
-      
-      document.addEventListener('DOMContentLoaded', function() {
-        // Security check
-        if (_0x3456.open) {
-          _0xShowWarning();
+
+      // Event listeners
+      window.addEventListener('blur', clearConsole);
+      window.addEventListener('focus', clearConsole);
+      window.addEventListener('resize', detectDevTools);
+
+      // Mobile menu toggle
+      document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('open');
+      });
+
+      // Format bold text function
+      function formatBoldText(text) {
+        return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      }
+
+      // IndexedDB Functions
+      function initDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open('AbidinAIChatDB', 1);
+          
+          request.onerror = () => {
+            console.error('IndexedDB error:', request.error);
+            reject(request.error);
+          };
+          
+          request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+          };
+          
+          request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            
+            // Buat object store untuk menyimpan pesan
+            if (!db.objectStoreNames.contains('conversations')) {
+              const store = db.createObjectStore('conversations', { keyPath: 'id', autoIncrement: true });
+              store.createIndex('timestamp', 'timestamp', { unique: false });
+            }
+          };
+        });
+      }
+
+      function saveMessageToDB(sender, text, timestamp) {
+        if (!db) return;
+        
+        const transaction = db.transaction(['conversations'], 'readwrite');
+        const store = transaction.objectStore('conversations');
+        
+        const message = {
+          sender: sender,
+          text: text,
+          timestamp: timestamp || new Date().getTime()
+        };
+        
+        store.add(message);
+      }
+
+      function loadMessagesFromDB() {
+        return new Promise((resolve, reject) => {
+          if (!db) {
+            resolve([]);
+            return;
+          }
+          
+          const transaction = db.transaction(['conversations'], 'readonly');
+          const store = transaction.objectStore('conversations');
+          const index = store.index('timestamp');
+          const request = index.getAll();
+          
+          request.onsuccess = () => {
+            resolve(request.result);
+          };
+          
+          request.onerror = () => {
+            reject(request.error);
+          };
+        });
+      }
+
+      function clearConversationFromDB() {
+        if (!db) return;
+        
+        const transaction = db.transaction(['conversations'], 'readwrite');
+        const store = transaction.objectStore('conversations');
+        store.clear();
+      }
+
+      // Initialize chat
+      document.addEventListener('DOMContentLoaded', async function() {
+        if (devToolsState.open) {
+          showWarning();
           return;
         }
-        
-        const chatbox = document.getElementById("chatbox");
-        const welcomeMsg = document.createElement("div");
-        welcomeMsg.className = "message ai-message";
-        welcomeMsg.innerHTML = `
-          <strong>AbidinAI:</strong> Halo! Saya AbidinAI, asisten cerdas buatan Abidin. 
-          Ada yang bisa saya bantu? Anda bisa mengetik pesan atau menggunakan tombol mikrofon untuk berbicara.
-          <br><br>
-          <strong>Fitur Baru:</strong> Sekarang Anda bisa membuat gambar dengan AI! Klik tab "Buat Gambar" untuk mencoba.
-        `;
-        chatbox.appendChild(welcomeMsg);
+
+        // Inisialisasi database
+        try {
+          await initDatabase();
+          
+          // Muat percakapan sebelumnya
+          const messages = await loadMessagesFromDB();
+          const chatbox = document.getElementById("chatbox");
+          
+          // Tampilkan pesan selamat datang hanya jika tidak ada pesan sebelumnya
+          if (messages.length === 0) {
+            const welcomeMsg = document.createElement("div");
+            welcomeMsg.innerHTML = `
+                </div>
+                <div class="message-content">
+                  <div class="message-header">
+              </div>
+            `;
+            chatbox.appendChild(welcomeMsg);
+          } else {
+            // Tampilkan kembali percakapan sebelumnya
+            messages.forEach(msg => {
+              const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
+              addMessage(msg.sender, msg.text, messageClass, msg.timestamp);
+            });
+          }
+          
+          chatbox.scrollTop = chatbox.scrollHeight;
+        } catch (error) {
+          console.error('Error initializing database:', error);
+          // Tetap tampilkan pesan selamat datang jika terjadi error
+          const chatbox = document.getElementById("chatbox");
+          const welcomeMsg = document.createElement("div");
+          welcomeMsg.innerHTML = `
+              </div>
+              <div class="message-content">
+                <div class="message-header">
+            </div>
+          `;
+          chatbox.appendChild(welcomeMsg);
+          chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('messageInput');
+        textarea.addEventListener('input', function() {
+          this.style.height = 'auto';
+          this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Music control
+        document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
+
+        // OCR menu item
+        document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
+
+        // Initialize OCR modal
+        initOCRModal();
+
+        // Clear memory button
+        document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
+          if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
+            try {
+              await clearConversationFromDB();
+              const chatbox = document.getElementById("chatbox");
+              chatbox.innerHTML = '';
+              
+              // Tampilkan pesan konfirmasi HANYA setelah penghapusan berhasil
+              const confirmationMsg = addMessage('Sistem', 'Riwayat percakapan telah dihapus.', 'ai-message');
+              
+              // Hapus pesan konfirmasi setelah 3 detik
+              setTimeout(() => {
+                if (confirmationMsg && confirmationMsg.parentNode) {
+                  confirmationMsg.parentNode.removeChild(confirmationMsg);
+                }
+              }, 3000);
+            } catch (error) {
+              console.error('Error clearing conversation:', error);
+              addMessage('Sistem', 'Gagal menghapus riwayat percakapan.', 'ai-message');
+            }
+          }
+        });
       });
-      
-      function openTab(tabName) {
-        const tabContents = document.getElementsByClassName("tab-content");
-        for (let i = 0; i < tabContents.length; i++) {
-          tabContents[i].classList.remove("active");
-        }
-        
-        const tabButtons = document.getElementsByClassName("tab-button");
-        for (let i = 0; i < tabButtons.length; i++) {
-          tabButtons[i].classList.remove("active");
-        }
-        
-        document.getElementById(tabName).classList.add("active");
-        event.currentTarget.classList.add("active");
-        
-        // Scroll to top when switching tabs
-        if (tabName === 'imageTab') {
-          document.getElementById('imagePromptBox').scrollTop = 0;
-        } else {
-          document.getElementById('chatbox').scrollTop = 0;
-        }
+
+      function getCurrentTime() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
-      
+
       window.handleKeyPress = function(event) {
-        if (_0x3456.open) {
-          _0xShowWarning();
+        if (devToolsState.open) {
+          showWarning();
           return false;
         }
-        if (event.key === 'Enter') {
-          const activeTab = document.querySelector('.tab-content.active');
-          if (activeTab.id === 'chatTab') {
-            sendMessage();
-          } else if (activeTab.id === 'imageTab') {
-            generateImage();
-          }
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
         }
       };
-      
-      window.toggleAudio = function() {
-        if (_0x3456.open) {
-          _0xShowWarning();
+
+      function toggleAudio() {
+        if (devToolsState.open) {
+          showWarning();
           return false;
         }
-        
+
         const player = document.getElementById("audioPlayer");
-        const btn = document.getElementById("playBtn");
+        const menuItem = document.getElementById("musicMenuItem");
         if (player.paused) {
           player.play();
-          btn.innerHTML = '<i class="fas fa-pause"></i><span>Jeda Musik</span>';
-          btn.classList.add("pulse");
+          menuItem.innerHTML = '<i class="fas fa-music"></i><span>Jeda Musik</span>';
+          isMusicPlaying = true;
         } else {
           player.pause();
-          btn.innerHTML = '<i class="fas fa-play"></i><span>Putar Musik</span>';
-          btn.classList.remove("pulse");
+          menuItem.innerHTML = '<i class="fas fa-music"></i><span>Putar Musik</span>';
+          isMusicPlaying = false;
         }
       };
-      
-      window.startVoiceRecognition = function() {
-        if (_0x3456.open) {
-          _0xShowWarning();
-          return false;
+
+      // OCR Functions
+      function initOCRModal() {
+        const modal = document.getElementById('ocrModal');
+        const closeBtn = document.getElementById('closeModal');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewImage = document.getElementById('previewImage');
+        const processBtn = document.getElementById('processBtn');
+        const copyResultBtn = document.getElementById('copyResult');
+        const resultText = document.getElementById('resultText');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressText = document.getElementById('progressText');
+        const ocrResult = document.getElementById('ocrResult');
+
+        // Close modal when clicking X or outside
+        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Handle file upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          uploadArea.style.borderColor = '#4f46e5';
+          uploadArea.style.backgroundColor = '#f9fafb';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+          uploadArea.style.borderColor = '#e5e5e6';
+          uploadArea.style.backgroundColor = 'transparent';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadArea.style.borderColor = '#e5e5e6';
+          uploadArea.style.backgroundColor = 'transparent';
+
+          if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileUpload(fileInput.files[0]);
+          }
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files.length) {
+            handleFileUpload(fileInput.files[0]);
+          }
+        });
+
+        // Process button click
+        processBtn.addEventListener('click', processOCR);
+
+        // Copy result button
+        copyResultBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(resultText.textContent).then(() => {
+            copyResultBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+            setTimeout(() => {
+              copyResultBtn.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            }, 1500);
+          });
+        });
+
+        function handleFileUpload(file) {
+          // Check file type and size
+          if (!file.type.match('image.*') && file.type !== 'application/pdf') {
+            alert('Hanya file gambar (JPG, PNG) atau PDF yang didukung!');
+            return;
+          }
+
+          if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran file maksimal 5MB!');
+            return;
+          }
+
+          // Show preview for images
+          if (file.type.match('image.*')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              previewImage.src = e.target.result;
+              previewImage.style.display = 'block';
+              processBtn.style.display = 'block';
+              ocrResult.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            // For PDF, just show the filename
+            previewImage.style.display = 'none';
+            processBtn.style.display = 'block';
+            ocrResult.style.display = 'none';
+          }
+        }
+
+        function processOCR() {
+          const file = fileInput.files[0];
+          if (!file) return;
+
+          // Show progress
+          processBtn.style.display = 'none';
+          progressContainer.style.display = 'flex';
+
+          // Use Tesseract.js for OCR
+          Tesseract.recognize(
+            file,
+            'ind', // Bahasa Indonesia
+            {
+              logger: m => {
+                if (m.status === 'recognizing text') {
+                  progressText.textContent = `Memproses: ${Math.round(m.progress * 100)}%`;
+                }
+              }
+            }
+          ).then(({ data: { text } }) => {
+            // Show result
+            resultText.textContent = text;
+            ocrResult.style.display = 'block';
+            progressContainer.style.display = 'none';
+            
+            // Simpan teks hasil OCR untuk dikirim ke AI
+            ocrExtractedText = text;
+
+            // Auto-scroll to result
+            ocrResult.scrollIntoView({ behavior: 'smooth' });
+            
+            // Otomatis kirim ke AI setelah 1 detik
+            setTimeout(() => {
+              modal.style.display = 'none';
+              sendOCRToAI(text);
+            }, 1000);
+          }).catch(err => {
+            console.error('OCR Error:', err);
+            progressText.textContent = 'Error saat memproses gambar';
+            setTimeout(() => {
+              progressContainer.style.display = 'none';
+              processBtn.style.display = 'block';
+            }, 2000);
+          });
+        }
+      }
+
+      // Fungsi untuk mengirim hasil OCR ke AI
+      function sendOCRToAI(text) {
+        if (!text || text.trim() === "") return;
+        
+        // Tampilkan pesan pengguna dengan teks OCR
+        const userDiv = addMessage('Anda', `[Gambar OCR] ${text}`, 'user-message');
+        
+        // Tampilkan indikator bahwa AI sedang mengetik
+        const chatbox = document.getElementById("chatbox");
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "message ai-message";
+        typingDiv.innerHTML = `
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="typing-indicator">
+              <div class="loading"></div>
+              AbidinAI sedang menganalisis teks dari gambar...
+            </div>
+          </div>
+        `;
+        chatbox.appendChild(typingDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        // Simulasi respons AI (dalam implementasi nyata, ini akan memanggil API AI)
+        setTimeout(() => {
+          typingDiv.remove();
+          
+          // Respons AI berdasarkan teks yang diekstrak
+          let aiResponse = generateAIResponse(text);
+          displayAIResponse(aiResponse);
+        }, 2000);
+      }
+
+      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR
+      function generateAIResponse(ocrText) {
+        // Analisis teks untuk menentukan jenis konten
+        const lowerText = ocrText.toLowerCase();
+        
+        // Deteksi jika teks berisi kode pemrograman
+        if (lowerText.includes("function") || lowerText.includes("var ") || 
+            lowerText.includes("const ") || lowerText.includes("let ") ||
+            lowerText.includes("class ") || lowerText.includes("import ") ||
+            lowerText.includes("console.log") || lowerText.includes("return ")) {
+          return "Saya melihat Anda berbagi kode pemrograman. Berikut adalah analisis dan saran untuk kode tersebut:\n\n```javascript\n// Contoh perbaikan kode\nfunction optimizedFunction() {\n  // Implementasi yang lebih efisien\n  return hasil;\n}\n```\n\nPastikan untuk selalu memberikan komentar pada kode Anda agar mudah dipahami oleh developer lain.";
         }
         
+        // Deteksi jika teks berisi struktur data atau algoritma
+        if (lowerText.includes("algorithm") || lowerText.includes("data structure") ||
+            lowerText.includes("complexity") || lowerText.includes("o(n)")) {
+          return "Tampaknya Anda berbagi informasi tentang algoritma atau struktur data. Ini adalah topik yang sangat penting dalam ilmu komputer. Apakah Anda ingin saya menjelaskan lebih detail tentang topik tertentu atau membantu mengoptimalkan suatu algoritma?";
+        }
+        
+        // Deteksi jika teks berisi matematika
+        if (lowerText.includes("math") || lowerText.includes("equation") || 
+            lowerText.includes("formula") || lowerText.includes("calculate") ||
+            /\d+[\+\-\*\/]\d+/.test(lowerText)) {
+          return "Saya melihat konten matematika dalam gambar Anda. Matematika adalah dasar dari banyak ilmu termasuk pemrograman dan ilmu data. Apakah Anda ingin saya membantu menjelaskan konsep matematika tertentu atau membantu menyelesaikan persamaan?";
+        }
+        
+        // Deteksi jika teks berisi bahasa asing
+        if (lowerText.includes("english") || lowerText.includes("inggris") ||
+            lowerText.match(/[a-z]+\s+is\s+[a-z]+/i) || lowerText.match(/[a-z]+\s+are\s+[a-z]+/i)) {
+          return "Saya mendeteksi teks dalam bahasa Inggris. Apakah Anda ingin saya menerjemahkannya ke bahasa Indonesia atau membantu memahami artinya?";
+        }
+        
+        // Deteksi jika teks berisi resep atau makanan
+        if (lowerText.includes("recipe") || lowerText.includes("resep") ||
+            lowerText.includes("food") || lowerText.includes("makanan") ||
+            lowerText.includes("cook") || lowerText.includes("masak")) {
+          return "Wah, sepertinya ini resep makanan! Masak adalah kegiatan yang menyenangkan. Apakah Anda ingin saya membantu menjelaskan langkah-langkahnya atau memberikan saran variasi resep?";
+        }
+        
+        // Deteksi jika teks berisi alamat atau lokasi
+        if (lowerText.includes("address") || lowerText.includes("alamat") ||
+            lowerText.includes("location") || lowerText.includes("lokasi") ||
+            lowerText.includes("map") || lowerText.includes("peta")) {
+          return "Saya melihat informasi alamat atau lokasi dalam gambar. Apakah Anda perlu bantuan untuk menemukan lokasi tersebut atau mencari rute terdekat?";
+        }
+        
+        // Deteksi jika teks berisi kontak atau informasi telepon
+        if (lowerText.includes("phone") || lowerText.includes("telepon") ||
+            lowerText.includes("contact") || lowerText.includes("kontak") ||
+            lowerText.match(/\d{4}[\-\s]?\d{4}[\-\s]?\d{4}/)) {
+          return "Ini tampaknya informasi kontak. Hati-hati dalam berbagi informasi pribadi seperti nomor telepon. Pastikan Anda membaginya hanya kepada orang yang terpercaya.";
+        }
+        
+        // Respons default untuk teks umum
+        return `Terima kasih telah membagikan teks dari gambar. Saya telah berhasil mengekstrak teks berikut:
+
+"${ocrText}"
+
+Apakah ada yang khusus dari teks ini yang ingin Anda tanyakan atau butuhkan bantuan untuk memahaminya? Saya siap membantu menjelaskan, menganalisis, atau mengembangkan ide dari teks tersebut.`;
+      }
+
+      window.openOCRModal = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
+        const modal = document.getElementById('ocrModal');
+        modal.style.display = 'flex';
+
+        // Reset modal state
+        document.getElementById('previewImage').style.display = 'none';
+        document.getElementById('processBtn').style.display = 'none';
+        document.getElementById('progressContainer').style.display = 'none';
+        document.getElementById('ocrResult').style.display = 'none';
+        document.getElementById('fileInput').value = '';
+        ocrExtractedText = '';
+      };
+
+      window.startVoiceRecognition = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
+        if (!('webkitSpeechRecognition' in window)) {
+          addMessage('Sistem', 'Browser Anda tidak mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.', 'ai-message');
+          return;
+        }
+
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'id-ID';
         recognition.start();
 
-        const activeTab = document.querySelector('.tab-content.active');
-        const targetBox = activeTab.id === 'chatTab' ? "chatbox" : "imagePromptBox";
-        
-        const messageBox = document.getElementById(targetBox);
-        if (_0xef12) {
-          _0xef12.remove();
+        const chatbox = document.getElementById("chatbox");
+        if (listeningElement) {
+          listeningElement.remove();
         }
-        _0xef12 = document.createElement("div");
-        _0xef12.className = "message user-message";
-        _0xef12.innerHTML = `<strong>Sistem:</strong> Mendengarkan...`;
-        messageBox.appendChild(_0xef12);
-        messageBox.scrollTop = messageBox.scrollHeight;
+
+        listeningElement = document.createElement("div");
+        listeningElement.className = "message ai-message";
+        listeningElement.innerHTML = `
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">Sistem</span>
+              <span class="message-time">${getCurrentTime()}</span>
+            </div>
+            <div class="message-text">
+              <div class="typing-indicator">
+                <div class="loading"></div>
+                Mendengarkan...
+              </div>
+            </div>
+          </div>
+        `;
+        chatbox.appendChild(listeningElement);
+        chatbox.scrollTop = chatbox.scrollHeight;
 
         recognition.onresult = function(event) {
           const transcript = event.results[0][0].transcript;
-          const activeTab = document.querySelector('.tab-content.active');
-          if (activeTab.id === 'chatTab') {
-            document.getElementById("messageInput").value = transcript;
-            _0x5e6f = true;
-            sendMessage();
-          } else if (activeTab.id === 'imageTab') {
-            document.getElementById("imagePromptInput").value = transcript;
-            generateImage();
-          }
+          document.getElementById("messageInput").value = transcript;
+          isVoiceMode = true;
+          sendMessage();
         };
 
         recognition.onerror = function(event) {
-          if (_0xef12) {
-            _0xef12.remove();
-            _0xef12 = null;
+          if (listeningElement) {
+            listeningElement.remove();
+            listeningElement = null;
           }
-          console.error("Error in speech recognition:", event.error);
+
+          if (event.error !== 'no-speech') {
+            addMessage('Sistem', `Error: ${event.error}`, 'ai-message');
+          }
         };
       };
-      
+
+      function addMessage(sender, text, messageClass, timestamp = null) {
+        const chatbox = document.getElementById("chatbox");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${messageClass}`;
+        
+        // Generate unique ID for this message
+        const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
+        messageDiv.innerHTML = `
+          <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
+            ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
+          </div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">${sender}</span>
+              <span class="message-time">${timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : getCurrentTime()}</span>
+            </div>
+            <div class="message-text" id="${messageId}-text">${text}</div>
+            ${messageClass === 'ai-message' ? `
+            <div class="message-actions">
+              <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
+                <i class="fas fa-copy"></i> Salin
+              </button>
+              <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
+                <i class="fas fa-redo"></i> Buat Ulang
+              </button>
+            </div>
+            ` : ''}
+          </div>
+        `;
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        
+        // Simpan pesan ke database
+        saveMessageToDB(sender, text, timestamp);
+        
+        return messageDiv;
+      }
+
+      // Fungsi untuk menyalin teks pesan
+      window.copyMessageText = function(messageId) {
+        const messageTextElement = document.getElementById(`${messageId}-text`);
+        if (messageTextElement) {
+          const textToCopy = messageTextElement.textContent || messageTextElement.innerText;
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            // Tampilkan feedback bahwa teks telah disalin
+            const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
+            if (copyButton) {
+              const originalHtml = copyButton.innerHTML;
+              copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+              setTimeout(() => {
+                copyButton.innerHTML = originalHtml;
+              }, 2000);
+            }
+          }).catch(err => {
+            console.error('Gagal menyalin teks: ', err);
+          });
+        }
+      };
+
+      // Fungsi untuk membuat ulang respons AI
+      window.regenerateMessage = async function(messageId) {
+        const messageTextElement = document.getElementById(`${messageId}-text`);
+        if (!messageTextElement) return;
+        
+        const originalText = messageTextElement.textContent || messageTextElement.innerText;
+        
+        // Tampilkan indikator loading
+        const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
+        if (regenerateButton) {
+          const originalHtml = regenerateButton.innerHTML;
+          regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+          regenerateButton.disabled = true;
+          
+          try {
+            // Kirim permintaan ke API untuk membuat ulang respons
+            const response = await fetch("/api/chat", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ 
+                message: originalText,
+                regenerate: true 
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            let aiReply = data.reply;
+
+            if (!aiReply || aiReply.trim() === "") {
+              throw new Error("Respons kosong dari server");
+            }
+
+            // Perbarui teks pesan dengan respons baru
+            messageTextElement.innerHTML = formatBoldText(aiReply);
+            
+            // Perbarui timestamp
+            const timeElement = messageTextElement.parentElement.querySelector('.message-time');
+            if (timeElement) {
+              timeElement.textContent = getCurrentTime();
+            }
+            
+            // Tampilkan feedback sukses
+            regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
+            setTimeout(() => {
+              regenerateButton.innerHTML = originalHtml;
+              regenerateButton.disabled = false;
+            }, 2000);
+            
+          } catch (error) {
+            console.error("Error regenerating message:", error);
+            regenerateButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Gagal';
+            setTimeout(() => {
+              regenerateButton.innerHTML = originalHtml;
+              regenerateButton.disabled = false;
+            }, 2000);
+          }
+        }
+      };
+
       window.sendMessage = async function() {
-        // Security check
-        if (_0x3456.open) {
-          _0xShowWarning();
+        if (devToolsState.open) {
+          showWarning();
           return false;
         }
-        
+
         const input = document.getElementById("messageInput");
         const text = input.value.trim();
         if (!text) return;
@@ -313,19 +1606,25 @@
         const sendButton = document.getElementById("sendButton");
 
         // Show user message
-        const userDiv = document.createElement("div");
-        userDiv.className = "message user-message";
-        userDiv.innerHTML = `<strong>Anda:</strong> ${text}`;
-        chatbox.appendChild(userDiv);
+        const userDiv = addMessage('Anda', text, 'user-message');
 
-        const typingIndicator = document.createElement("div");
-        typingIndicator.className = "message ai-message typing-indicator";
-        typingIndicator.id = "typingIndicator";
-        typingIndicator.innerHTML = `<strong>AbidinAI:</strong> <span class="loading"></span> Mengetik...`;
-        chatbox.appendChild(typingIndicator);
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "message ai-message";
+        typingDiv.innerHTML = `
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="typing-indicator">
+              <div class="loading"></div>
+              AbidinAI sedang mengetik...
+            </div>
+          </div>
+        `;
+        chatbox.appendChild(typingDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
-        
+
         sendButton.disabled = true;
+        input.value = '';
+        input.style.height = 'auto';
 
         try {
           const response = await fetch("/api/chat", {
@@ -342,202 +1641,92 @@
 
           const data = await response.json();
           let aiReply = data.reply;
-          
-          document.getElementById("typingIndicator").remove();
+
+          typingDiv.remove();
 
           if (!aiReply || aiReply.trim() === "") {
-            _0xDisplayMaintenanceMessage();
+            displayMaintenanceMessage();
           } else {
-            _0xDisplayAIResponse(aiReply);
+            displayAIResponse(aiReply);
           }
         } catch (error) {
-          document.getElementById("typingIndicator").remove();
-          _0xDisplayMaintenanceMessage();
+          typingDiv.remove();
+          displayMaintenanceMessage();
           console.error("Error:", error);
           sendButton.disabled = false;
         }
-
-        input.value = "";
       };
-      
-      async function generateImage() {
-        if (_0x3456.open) {
-          _0xShowWarning();
-          return false;
-        }
-        
-        const promptInput = document.getElementById("imagePromptInput");
-        const prompt = promptInput.value.trim();
-        if (!prompt) {
-          alert("Silakan masukkan deskripsi gambar terlebih dahulu!");
-          return;
-        }
 
-        const imagePromptBox = document.getElementById("imagePromptBox");
-        const generateButton = document.getElementById("generateButton");
-        const imageResultContainer = document.getElementById("imageResultContainer");
-
-        // Clear previous results
-        imageResultContainer.innerHTML = "";
-        imageResultContainer.style.display = "none";
-
-        // Show user prompt
-        const userDiv = document.createElement("div");
-        userDiv.className = "message user-message";
-        userDiv.innerHTML = `<strong>Anda:</strong> ${prompt}`;
-        imagePromptBox.appendChild(userDiv);
-
-        const typingIndicator = document.createElement("div");
-        typingIndicator.className = "message ai-message typing-indicator";
-        typingIndicator.id = "imageTypingIndicator";
-        typingIndicator.innerHTML = `<strong>AbidinAI:</strong> <span class="loading"></span> Membuat gambar...`;
-        imagePromptBox.appendChild(typingIndicator);
-        imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
-        
-        generateButton.disabled = true;
-
-        try {
-          // Use your backend API for image generation
-          const response = await fetch('/api/generate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ text: prompt })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          
-          document.getElementById("imageTypingIndicator").remove();
-
-          if (!data.output_url) {
-            _0xDisplayImageError("Gagal membuat gambar. Silakan coba lagi dengan deskripsi yang berbeda.");
-          } else {
-            _0xDisplayGeneratedImage(prompt, data.output_url);
-          }
-        } catch (error) {
-          document.getElementById("imageTypingIndicator").remove();
-          _0xDisplayImageError("Terjadi kesalahan saat membuat gambar. Silakan coba lagi nanti.");
-          console.error("Error generating image:", error);
-        }
-
-        generateButton.disabled = false;
-        promptInput.value = "";
-      }
-      
-      function _0xDisplayGeneratedImage(prompt, imageUrl) {
-        const imagePromptBox = document.getElementById("imagePromptBox");
-        const imageResultContainer = document.getElementById("imageResultContainer");
-        
-        const aiDiv = document.createElement("div");
-        aiDiv.className = "message ai-message";
-        aiDiv.innerHTML = `<strong>AbidinAI:</strong> Berikut gambar yang saya buat berdasarkan deskripsi Anda:`;
-        imagePromptBox.appendChild(aiDiv);
-        imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
-        
-        // Display the generated image
-        imageResultContainer.style.display = "block";
-        imageResultContainer.innerHTML = `
-          <div class="image-container">
-            <img src="${imageUrl}" alt="Generated image from prompt: ${prompt}" class="generated-image">
-            <button onclick="downloadImage('${imageUrl}', 'abidinAI-${Date.now()}.jpg')" class="image-download-btn">
-              <i class="fas fa-download"></i> Unduh Gambar
-            </button>
-          </div>
-        `;
-        
-        // Scroll to show the generated image
-        imageResultContainer.scrollIntoView({ behavior: 'smooth' });
-      }
-      
-      function _0xDisplayImageError(message) {
-        const imagePromptBox = document.getElementById("imagePromptBox");
-        
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "message maintenance-message";
-        errorDiv.innerHTML = `
-          <strong><i class="fas fa-exclamation-triangle"></i> AbidinAI:</strong> 
-          ${message || "Maaf, terjadi kesalahan saat membuat gambar. Silakan coba lagi dengan deskripsi yang berbeda."}
-        `;
-        imagePromptBox.appendChild(errorDiv);
-        imagePromptBox.scrollTop = imagePromptBox.scrollHeight;
-      }
-      
-      window.downloadImage = function(url, filename) {
-        if (_0x3456.open) {
-          _0xShowWarning();
-          return false;
-        }
-        
-        fetch(url)
-          .then(response => response.blob())
-          .then(blob => {
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-          })
-          .catch(err => {
-            console.error("Error downloading image:", err);
-            alert("Gagal mengunduh gambar. Silakan coba lagi.");
-          });
-      };
-      
-      function _0xDisplayMaintenanceMessage() {
+      function displayMaintenanceMessage() {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
-        
-        if (_0xef12) {
-          _0xef12.remove();
-          _0xef12 = null;
+
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
         }
-        
-        const maintenanceDiv = document.createElement("div");
-        maintenanceDiv.className = "message maintenance-message";
-        maintenanceDiv.innerHTML = `
-          <strong><i class="fas fa-tools"></i> AbidinAI:</strong> 
-          Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. 
-          Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧
-        `;
-        chatbox.appendChild(maintenanceDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-        
+
+        const maintenanceDiv = addMessage(
+          'AbidinAI',
+          formatBoldText('<i class="fas fa-tools"></i> Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'),
+          'ai-message'
+        );
+
         sendButton.disabled = false;
-        
-        if (_0x5e6f) {
-          _0xReadWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
+
+        if (isVoiceMode) {
+          readWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
         }
-        _0x5e6f = false;
+        isVoiceMode = false;
       }
 
-      function _0xDisplayAIResponse(aiReply) {
+      function displayAIResponse(aiReply) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
-        
-        if (_0xef12) {
-          _0xef12.remove();
-          _0xef12 = null;
+
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
         }
-        
+
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
+        const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         const container = document.createElement("div");
         container.className = "message ai-message";
-        container.innerHTML = `<strong>AbidinAI:</strong><br>`;
+        container.innerHTML = `
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">AbidinAI</span>
+              <span class="message-time">${getCurrentTime()}</span>
+            </div>
+            <div class="message-text" id="${messageId}-text"></div>
+            <div class="message-actions">
+              <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
+                <i class="fas fa-copy"></i> Salin
+              </button>
+              <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
+                <i class="fas fa-redo"></i> Buat Ulang
+              </button>
+            </div>
+          </div>
+        `;
+
+        const messageText = container.querySelector('.message-text');
         let textToRead = "";
 
         for (let i = 0; i < parts.length; i++) {
           if (i % 2 === 0) {
             const span = document.createElement("span");
-            span.textContent = parts[i];
+            span.innerHTML = formatBoldText(parts[i]);
             textToRead += parts[i] + " ";
-            container.appendChild(span);
+            messageText.appendChild(span);
           } else {
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
+
+            const codeHeader = document.createElement("div");
+            codeHeader.className = "code-header";
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-btn";
@@ -549,11 +1738,14 @@
               });
             };
 
+            codeHeader.appendChild(copyButton);
+
             const pre = document.createElement("pre");
             pre.textContent = parts[i];
-            codeContainer.appendChild(copyButton);
+
+            codeContainer.appendChild(codeHeader);
             codeContainer.appendChild(pre);
-            container.appendChild(codeContainer);
+            messageText.appendChild(codeContainer);
           }
         }
 
@@ -561,18 +1753,18 @@
         chatbox.scrollTop = chatbox.scrollHeight;
         sendButton.disabled = false;
 
-        if (_0x5e6f) {
-          _0xReadWithPauses(textToRead);
+        if (isVoiceMode) {
+          readWithPauses(textToRead);
         }
-        _0x5e6f = false;
+        isVoiceMode = false;
       }
 
-      function _0xReadWithPauses(text) {
+      function readWithPauses(text) {
         if (!('speechSynthesis' in window)) {
           console.log("Text-to-speech tidak didukung di browser ini");
           return;
         }
-        
+
         const sentences = text.split(/(?<=[.!?])\s+/);
         const synth = window.speechSynthesis;
         synth.cancel();
@@ -583,23 +1775,22 @@
 
         function speakNext(index) {
           if (index >= sentences.length) return;
-          
+
           const cleanSentence = cleanText(sentences[index]).trim();
           if (!cleanSentence) return speakNext(index + 1);
-          
+
           const utter = new SpeechSynthesisUtterance(cleanSentence);
           utter.lang = 'id-ID';
           utter.rate = 1.0;
           utter.pitch = 1.0;
           utter.volume = 1.0;
-          
+
           utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
           synth.speak(utter);
         }
 
         speakNext(0);
       }
-      
     })();
   </script>
 </body>
