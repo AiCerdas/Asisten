@@ -692,7 +692,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title">
-          <i class="fas fa-file-image"></i> OCR - Ekstrak Teks dari Gambar
+          <i class="fas fa-file-image"></i> Upload Gambar Cerdas
         </div>
         <button class="close-btn" id="closeModal">&times;</button>
       </div>
@@ -703,7 +703,6 @@
         </div>
         <div class="upload-text">
           <strong>Klik untuk mengunggah gambar</strong><br>
-          atau seret dan lepas file ke sini
         </div>
         <div style="font-size: 12px; color: #718096;">
           Format yang didukung: JPG, PNG, PDF (maks. 5MB)
@@ -714,7 +713,7 @@
       <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
 
       <button id="processBtn" class="process-btn">
-        <i class="fas fa-cogs"></i> Proses OCR
+        <i class="fas fa-cogs"></i> Lanjutkan Analisis
       </button>
 
       <div class="ocr-progress" id="progressContainer" style="display: none;">
@@ -724,12 +723,17 @@
 
       <div class="ocr-result" id="ocrResult">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-          <strong>Hasil OCR:</strong>
+          <strong>Hasil:</strong>
           <button class="copy-btn" id="copyResult" style="position: static; padding: 3px 8px;">
             <i class="fas fa-copy"></i> Salin
           </button>
         </div>
         <div id="resultText" style="white-space: pre-line;"></div>
+        <div style="margin-top: 15px; text-align: center;">
+          <button id="sendToAI" class="process-btn" style="display: none;">
+            <i class="fas fa-robot"></i> Kirim ke AI untuk Analisis
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -765,7 +769,7 @@
 
       <a href="obrolan.html" class="menu-item">
         <i class="fas fa-comments"></i>
-        <span>Obrolan Grup</span>
+        <span>Obrolan AI</span>
       </a>
 
       <a href="dokter.html" class="menu-item">
@@ -775,7 +779,7 @@
 
       <div class="menu-item" id="ocrMenuItem">
         <i class="fas fa-file-alt"></i>
-        <span>Ekstrak Teks (OCR)</span>
+        <span>Ekstrak Teks</span>
       </div>
 
       <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
@@ -854,7 +858,7 @@
       let isMusicPlaying = false;
       let lastTypingElement = null;
       let db = null; // Variabel untuk database IndexedDB
-      let ocrExtractedText = ''; // Variabel untuk menyimpan teks hasil OCR
+      let extractedText = ""; // Menyimpan teks hasil OCR
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
@@ -1166,6 +1170,7 @@
         const progressContainer = document.getElementById('progressContainer');
         const progressText = document.getElementById('progressText');
         const ocrResult = document.getElementById('ocrResult');
+        const sendToAI = document.getElementById('sendToAI');
 
         // Close modal when clicking X or outside
         closeBtn.addEventListener('click', () => modal.style.display = 'none');
@@ -1219,6 +1224,13 @@
           });
         });
 
+        // Send to AI button
+        sendToAI.addEventListener('click', () => {
+          modal.style.display = 'none';
+          document.getElementById('messageInput').value = extractedText;
+          sendMessage();
+        });
+
         function handleFileUpload(file) {
           // Check file type and size
           if (!file.type.match('image.*') && file.type !== 'application/pdf') {
@@ -1239,6 +1251,7 @@
               previewImage.style.display = 'block';
               processBtn.style.display = 'block';
               ocrResult.style.display = 'none';
+              sendToAI.style.display = 'none';
             };
             reader.readAsDataURL(file);
           } else {
@@ -1246,6 +1259,7 @@
             previewImage.style.display = 'none';
             processBtn.style.display = 'block';
             ocrResult.style.display = 'none';
+            sendToAI.style.display = 'none';
           }
         }
 
@@ -1271,20 +1285,13 @@
           ).then(({ data: { text } }) => {
             // Show result
             resultText.textContent = text;
+            extractedText = text; // Simpan teks untuk dikirim ke AI
             ocrResult.style.display = 'block';
+            sendToAI.style.display = 'block';
             progressContainer.style.display = 'none';
-            
-            // Simpan teks hasil OCR untuk dikirim ke AI
-            ocrExtractedText = text;
 
             // Auto-scroll to result
             ocrResult.scrollIntoView({ behavior: 'smooth' });
-            
-            // Otomatis kirim ke AI setelah 1 detik
-            setTimeout(() => {
-              modal.style.display = 'none';
-              sendOCRToAI(text);
-            }, 1000);
           }).catch(err => {
             console.error('OCR Error:', err);
             progressText.textContent = 'Error saat memproses gambar';
@@ -1294,100 +1301,6 @@
             }, 2000);
           });
         }
-      }
-
-      // Fungsi untuk mengirim hasil OCR ke AI
-      function sendOCRToAI(text) {
-        if (!text || text.trim() === "") return;
-        
-        // Tampilkan pesan pengguna dengan teks OCR
-        const userDiv = addMessage('Anda', `[Gambar OCR] ${text}`, 'user-message');
-        
-        // Tampilkan indikator bahwa AI sedang mengetik
-        const chatbox = document.getElementById("chatbox");
-        const typingDiv = document.createElement("div");
-        typingDiv.className = "message ai-message";
-        typingDiv.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="typing-indicator">
-              <div class="loading"></div>
-              AbidinAI sedang menganalisis teks dari gambar...
-            </div>
-          </div>
-        `;
-        chatbox.appendChild(typingDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-
-        // Simulasi respons AI (dalam implementasi nyata, ini akan memanggil API AI)
-        setTimeout(() => {
-          typingDiv.remove();
-          
-          // Respons AI berdasarkan teks yang diekstrak
-          let aiResponse = generateAIResponse(text);
-          displayAIResponse(aiResponse);
-        }, 2000);
-      }
-
-      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR
-      function generateAIResponse(ocrText) {
-        // Analisis teks untuk menentukan jenis konten
-        const lowerText = ocrText.toLowerCase();
-        
-        // Deteksi jika teks berisi kode pemrograman
-        if (lowerText.includes("function") || lowerText.includes("var ") || 
-            lowerText.includes("const ") || lowerText.includes("let ") ||
-            lowerText.includes("class ") || lowerText.includes("import ") ||
-            lowerText.includes("console.log") || lowerText.includes("return ")) {
-          return "Saya melihat Anda berbagi kode pemrograman. Berikut adalah analisis dan saran untuk kode tersebut:\n\n```javascript\n// Contoh perbaikan kode\nfunction optimizedFunction() {\n  // Implementasi yang lebih efisien\n  return hasil;\n}\n```\n\nPastikan untuk selalu memberikan komentar pada kode Anda agar mudah dipahami oleh developer lain.";
-        }
-        
-        // Deteksi jika teks berisi struktur data atau algoritma
-        if (lowerText.includes("algorithm") || lowerText.includes("data structure") ||
-            lowerText.includes("complexity") || lowerText.includes("o(n)")) {
-          return "Tampaknya Anda berbagi informasi tentang algoritma atau struktur data. Ini adalah topik yang sangat penting dalam ilmu komputer. Apakah Anda ingin saya menjelaskan lebih detail tentang topik tertentu atau membantu mengoptimalkan suatu algoritma?";
-        }
-        
-        // Deteksi jika teks berisi matematika
-        if (lowerText.includes("math") || lowerText.includes("equation") || 
-            lowerText.includes("formula") || lowerText.includes("calculate") ||
-            /\d+[\+\-\*\/]\d+/.test(lowerText)) {
-          return "Saya melihat konten matematika dalam gambar Anda. Matematika adalah dasar dari banyak ilmu termasuk pemrograman dan ilmu data. Apakah Anda ingin saya membantu menjelaskan konsep matematika tertentu atau membantu menyelesaikan persamaan?";
-        }
-        
-        // Deteksi jika teks berisi bahasa asing
-        if (lowerText.includes("english") || lowerText.includes("inggris") ||
-            lowerText.match(/[a-z]+\s+is\s+[a-z]+/i) || lowerText.match(/[a-z]+\s+are\s+[a-z]+/i)) {
-          return "Saya mendeteksi teks dalam bahasa Inggris. Apakah Anda ingin saya menerjemahkannya ke bahasa Indonesia atau membantu memahami artinya?";
-        }
-        
-        // Deteksi jika teks berisi resep atau makanan
-        if (lowerText.includes("recipe") || lowerText.includes("resep") ||
-            lowerText.includes("food") || lowerText.includes("makanan") ||
-            lowerText.includes("cook") || lowerText.includes("masak")) {
-          return "Wah, sepertinya ini resep makanan! Masak adalah kegiatan yang menyenangkan. Apakah Anda ingin saya membantu menjelaskan langkah-langkahnya atau memberikan saran variasi resep?";
-        }
-        
-        // Deteksi jika teks berisi alamat atau lokasi
-        if (lowerText.includes("address") || lowerText.includes("alamat") ||
-            lowerText.includes("location") || lowerText.includes("lokasi") ||
-            lowerText.includes("map") || lowerText.includes("peta")) {
-          return "Saya melihat informasi alamat atau lokasi dalam gambar. Apakah Anda perlu bantuan untuk menemukan lokasi tersebut atau mencari rute terdekat?";
-        }
-        
-        // Deteksi jika teks berisi kontak atau informasi telepon
-        if (lowerText.includes("phone") || lowerText.includes("telepon") ||
-            lowerText.includes("contact") || lowerText.includes("kontak") ||
-            lowerText.match(/\d{4}[\-\s]?\d{4}[\-\s]?\d{4}/)) {
-          return "Ini tampaknya informasi kontak. Hati-hati dalam berbagi informasi pribadi seperti nomor telepon. Pastikan Anda membaginya hanya kepada orang yang terpercaya.";
-        }
-        
-        // Respons default untuk teks umum
-        return `Terima kasih telah membagikan teks dari gambar. Saya telah berhasil mengekstrak teks berikut:
-
-"${ocrText}"
-
-Apakah ada yang khusus dari teks ini yang ingin Anda tanyakan atau butuhkan bantuan untuk memahaminya? Saya siap membantu menjelaskan, menganalisis, atau mengembangkan ide dari teks tersebut.`;
       }
 
       window.openOCRModal = function() {
@@ -1404,8 +1317,8 @@ Apakah ada yang khusus dari teks ini yang ingin Anda tanyakan atau butuhkan bant
         document.getElementById('processBtn').style.display = 'none';
         document.getElementById('progressContainer').style.display = 'none';
         document.getElementById('ocrResult').style.display = 'none';
+        document.getElementById('sendToAI').style.display = 'none';
         document.getElementById('fileInput').value = '';
-        ocrExtractedText = '';
       };
 
       window.startVoiceRecognition = function() {
