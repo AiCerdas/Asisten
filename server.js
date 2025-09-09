@@ -4,7 +4,6 @@ const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const multer = require('multer'); // untuk upload gambar
-const FormData = require('form-data');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -127,32 +126,49 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
   }
 
   try {
-    // 1. OCR menggunakan DeepSeek Vision
-    const formData = new FormData();
-    formData.append('image', req.file.buffer, {
-      filename: req.file.originalname,
-      contentType: req.file.mimetype
-    });
+    // Konversi gambar ke base64
+    const base64Image = req.file.buffer.toString('base64');
     
-    const dsRes = await fetch("https://api.deepseek.com/v1/ocr", {
+    // 1. OCR menggunakan DeepSeek Vision
+    const dsRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-        ...formData.getHeaders()
+        "Content-Type": "application/json"
       },
-      body: formData
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { 
+                type: "text", 
+                text: "Extract all text from this image accurately and completely. Return only the extracted text without any additional commentary." 
+              },
+              {
+                type: "image_url",
+                image_url: `data:${req.file.mimetype};base64,${base64Image}`
+              }
+            ]
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 2048
+      })
     });
 
     if (!dsRes.ok) {
       const errorText = await dsRes.text();
-      console.error("DeepSeek OCR API error:", dsRes.status, errorText);
+      console.error("DeepSeek Vision API error:", dsRes.status, errorText);
       return res.status(500).json({ 
-        error: `DeepSeek API error: ${dsRes.status} - ${errorText}` 
+        error: `DeepSeek Vision API error: ${dsRes.status}`,
+        details: "Pastikan DEEPSEEK_API_KEY sudah benar dan memiliki akses ke fitur vision"
       });
     }
 
     const dsData = await dsRes.json();
-    const ocrText = dsData.text || dsData.result || "";
+    const ocrText = dsData.choices?.[0]?.message?.content || "";
 
     if (!ocrText || ocrText.trim() === "") {
       return res.json({
@@ -217,96 +233,6 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
   }
 });
 
-// Endpoint alternatif untuk OCR dengan base64
-app.post('/api/vision-base64', async (req, res) => {
-  const { imageBase64 } = req.body;
-
-  if (!imageBase64) {
-    return res.status(400).json({ error: "Tidak ada gambar yang dikirim" });
-  }
-
-  try {
-    // 1. OCR menggunakan DeepSeek Vision dengan base64
-    const dsRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Extract all text from this image accurately and completely." },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:image/jpeg;base64,${imageBase64}`
-                }
-              }
-            ]
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 2048
-      })
-    });
-
-    if (!dsRes.ok) {
-      const errorText = await dsRes.text();
-      console.error("DeepSeek Vision API error:", dsRes.status, errorText);
-      return res.status(500).json({ 
-        error: `DeepSeek Vision API error: ${dsRes.status}` 
-      });
-    }
-
-    const dsData = await dsRes.json();
-    const ocrText = dsData.choices?.[0]?.message?.content || "";
-
-    // 2. Kirim hasil OCR ke Groq untuk dijelaskan
-    const gqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { 
-            role: "system", 
-            content: "Jelaskan isi teks hasil OCR dengan bahasa Indonesia yang sederhana dan mudah dipahami." 
-          },
-          { 
-            role: "user", 
-            content: `Ini adalah teks yang diekstrak dari gambar:\n\n${ocrText}\n\nJelaskan isinya dengan jelas.` 
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1024
-      })
-    });
-
-    const gqData = await gqRes.json();
-    const explanation = gqData.choices?.[0]?.message?.content || "Tidak ada penjelasan.";
-
-    res.json({ 
-      success: true,
-      ocrText, 
-      explanation 
-    });
-
-  } catch (err) {
-    console.error("Error in /api/vision-base64:", err);
-    res.status(500).json({ 
-      error: "Terjadi kesalahan internal server",
-      details: err.message 
-    });
-  }
-});
-
 // === Serve file statis ===
 app.use(express.static(path.join(__dirname)));
 
@@ -342,6 +268,38 @@ app.get('/health', (req, res) => {
     message: 'Server is running',
     timestamp: new Date().toISOString()
   });
+});
+
+// Test DeepSeek API endpoint
+app.get('/test-deepseek', async (req, res) => {
+  try {
+    const testRes = await fetch("https://api.deepseek.com/v1/models", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`
+      }
+    });
+
+    if (!testRes.ok) {
+      const errorText = await testRes.text();
+      return res.status(500).json({ 
+        error: `DeepSeek API test failed: ${testRes.status}`,
+        details: errorText
+      });
+    }
+
+    const models = await testRes.json();
+    res.json({ 
+      success: true,
+      message: "DeepSeek API connection successful",
+      models: models.data.map(m => m.id)
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      error: "DeepSeek API test failed",
+      details: err.message 
+    });
+  }
 });
 
 // fallback: jika URL tidak cocok, redirect ke index
