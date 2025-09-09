@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 3000;
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // === API AbidinAI ke Groq ===
 app.post('/api/chat', async (req, res) => {
@@ -112,6 +113,9 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Gambar kosong" });
 
   try {
+    // Konversi gambar ke base64
+    const base64Image = req.file.buffer.toString('base64');
+    
     // 1. OCR pakai DeepSeek
     const dsRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
@@ -122,11 +126,28 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: "Extract the text from this image." },
-          { role: "user", content: `data:image/jpeg;base64,${req.file.buffer.toString("base64")}` }
-        ]
+          { 
+            role: "user", 
+            content: [
+              { type: "text", text: "Extract all text from this image accurately." },
+              { 
+                type: "image_url", 
+                image_url: `data:${req.file.mimetype};base64,${base64Image}`
+              }
+            ]
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 2048
       })
     });
+
+    if (!dsRes.ok) {
+      const errorText = await dsRes.text();
+      console.error("DeepSeek API error:", errorText);
+      return res.status(500).json({ error: "DeepSeek API error: " + errorText });
+    }
+
     const dsData = await dsRes.json();
     const ocrText = dsData.choices?.[0]?.message?.content || "";
 
@@ -140,21 +161,41 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
       body: JSON.stringify({
         model: "meta-llama/llama-4-scout-17b-16e-instruct",
         messages: [
-          { role: "system", content: "Jelaskan isi teks hasil OCR dengan bahasa sederhana." },
-          { role: "user", content: ocrText }
+          { 
+            role: "system", 
+            content: "Anda adalah asisten yang membantu menjelaskan isi teks dari gambar. Berikan penjelasan yang jelas dan mudah dipahami dalam bahasa Indonesia." 
+          },
+          { 
+            role: "user", 
+            content: `Saya telah mengekstrak teks berikut dari gambar:\n\n${ocrText}\n\nJelaskan isi teks ini dengan bahasa yang sederhana dan mudah dimengerti.` 
+          }
         ],
         temperature: 0.7,
-        max_tokens: 512
+        max_tokens: 1024
       })
     });
+
+    if (!gqRes.ok) {
+      const errorText = await gqRes.text();
+      console.error("Groq API error:", errorText);
+      return res.status(500).json({ error: "Groq API error: " + errorText });
+    }
+
     const gqData = await gqRes.json();
     const explanation = gqData.choices?.[0]?.message?.content || "Tidak ada penjelasan.";
 
-    res.json({ ocrText, explanation });
+    res.json({ 
+      success: true,
+      ocrText, 
+      explanation 
+    });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Error in /api/vision:", err);
+    res.status(500).json({ 
+      error: "Terjadi kesalahan internal server",
+      details: err.message 
+    });
   }
 });
 
