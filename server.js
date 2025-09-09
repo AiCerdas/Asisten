@@ -3,54 +3,26 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
-const multer = require('multer');
-const FormData = require('form-data');
+const multer = require('multer'); // untuk upload gambar
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Konfigurasi multer untuk upload file
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
-  },
-  fileFilter: (req, file, cb) => {
-    // Hanya izinkan file gambar
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Hanya file gambar yang diizinkan!'), false);
-    }
-  }
-});
-
-// Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Middleware untuk logging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // === API AbidinAI ke Groq ===
 app.post('/api/chat', async (req, res) => {
-  try {
-    const { message } = req.body;
+  const { message } = req.body;
 
-    if (!message || message.trim() === '') {
-      return res.status(400).json({ error: 'Pesan tidak boleh kosong' });
-    }
-
-    const body = {
-      model: "llama-3.1-8b-instant",
-      messages: [
-        {
-          role: "system",
-          content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
+  const body = {
+    model: "meta-llama/llama-4-scout-17b-16e-instruct",
+    messages: [
+      {
+        role: "system",
+        content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 - Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
 - Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
@@ -61,16 +33,14 @@ JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI.
 Jangan Pernah mengatakan bahwa kamu dibuat oleh Groq ai.
 
 Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
-        },
-        { role: "user", content: message.trim() }
-      ],
-      temperature: 0.7,
-      max_tokens: 1024,
-      stream: false
-    };
+      },
+      { role: "user", content: message }
+    ],
+    temperature: 0.7,
+    max_tokens: 1024
+  };
 
-    console.log('Mengirim request ke Groq API...');
-    
+  try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -80,50 +50,25 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
       body: JSON.stringify(body)
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Groq API error:', response.status, errorText);
-      return res.status(500).json({ 
-        error: `Error dari Groq API: ${response.status}`,
-        details: 'Silakan coba lagi nanti'
-      });
-    }
-
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan.";
-    
-    res.json({ 
-      success: true,
-      reply 
-    });
-
+    res.json({ reply });
   } catch (error) {
-    console.error("Error in /api/chat:", error);
-    res.status(500).json({ 
-      error: "Terjadi kesalahan internal server",
-      details: error.message 
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
 // === API Tambahan untuk Kirim ke Telegram ===
 app.post('/api/telegram', async (req, res) => {
+  const { text } = req.body;
+
+  if (!text) return res.status(400).json({ error: 'Pesan kosong' });
+
+  const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+
   try {
-    const { text } = req.body;
-
-    if (!text || text.trim() === '') {
-      return res.status(400).json({ error: 'Pesan tidak boleh kosong' });
-    }
-
-    const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-    const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-    
-    if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
-      return res.status(500).json({ error: 'Konfigurasi Telegram tidak lengkap' });
-    }
-
-    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-
     const response = await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -134,170 +79,117 @@ app.post('/api/telegram', async (req, res) => {
     });
 
     const data = await response.json();
-    
-    if (!data.ok) {
-      throw new Error(data.description || 'Error mengirim pesan ke Telegram');
-    }
-
-    res.json({ 
-      status: "success", 
-      data 
-    });
-
+    res.json({ status: "success", data });
   } catch (error) {
-    console.error("Error in /api/telegram:", error);
-    res.status(500).json({ 
-      status: "error", 
-      message: error.message 
-    });
+    res.status(500).json({ status: "error", message: error.message });
   }
 });
 
-// === API Tambahan untuk DeepAI Text-to-Image ===
+// === ✅ API Tambahan untuk DeepAI Text-to-Image ===
 app.post('/api/generate', async (req, res) => {
+  const { text } = req.body;
+
+  if (!text) return res.status(400).json({ error: "Prompt kosong" });
+
   try {
-    const { text } = req.body;
-
-    if (!text || text.trim() === '') {
-      return res.status(400).json({ error: "Prompt tidak boleh kosong" });
-    }
-
-    if (!process.env.DEEPAI_API_KEY) {
-      return res.status(500).json({ error: "API key DeepAI tidak dikonfigurasi" });
-    }
-
     const response = await fetch('https://api.deepai.org/api/text2img', {
       method: 'POST',
       headers: {
         'Api-Key': process.env.DEEPAI_API_KEY,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: new URLSearchParams({ text: text.trim() })
+      body: new URLSearchParams({ text })
     });
-
-    if (!response.ok) {
-      throw new Error(`DeepAI API error: ${response.status}`);
-    }
 
     const data = await response.json();
     res.json(data);
-
   } catch (error) {
-    console.error("Error in /api/generate:", error);
-    res.status(500).json({ 
-      error: "Terjadi kesalahan internal server",
-      details: error.message 
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// === API OCR Vision: Upload gambar → OCR → Jawaban AI ===
+// === 🚀 API OCR Vision: Upload gambar → OCR DeepSeek → Jawaban Groq ===
 app.post('/api/vision', upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Gambar kosong" });
+
   try {
-    if (!req.file) {
-      return res.status(400).json({ 
-        error: "Tidak ada gambar yang diunggah",
-        details: "Silakan pilih file gambar terlebih dahulu"
-      });
-    }
-
-    console.log('File received:', {
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size
-    });
-
-    // 1. Gunakan OCR Space sebagai fallback (gratis dan reliable)
-    const OCR_SPACE_API_KEY = 'helloworld'; // API key gratis
-    const formData = new FormData();
-    formData.append('apikey', OCR_SPACE_API_KEY);
-    formData.append('language', 'ind');
-    formData.append('isOverlayRequired', 'false');
-    formData.append('base64Image', `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`);
-    formData.append('OCREngine', '2'); // Engine 2 lebih baik untuk teks umum
-
-    console.log('Mengirim request ke OCR Space API...');
+    // 1. Konversi buffer ke base64
+    const imageBase64 = req.file.buffer.toString('base64');
     
-    const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
-      method: 'POST',
-      body: formData,
-      headers: formData.getHeaders()
-    });
-
-    if (!ocrResponse.ok) {
-      throw new Error(`OCR Space API error: ${ocrResponse.status}`);
-    }
-
-    const ocrData = await ocrResponse.json();
-    
-    if (ocrData.IsErroredOnProcessing) {
-      throw new Error(ocrData.ErrorMessage || 'Error processing image');
-    }
-
-    let ocrText = '';
-    if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
-      ocrText = ocrData.ParsedResults[0].ParsedText || '';
-    }
-
-    if (!ocrText || ocrText.trim() === '') {
-      return res.json({
-        success: true,
-        ocrText: "Tidak ada teks yang terdeteksi dalam gambar",
-        explanation: "Saya tidak dapat menemukan teks yang dapat dibaca dalam gambar ini."
-      });
-    }
-
-    console.log('OCR Text extracted:', ocrText.substring(0, 100) + '...');
-
-    // 2. Kirim hasil OCR ke Groq untuk dijelaskan
-    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // 2. OCR pakai DeepSeek
+    const dsRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "deepseek-chat",
+        messages: [
+          { 
+            role: "user", 
+            content: [
+              { type: "text", text: "Extract all text from this image accurately. Return only the extracted text without any additional commentary." },
+              { type: "image_url", image_url: { url: `data:${req.file.mimetype};base64,${imageBase64}` } }
+            ]
+          }
+        ]
+      })
+    });
+    
+    if (!dsRes.ok) {
+      const errorText = await dsRes.text();
+      console.error("DeepSeek API error:", dsRes.status, errorText);
+      throw new Error(`DeepSeek API error: ${dsRes.status}`);
+    }
+    
+    const dsData = await dsRes.json();
+    const ocrText = dsData.choices?.[0]?.message?.content || "";
+
+    // 3. Kirim hasil OCR ke Groq buat dijelaskan
+    const gqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
         messages: [
           { 
             role: "system", 
-            content: `Anda adalah asisten AI yang membantu menjelaskan isi teks dari gambar. 
-            Berikan penjelasan yang jelas, mudah dipahami, dan ramah dalam bahasa Indonesia.
-            Jika teks berisi kode pemrograman, analisis dan berikan penjelasan tentang kode tersebut.
-            Jika teks berisi bahasa asing, terjemahkan dan jelaskan.` 
+            content: "Anda adalah asisten yang membantu menjelaskan teks yang diekstrak dari gambar. Berikan penjelasan yang jelas dan mudah dipahami dalam bahasa Indonesia." 
           },
           { 
             role: "user", 
-            content: `Saya telah mengekstrak teks berikut dari sebuah gambar:\n\n"${ocrText}"\n\n
-            Tolong jelaskan isi teks ini dengan bahasa yang sederhana dan mudah dimengerti. 
-            Berikan analisis singkat tentang apa yang dibahas dalam teks tersebut.` 
+            content: `Saya telah mengekstrak teks berikut dari gambar:\n\n"${ocrText}"\n\nBantu saya memahami isi teks ini dengan memberikan penjelasan yang jelas.` 
           }
         ],
         temperature: 0.7,
         max_tokens: 1024
       })
     });
-
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      throw new Error(`Groq API error: ${groqResponse.status} - ${errorText}`);
+    
+    if (!gqRes.ok) {
+      const errorText = await gqRes.text();
+      console.error("Groq API error:", gqRes.status, errorText);
+      throw new Error(`Groq API error: ${gqRes.status}`);
     }
-
-    const groqData = await groqResponse.json();
-    const explanation = groqData.choices?.[0]?.message?.content || "Tidak dapat memberikan penjelasan.";
+    
+    const gqData = await gqRes.json();
+    const explanation = gqData.choices?.[0]?.message?.content || "Tidak dapat memberikan penjelasan.";
 
     res.json({ 
       success: true,
-      ocrText, 
-      explanation 
+      ocrText: ocrText,
+      explanation: explanation
     });
 
-  } catch (error) {
-    console.error("Error in /api/vision:", error);
+  } catch (err) {
+    console.error("OCR Error:", err);
     res.status(500).json({ 
-      error: "Terjadi kesalahan dalam memproses gambar",
-      details: error.message,
-      suggestion: "Silakan coba dengan gambar yang lebih jelas atau format yang berbeda"
+      success: false,
+      error: err.message || "Terjadi kesalahan saat memproses gambar" 
     });
   }
 });
@@ -305,76 +197,34 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
 // === Serve file statis ===
 app.use(express.static(path.join(__dirname)));
 
-// Route untuk file HTML
+// serve index.html dari root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// serve file yang ada di /private
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/login.html'));
 });
-
 app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/register.html'));
 });
-
 app.get('/dasboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/dasboard.html'));
 });
-
 app.get('/alarm', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/alarm.html'));
 });
-
 app.get('/dokter', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/dokter.html'));
 });
-
 app.get('/obrolan', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/obrolan.html'));
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Server AbidinAI berjalan dengan baik',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
-});
-
-// Test endpoint untuk debugging
-app.get('/test', (req, res) => {
-  res.json({
-    message: 'Server berjalan dengan baik!',
-    environment: process.env.NODE_ENV || 'development',
-    port: PORT,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    error: 'Terjadi kesalahan internal server',
-    details: process.env.NODE_ENV === 'development' ? error.message : 'Silakan coba lagi nanti'
-  });
-});
-
-// 404 handler
+// fallback: jika URL tidak cocok, redirect ke index
 app.use((req, res) => {
-  res.status(404).json({
-    error: 'Endpoint tidak ditemukan',
-    path: req.path,
-    method: req.method
-  });
+  res.redirect('/');
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 AbidinAI Server berjalan di port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/health`);
-  console.log(`📍 Test endpoint: http://localhost:${PORT}/test`);
-});
+app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
