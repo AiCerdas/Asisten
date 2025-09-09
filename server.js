@@ -3,17 +3,12 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
-const multer = require('multer');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
-// === Konfigurasi Multer untuk upload gambar ===
-const upload = multer({ dest: 'uploads/' });
 
 // === API AbidinAI ke Groq ===
 app.post('/api/chat', async (req, res) => {
@@ -60,52 +55,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// === ✅ Tambahan API Vision (Upload Gambar + Jawaban AI) ===
-app.post('/api/vision', upload.single('image'), async (req, res) => {
-  try {
-    const filePath = req.file.path;
-    const imageBase64 = fs.readFileSync(filePath, { encoding: 'base64' });
-
-    // Hapus file setelah dibaca (supaya tidak numpuk di server)
-    fs.unlinkSync(filePath);
-
-    const body = {
-      model: "llama-3.2-11b-vision-preview",
-      messages: [
-        {
-          role: "system",
-          content: "Kamu adalah AbidinAI Vision, bantu analisa gambar yang diberikan user."
-        },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Tolong analisa gambar ini." },
-            { type: "image_url", image_url: `data:image/jpeg;base64,${imageBase64}` }
-          ]
-        }
-      ],
-      max_tokens: 500
-    };
-
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify(body)
-    });
-
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan dari Vision.";
-    res.json({ reply });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// === API Telegram ===
+// === API Tambahan untuk Kirim ke Telegram ===
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -121,7 +71,7 @@ app.post('/api/telegram', async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
-        text: `🧑 Pesan dari AbidinAI:\n${text}`
+        text: `ðŸ§‘ Pesan dari AbidinAI:\n${text}`
       })
     });
 
@@ -132,7 +82,7 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// === ✅ DeepAI Text-to-Image ===
+// === âœ… API Tambahan untuk DeepAI Text-to-Image ===
 app.post('/api/generate', async (req, res) => {
   const { text } = req.body;
 
@@ -158,10 +108,12 @@ app.post('/api/generate', async (req, res) => {
 // === Serve file statis ===
 app.use(express.static(path.join(__dirname)));
 
+// serve index.html dari root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// serve file yang ada di /private
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/login.html'));
 });
@@ -181,9 +133,9 @@ app.get('/obrolan', (req, res) => {
   res.sendFile(path.join(__dirname, 'private/obrolan.html'));
 });
 
-// fallback: jika URL tidak cocok
+// fallback: jika URL tidak cocok, redirect ke index
 app.use((req, res) => {
   res.redirect('/');
 });
 
-app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
+app.listen(PORT, () => console.log(`ðŸš€ AbidinAI Server jalan di port ${PORT}`));
