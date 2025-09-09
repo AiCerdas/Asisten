@@ -3,9 +3,11 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
+const multer = require('multer'); // untuk upload gambar
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
@@ -71,7 +73,7 @@ app.post('/api/telegram', async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
-        text: `ðŸ§‘ Pesan dari AbidinAI:\n${text}`
+        text: `🧑 Pesan dari AbidinAI:\n${text}`
       })
     });
 
@@ -82,7 +84,7 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// === âœ… API Tambahan untuk DeepAI Text-to-Image ===
+// === ✅ API Tambahan untuk DeepAI Text-to-Image ===
 app.post('/api/generate', async (req, res) => {
   const { text } = req.body;
 
@@ -102,6 +104,57 @@ app.post('/api/generate', async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// === 🚀 API OCR Vision: Upload gambar → OCR DeepSeek → Jawaban Groq ===
+app.post('/api/vision', upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Gambar kosong" });
+
+  try {
+    // 1. OCR pakai DeepSeek
+    const dsRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: "Extract the text from this image." },
+          { role: "user", content: `data:image/jpeg;base64,${req.file.buffer.toString("base64")}` }
+        ]
+      })
+    });
+    const dsData = await dsRes.json();
+    const ocrText = dsData.choices?.[0]?.message?.content || "";
+
+    // 2. Kirim hasil OCR ke Groq buat dijelaskan
+    const gqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        messages: [
+          { role: "system", content: "Jelaskan isi teks hasil OCR dengan bahasa sederhana." },
+          { role: "user", content: ocrText }
+        ],
+        temperature: 0.7,
+        max_tokens: 512
+      })
+    });
+    const gqData = await gqRes.json();
+    const explanation = gqData.choices?.[0]?.message?.content || "Tidak ada penjelasan.";
+
+    res.json({ ocrText, explanation });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -138,4 +191,4 @@ app.use((req, res) => {
   res.redirect('/');
 });
 
-app.listen(PORT, () => console.log(`ðŸš€ AbidinAI Server jalan di port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
