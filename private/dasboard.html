@@ -6,6 +6,7 @@
   <link rel="icon" type="image/jpg" href="https://iili.io/FvxcSaa.jpg"/>
   <title>AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -1123,6 +1124,10 @@
       }
 
       window.handleKeyPress = function(event) {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
           sendMessage();
@@ -1130,6 +1135,11 @@
       };
 
       function toggleAudio() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
         const player = document.getElementById("audioPlayer");
         const menuItem = document.getElementById("musicMenuItem");
         if (player.paused) {
@@ -1143,7 +1153,7 @@
         }
       };
 
-      // OCR Functions - DIPERBAIKI: Menggunakan FormData untuk upload file
+      // OCR Functions
       function initOCRModal() {
         const modal = document.getElementById('ocrModal');
         const closeBtn = document.getElementById('closeModal');
@@ -1239,44 +1249,33 @@
           }
         }
 
-        async function processOCR() {
+        function processOCR() {
           const file = fileInput.files[0];
           if (!file) return;
 
           // Show progress
           processBtn.style.display = 'none';
           progressContainer.style.display = 'flex';
-          progressText.textContent = "Mengirim ke DeepSeek API...";
 
-          try {
-            // Create FormData for file upload
-            const formData = new FormData();
-            formData.append('image', file);
-
-            // Send to our server API
-            const response = await fetch('/api/vision', {
-              method: 'POST',
-              body: formData
-              // Note: Don't set Content-Type header, let browser set it with boundary
-            });
-
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+          // Use Tesseract.js for OCR
+          Tesseract.recognize(
+            file,
+            'ind', // Bahasa Indonesia
+            {
+              logger: m => {
+                if (m.status === 'recognizing text') {
+                  progressText.textContent = `Memproses: ${Math.round(m.progress * 100)}%`;
+                }
+              }
             }
-
-            const data = await response.json();
-            
-            if (!data.success) {
-              throw new Error(data.error || 'Gagal memproses gambar');
-            }
-            
+          ).then(({ data: { text } }) => {
             // Show result
-            resultText.textContent = data.ocrText || "Tidak ada teks yang terdeteksi";
+            resultText.textContent = text;
             ocrResult.style.display = 'block';
             progressContainer.style.display = 'none';
             
             // Simpan teks hasil OCR untuk dikirim ke AI
-            ocrExtractedText = data.ocrText || "";
+            ocrExtractedText = text;
 
             // Auto-scroll to result
             ocrResult.scrollIntoView({ behavior: 'smooth' });
@@ -1284,23 +1283,21 @@
             // Otomatis kirim ke AI setelah 1 detik
             setTimeout(() => {
               modal.style.display = 'none';
-              if (data.ocrText && data.ocrText.trim() !== "") {
-                sendOCRToAI(data.ocrText, data.explanation);
-              }
+              sendOCRToAI(text);
             }, 1000);
-          } catch (err) {
+          }).catch(err => {
             console.error('OCR Error:', err);
-            progressText.textContent = 'Error: ' + (err.message || 'Terjadi kesalahan saat memproses gambar');
+            progressText.textContent = 'Error saat memproses gambar';
             setTimeout(() => {
               progressContainer.style.display = 'none';
               processBtn.style.display = 'block';
-            }, 3000);
-          }
+            }, 2000);
+          });
         }
       }
 
-      // Fungsi untuk mengirim hasil OCR ke AI
-      function sendOCRToAI(text, explanation = "") {
+      // Fungsi untuk mengirim hasil OCR ke AI menggunakan DeepSeek dan Groq
+      async function sendOCRToAI(text) {
         if (!text || text.trim() === "") return;
         
         // Tampilkan pesan pengguna dengan teks OCR
@@ -1322,25 +1319,45 @@
         chatbox.appendChild(typingDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
 
-        // Jika sudah ada penjelasan dari API, langsung tampilkan
-        if (explanation && explanation.trim() !== "") {
-          setTimeout(() => {
-            typingDiv.remove();
-            displayAIResponse(explanation);
-          }, 1500);
-        } else {
-          // Jika tidak, minta analisis dari AI
-          setTimeout(() => {
-            typingDiv.remove();
-            
-            // Respons AI berdasarkan teks yang diekstrak
-            let aiResponse = generateAIResponse(text);
-            displayAIResponse(aiResponse);
-          }, 2000);
+        try {
+          // Kirim teks hasil OCR ke API untuk diproses oleh DeepSeek/Groq
+          const response = await fetch("/api/analyze-ocr", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ 
+              text: text,
+              source: "ocr" 
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          let aiResponse = data.response;
+
+          typingDiv.remove();
+          
+          if (!aiResponse || aiResponse.trim() === "") {
+            // Fallback ke respons lokal jika API tidak merespons
+            aiResponse = generateAIResponse(text);
+          }
+          
+          displayAIResponse(aiResponse);
+        } catch (error) {
+          console.error("Error processing OCR text:", error);
+          typingDiv.remove();
+          
+          // Gunakan respons lokal sebagai fallback
+          let aiResponse = generateAIResponse(text);
+          displayAIResponse(aiResponse);
         }
       }
 
-      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR
+      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR (fallback)
       function generateAIResponse(ocrText) {
         // Analisis teks untuk menentukan jenis konten
         const lowerText = ocrText.toLowerCase();
@@ -1488,6 +1505,11 @@
       }
 
       window.openOCRModal = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
         const modal = document.getElementById('ocrModal');
         modal.style.display = 'flex';
 
@@ -1501,6 +1523,11 @@
       };
 
       window.startVoiceRecognition = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
         if (!('webkitSpeechRecognition' in window)) {
           addMessage('Sistem', 'Browser Anda tidak mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.', 'ai-message');
           return;
@@ -1680,6 +1707,11 @@
       };
 
       window.sendMessage = async function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
         const input = document.getElementById("messageInput");
         const text = input.value.trim();
         if (!text) return;
