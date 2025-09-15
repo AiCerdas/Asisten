@@ -3,9 +3,13 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Konfigurasi Multer untuk menyimpan file di memori
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
@@ -13,7 +17,6 @@ app.use(express.json());
 // --- API Groq untuk Chat (Tetap sama) ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
-
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
     messages: [
@@ -55,107 +58,65 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// --- API Telegram (Tetap sama) ---
-app.post('/api/telegram', async (req, res) => {
-  const { text } = req.body;
-
-  if (!text) return res.status(400).json({ error: 'Pesan kosong' });
-
-  const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-  const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-
-  try {
-    const response = await fetch(telegramUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: `🧑 Pesan dari AbidinAI:\n${text}`
-      })
-    });
-
-    const data = await response.json();
-    res.json({ status: "success", data });
-  } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
-  }
-});
-
 // --- API OCR dan Analisis (Diperbarui) ---
-app.post('/api/ocr', async (req, res) => {
-  const { imageUrl } = req.body;
+app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-  if (!imageUrl) {
-    return res.status(400).json({ error: 'URL gambar tidak ditemukan' });
+  if (!req.file) {
+    return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
+
+  // Mengubah buffer gambar menjadi base64
+  const imageBase64 = req.file.buffer.toString('base64');
 
   const payload = {
     contents: [
       {
         parts: [
-          // Prompt untuk Gemini agar menganalisis dan menjawab, bukan hanya mengekstrak teks
+          // Prompt untuk menganalisis dan menjawab gambar
           {
-            text: "Lihat gambar ini. Jawablah pertanyaan apa pun yang mungkin ada di dalamnya atau jelaskan isinya."
+            text: "Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Jika gambar mengandung teks, jelaskan teks tersebut. Berikan jawaban yang relevan dan mudah dipahami."
           },
           {
-            image_url: imageUrl
-          }
+            inline_data: {
+              mime_type: req.file.mimetype,
+              data: imageBase64,
+            },
+          },
         ]
       }
     ]
   };
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
     const data = await response.json();
-    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini.";
+    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
     
-    // Mengirim hasil analisis Gemini ke client
-    res.json({ text: geminiReply });
+    res.json({ reply: geminiReply });
   } catch (error) {
-    console.error("Kesalahan OCR/Analisis Gambar:", error);
+    console.error("Kesalahan Analisis Gambar:", error);
     res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
   }
 });
 
 // --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'private/register.html')));
+app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/dasboard.html')));
+app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
+app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
+app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
 
-// serve index.html dari root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// serve file yang ada di /private
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/login.html'));
-});
-app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/register.html'));
-});
-app.get('/dasboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/dasboard.html'));
-});
-app.get('/alarm', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/alarm.html'));
-});
-app.get('/dokter', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/dokter.html'));
-});
-app.get('/obrolan', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/obrolan.html'));
-});
-
-// fallback: jika URL tidak cocok, redirect ke index
-app.use((req, res) => {
-  res.redirect('/');
-});
+// fallback
+app.use((req, res) => res.redirect('/'));
 
 app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
+
