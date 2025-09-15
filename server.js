@@ -3,12 +3,11 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
-const multer = require('multer');
-const fs = require('fs');
+const multer = require('multer'); // untuk upload gambar
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
@@ -108,38 +107,51 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// === ✅ API OCR: DeepSeek Vision + Groq ===
-app.post('/api/ocr', upload.single("image"), async (req, res) => {
-  try {
-    const imagePath = req.file.path;
-    const imageBase64 = fs.readFileSync(imagePath, { encoding: 'base64' });
+// === 🚀 API OCR Vision: Upload gambar → OCR Gemini → Jawaban Groq ===
+app.post('/api/vision', upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Gambar kosong" });
 
-    // 1. Kirim gambar ke DeepSeek Vision
-    const deepseekRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
+  try {
+    // 1. OCR pakai Gemini API
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
+        contents: [
           {
-            role: "user",
-            content: [
-              { type: "text", text: "Baca teks pada gambar ini lalu jelaskan." },
-              { type: "image_url", image_url: `data:image/png;base64,${imageBase64}` }
+            parts: [
+              {
+                text: "Extract all text from this image accurately. Return only the extracted text without any additional explanation."
+              },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Image
+                }
+              }
             ]
           }
         ]
       })
     });
 
-    const deepseekData = await deepseekRes.json();
-    const extracted = deepseekData.choices?.[0]?.message?.content || "Teks tidak terbaca.";
+    const geminiData = await geminiResponse.json();
+    
+    // Ekstrak teks dari respons Gemini
+    let ocrText = "";
+    if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content) {
+      ocrText = geminiData.candidates[0].content.parts[0].text;
+    } else {
+      throw new Error("Tidak dapat mengekstrak teks dari gambar");
+    }
 
-    // 2. Proses hasil OCR ke Groq
-    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // 2. Kirim hasil OCR ke Groq untuk dijelaskan
+    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
@@ -147,20 +159,36 @@ app.post('/api/ocr', upload.single("image"), async (req, res) => {
       },
       body: JSON.stringify({
         model: "meta-llama/llama-4-scout-17b-16e-instruct",
-        messages: [{ role: "user", content: `Tolong olah hasil OCR ini:\n${extracted}` }]
+        messages: [
+          { 
+            role: "system", 
+            content: "Anda adalah asisten yang membantu menjelaskan teks yang diekstrak dari gambar. Berikan penjelasan yang jelas dan mudah dipahami tentang isi teks tersebut dalam bahasa Indonesia." 
+          },
+          { 
+            role: "user", 
+            content: `Ini adalah teks yang diekstrak dari gambar: "${ocrText}". Jelaskan isi teks ini dengan bahasa yang sederhana.` 
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 512
       })
     });
+    
+    const groqData = await groqResponse.json();
+    const explanation = groqData.choices?.[0]?.message?.content || "Tidak dapat memberikan penjelasan.";
 
-    const groqData = await groqRes.json();
-
-    res.json({
-      ocr_result: extracted,
-      ai_final_answer: groqData.choices?.[0]?.message?.content || "Tidak ada jawaban."
+    res.json({ 
+      success: true,
+      ocrText: ocrText,
+      explanation: explanation
     });
 
-    fs.unlinkSync(imagePath); // hapus file sementara
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error in /api/vision:", err);
+    res.status(500).json({ 
+      success: false,
+      error: "Terjadi kesalahan saat memproses gambar: " + err.message 
+    });
   }
 });
 
