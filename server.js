@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// === API AbidinAI ke Groq ===
+// --- API Groq untuk Chat ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
@@ -55,7 +55,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// === API Tambahan untuk Kirim ke Telegram ===
+// --- API Tambahan untuk Kirim ke Telegram ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -82,7 +82,47 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// === Serve file statis ===
+// --- API OCR (Pengenalan Teks dari Gambar) menggunakan Gemini API ---
+app.post('/api/ocr', async (req, res) => {
+  const { imageUrl } = req.body;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'URL gambar tidak ditemukan' });
+  }
+
+  const payload = {
+    contents: [
+      {
+        parts: [
+          {
+            text: "Ekstrak semua teks dari gambar ini dengan akurat. Sertakan hanya teks yang diekstrak."
+          },
+          {
+            image_url: imageUrl
+          }
+        ]
+      }
+    ]
+  };
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    const extractedText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Tidak ada teks yang ditemukan.";
+    res.json({ text: extractedText });
+  } catch (error) {
+    console.error("Kesalahan OCR:", error);
+    res.status(500).json({ error: 'Gagal melakukan OCR', details: error.message });
+  }
+});
+
+// --- Serve file statis ---
 app.use(express.static(path.join(__dirname)));
 
 // serve index.html dari root
