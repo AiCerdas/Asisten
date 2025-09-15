@@ -14,7 +14,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// --- API Groq untuk Chat ---
+// --- API Groq untuk Chat (Tetap sama) ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
@@ -96,18 +96,18 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
 
   // Mengubah buffer gambar menjadi base64
   const imageBase64 = req.file.buffer.toString('base64');
+  const imageMimeType = req.file.mimetype;
 
   const payload = {
     contents: [
       {
         parts: [
-          // Prompt yang lebih jelas untuk menganalisis dan menjawab gambar
           {
-            text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Jika gambar mengandung teks, jelaskan teks tersebut. Berikan jawaban yang relevan dan mudah dipahami."
+            text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Berikan jawaban yang relevan dan mudah dipahami."
           },
           {
             inline_data: {
-              mime_type: req.file.mimetype,
+              mime_type: imageMimeType,
               data: imageBase64,
             },
           },
@@ -117,7 +117,7 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   };
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -133,37 +133,17 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- Serve file statis ---
+// --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'private/register.html')));
+app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/dasboard.html')));
+app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
+app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
+app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
 
-// serve index.html dari root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// serve file yang ada di /private
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/login.html'));
-});
-app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/register.html'));
-});
-app.get('/dasboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/dasboard.html'));
-});
-app.get('/alarm', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/alarm.html'));
-});
-app.get('/dokter', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/dokter.html'));
-});
-app.get('/obrolan', (req, res) => {
-  res.sendFile(path.join(__dirname, 'private/obrolan.html'));
-});
-
-// fallback: jika URL tidak cocok, redirect ke index
-app.use((req, res) => {
-  res.redirect('/');
-});
+// fallback
+app.use((req, res) => res.redirect('/'));
 
 app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
