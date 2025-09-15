@@ -107,51 +107,31 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// === 🚀 API OCR Vision: Upload gambar → OCR Gemini → Jawaban Groq ===
+// === 🚀 API OCR Vision: Upload gambar → OCR DeepSeek → Jawaban Groq ===
 app.post('/api/vision', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Gambar kosong" });
 
   try {
-    // 1. OCR pakai Gemini API
-    const base64Image = req.file.buffer.toString('base64');
-    const mimeType = req.file.mimetype;
-
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: 'POST',
+    // 1. OCR pakai DeepSeek
+    const dsRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: "Extract all text from this image accurately. Return only the extracted text without any additional explanation."
-              },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64Image
-                }
-              }
-            ]
-          }
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: "Extract the text from this image." },
+          { role: "user", content: `data:image/jpeg;base64,${req.file.buffer.toString("base64")}` }
         ]
       })
     });
+    const dsData = await dsRes.json();
+    const ocrText = dsData.choices?.[0]?.message?.content || "";
 
-    const geminiData = await geminiResponse.json();
-    
-    // Ekstrak teks dari respons Gemini
-    let ocrText = "";
-    if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content) {
-      ocrText = geminiData.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error("Tidak dapat mengekstrak teks dari gambar");
-    }
-
-    // 2. Kirim hasil OCR ke Groq untuk dijelaskan
-    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // 2. Kirim hasil OCR ke Groq buat dijelaskan
+    const gqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
@@ -160,35 +140,21 @@ app.post('/api/vision', upload.single('image'), async (req, res) => {
       body: JSON.stringify({
         model: "meta-llama/llama-4-scout-17b-16e-instruct",
         messages: [
-          { 
-            role: "system", 
-            content: "Anda adalah asisten yang membantu menjelaskan teks yang diekstrak dari gambar. Berikan penjelasan yang jelas dan mudah dipahami tentang isi teks tersebut dalam bahasa Indonesia." 
-          },
-          { 
-            role: "user", 
-            content: `Ini adalah teks yang diekstrak dari gambar: "${ocrText}". Jelaskan isi teks ini dengan bahasa yang sederhana.` 
-          }
+          { role: "system", content: "Jelaskan isi teks hasil OCR dengan bahasa sederhana." },
+          { role: "user", content: ocrText }
         ],
         temperature: 0.7,
         max_tokens: 512
       })
     });
-    
-    const groqData = await groqResponse.json();
-    const explanation = groqData.choices?.[0]?.message?.content || "Tidak dapat memberikan penjelasan.";
+    const gqData = await gqRes.json();
+    const explanation = gqData.choices?.[0]?.message?.content || "Tidak ada penjelasan.";
 
-    res.json({ 
-      success: true,
-      ocrText: ocrText,
-      explanation: explanation
-    });
+    res.json({ ocrText, explanation });
 
   } catch (err) {
-    console.error("Error in /api/vision:", err);
-    res.status(500).json({ 
-      success: false,
-      error: "Terjadi kesalahan saat memproses gambar: " + err.message 
-    });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
