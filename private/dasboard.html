@@ -6,7 +6,7 @@
   <link rel="icon" type="image/jpg" href="https://iili.io/FvxcSaa.jpg"/>
   <title>AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  
   <style>
     * {
       margin: 0;
@@ -678,8 +678,7 @@
     }
   </style>
 </head>
-<body class="selectable"> <!-- Mengganti no-select dengan selectable -->
-  <div class="warning-overlay" id="warningOverlay">
+<body class="selectable"> <div class="warning-overlay" id="warningOverlay">
     <div style="text-align: center;">
       <i class="fas fa-shield-alt" style="font-size: 48px; margin-bottom: 20px; color: #ff0000;"></i>
       <h2>🚫 AKSES TERDETEKSI!</h2>
@@ -706,9 +705,9 @@
           atau seret dan lepas file ke sini
         </div>
         <div style="font-size: 12px; color: #718096;">
-          Format yang didukung: JPG, PNG, PDF (maks. 5MB)
+          Format yang didukung: JPG, PNG (maks. 5MB)
         </div>
-        <input type="file" id="fileInput" class="file-input" accept="image/*,.pdf">
+        <input type="file" id="fileInput" class="file-input" accept="image/*">
       </div>
 
       <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
@@ -853,13 +852,12 @@
       let listeningElement = null;
       let isMusicPlaying = false;
       let lastTypingElement = null;
-      let db = null; // Variabel untuk database IndexedDB
-      let ocrExtractedText = ''; // Variabel untuk menyimpan teks hasil OCR
+      let db = null;
+      let ocrExtractedText = '';
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // Security event listeners
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('selectstart', e => e.preventDefault());
       document.addEventListener('dragstart', e => e.preventDefault());
@@ -882,7 +880,6 @@
         }
       });
 
-      // DevTools detection
       const detectDevTools = () => {
         if (window.outerHeight - window.innerHeight > devToolsThreshold ||
             window.outerWidth - window.innerWidth > devToolsThreshold) {
@@ -900,7 +897,6 @@
 
       setInterval(detectDevTools, 300);
 
-      // Console protection
       const clearConsole = () => {
         if (typeof console !== 'undefined') {
           console.clear();
@@ -933,7 +929,6 @@
         }
       }
 
-      // Debugger trap
       (() => {
         const debugTrap = () => {
           debugger;
@@ -941,22 +936,18 @@
         setInterval(debugTrap, 100);
       })();
 
-      // Event listeners
       window.addEventListener('blur', clearConsole);
       window.addEventListener('focus', clearConsole);
       window.addEventListener('resize', detectDevTools);
 
-      // Mobile menu toggle
       document.getElementById('mobileMenuBtn').addEventListener('click', function() {
         document.getElementById('sidebar').classList.toggle('open');
       });
 
-      // Format bold text function
       function formatBoldText(text) {
         return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       }
 
-      // IndexedDB Functions
       function initDatabase() {
         return new Promise((resolve, reject) => {
           const request = indexedDB.open('AbidinAIChatDB', 1);
@@ -974,7 +965,6 @@
           request.onupgradeneeded = (event) => {
             const db = event.target.result;
             
-            // Buat object store untuk menyimpan pesan
             if (!db.objectStoreNames.contains('conversations')) {
               const store = db.createObjectStore('conversations', { keyPath: 'id', autoIncrement: true });
               store.createIndex('timestamp', 'timestamp', { unique: false });
@@ -1028,22 +1018,18 @@
         store.clear();
       }
 
-      // Initialize chat
       document.addEventListener('DOMContentLoaded', async function() {
         if (devToolsState.open) {
           showWarning();
           return;
         }
 
-        // Inisialisasi database
         try {
           await initDatabase();
           
-          // Muat percakapan sebelumnya
           const messages = await loadMessagesFromDB();
           const chatbox = document.getElementById("chatbox");
           
-          // Tampilkan pesan selamat datang hanya jika tidak ada pesan sebelumnya
           if (messages.length === 0) {
             const welcomeMsg = document.createElement("div");
             welcomeMsg.innerHTML = `
@@ -1054,7 +1040,6 @@
             `;
             chatbox.appendChild(welcomeMsg);
           } else {
-            // Tampilkan kembali percakapan sebelumnya
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
               addMessage(msg.sender, msg.text, messageClass, msg.timestamp);
@@ -1064,7 +1049,6 @@
           chatbox.scrollTop = chatbox.scrollHeight;
         } catch (error) {
           console.error('Error initializing database:', error);
-          // Tetap tampilkan pesan selamat datang jika terjadi error
           const chatbox = document.getElementById("chatbox");
           const welcomeMsg = document.createElement("div");
           welcomeMsg.innerHTML = `
@@ -1077,23 +1061,16 @@
           chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        // Auto-resize textarea
         const textarea = document.getElementById('messageInput');
         textarea.addEventListener('input', function() {
           this.style.height = 'auto';
           this.style.height = (this.scrollHeight) + 'px';
         });
 
-        // Music control
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
-
-        // OCR menu item
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
-
-        // Initialize OCR modal
         initOCRModal();
 
-        // Clear memory button
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
             try {
@@ -1101,10 +1078,8 @@
               const chatbox = document.getElementById("chatbox");
               chatbox.innerHTML = '';
               
-              // Tampilkan pesan konfirmasi HANYA setelah penghapusan berhasil
               const confirmationMsg = addMessage('Sistem', 'Riwayat percakapan telah dihapus.', 'ai-message');
               
-              // Hapus pesan konfirmasi setelah 3 detik
               setTimeout(() => {
                 if (confirmationMsg && confirmationMsg.parentNode) {
                   confirmationMsg.parentNode.removeChild(confirmationMsg);
@@ -1153,7 +1128,7 @@
         }
       };
 
-      // OCR Functions
+      // OCR Functions (Updated to use Gemini API via backend)
       function initOCRModal() {
         const modal = document.getElementById('ocrModal');
         const closeBtn = document.getElementById('closeModal');
@@ -1166,17 +1141,15 @@
         const progressContainer = document.getElementById('progressContainer');
         const progressText = document.getElementById('progressText');
         const ocrResult = document.getElementById('ocrResult');
+        let selectedFileBase64 = '';
 
-        // Close modal when clicking X or outside
         closeBtn.addEventListener('click', () => modal.style.display = 'none');
         modal.addEventListener('click', (e) => {
           if (e.target === modal) modal.style.display = 'none';
         });
 
-        // Handle file upload
         uploadArea.addEventListener('click', () => fileInput.click());
 
-        // Drag and drop functionality
         uploadArea.addEventListener('dragover', (e) => {
           e.preventDefault();
           uploadArea.style.borderColor = '#4f46e5';
@@ -1199,17 +1172,15 @@
           }
         });
 
-        // Handle file selection
         fileInput.addEventListener('change', () => {
           if (fileInput.files.length) {
             handleFileUpload(fileInput.files[0]);
           }
         });
 
-        // Process button click
-        processBtn.addEventListener('click', processOCR);
+        // Event listener diganti ke fungsi baru
+        processBtn.addEventListener('click', processOCRWithGemini);
 
-        // Copy result button
         copyResultBtn.addEventListener('click', () => {
           navigator.clipboard.writeText(resultText.textContent).then(() => {
             copyResultBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
@@ -1220,9 +1191,8 @@
         });
 
         function handleFileUpload(file) {
-          // Check file type and size
-          if (!file.type.match('image.*') && file.type !== 'application/pdf') {
-            alert('Hanya file gambar (JPG, PNG) atau PDF yang didukung!');
+          if (!file.type.match('image.*')) {
+            alert('Hanya file gambar (JPG, PNG) yang didukung!');
             return;
           }
 
@@ -1231,79 +1201,82 @@
             return;
           }
 
-          // Show preview for images
-          if (file.type.match('image.*')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              previewImage.src = e.target.result;
-              previewImage.style.display = 'block';
-              processBtn.style.display = 'block';
-              ocrResult.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-          } else {
-            // For PDF, just show the filename
-            previewImage.style.display = 'none';
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
             processBtn.style.display = 'block';
             ocrResult.style.display = 'none';
-          }
+            selectedFileBase64 = e.target.result;
+          };
+          reader.readAsDataURL(file);
         }
 
-        function processOCR() {
-          const file = fileInput.files[0];
-          if (!file) return;
+        // Fungsi baru untuk memproses OCR dengan Gemini API via backend
+        async function processOCRWithGemini() {
+          if (!selectedFileBase64) return;
 
-          // Show progress
           processBtn.style.display = 'none';
           progressContainer.style.display = 'flex';
+          progressText.textContent = `Mengirim gambar...`;
 
-          // Use Tesseract.js for OCR
-          Tesseract.recognize(
-            file,
-            'ind', // Bahasa Indonesia
-            {
-              logger: m => {
-                if (m.status === 'recognizing text') {
-                  progressText.textContent = `Memproses: ${Math.round(m.progress * 100)}%`;
-                }
-              }
+          try {
+            const response = await fetch("/api/gemini-ocr", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ image: selectedFileBase64 })
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || `Error: ${response.status} - ${response.statusText}`);
             }
-          ).then(({ data: { text } }) => {
-            // Show result
-            resultText.textContent = text;
+
+            const data = await response.json();
+            const { text, analysis } = data;
+
+            // Jika tidak ada teks yang diekstrak, beri tahu pengguna
+            if (!text || text.trim() === "") {
+                resultText.textContent = "Tidak dapat mengekstrak teks dari gambar ini.";
+            } else {
+                resultText.textContent = analysis; // Tampilkan analisis dari Gemini
+            }
+
             ocrResult.style.display = 'block';
             progressContainer.style.display = 'none';
             
-            // Simpan teks hasil OCR untuk dikirim ke AI
             ocrExtractedText = text;
-
-            // Auto-scroll to result
             ocrResult.scrollIntoView({ behavior: 'smooth' });
             
-            // Otomatis kirim ke AI setelah 1 detik
             setTimeout(() => {
               modal.style.display = 'none';
-              sendOCRToAI(text);
+              sendOCRToAI(text, analysis);
             }, 1000);
-          }).catch(err => {
-            console.error('OCR Error:', err);
-            progressText.textContent = 'Error saat memproses gambar';
+
+          } catch (err) {
+            console.error('Gemini OCR Error:', err);
+            progressText.textContent = `Error: ${err.message}`;
             setTimeout(() => {
               progressContainer.style.display = 'none';
               processBtn.style.display = 'block';
             }, 2000);
-          });
+          }
         }
       }
 
-      // Fungsi untuk mengirim hasil OCR ke AI
-      function sendOCRToAI(text) {
-        if (!text || text.trim() === "") return;
+      // Fungsi untuk mengirim hasil OCR ke AI (diperbarui)
+      function sendOCRToAI(extractedText, aiAnalysis) {
+        if (!extractedText || extractedText.trim() === "") {
+          const chatbox = document.getElementById("chatbox");
+          addMessage('AbidinAI', 'Maaf, saya tidak dapat mendeteksi teks apa pun di dalam gambar.', 'ai-message');
+          chatbox.scrollTop = chatbox.scrollHeight;
+          return;
+        }
+
+        const userDiv = addMessage('Anda', `[Gambar OCR] Teks yang terdeteksi: "${extractedText}"`, 'user-message');
         
-        // Tampilkan pesan pengguna dengan teks OCR
-        const userDiv = addMessage('Anda', `[Gambar OCR] ${text}`, 'user-message');
-        
-        // Tampilkan indikator bahwa AI sedang mengetik
         const chatbox = document.getElementById("chatbox");
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
@@ -1319,162 +1292,18 @@
         chatbox.appendChild(typingDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
 
-        // Simulasi respons AI (dalam implementasi nyata, ini akan memanggil API AI)
         setTimeout(() => {
           typingDiv.remove();
-          
-          // Respons AI berdasarkan teks yang diekstrak
-          let aiResponse = generateAIResponse(text);
-          displayAIResponse(aiResponse);
-        }, 2000);
+          displayAIResponse(aiAnalysis);
+        }, 1500);
       }
 
-      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR
-      function generateAIResponse(ocrText) {
-        // Analisis teks untuk menentukan jenis konten
-        const lowerText = ocrText.toLowerCase();
-        
-        // Deteksi jika teks berisi kode pemrograman
-        if (lowerText.includes("function") || lowerText.includes("var ") || 
-            lowerText.includes("const ") || lowerText.includes("let ") ||
-            lowerText.includes("class ") || lowerText.includes("import ") ||
-            lowerText.includes("console.log") || lowerText.includes("return ") ||
-            lowerText.includes("public ") || lowerText.includes("private ") ||
-            lowerText.includes("if (") || lowerText.includes("for (") ||
-            lowerText.includes("while (") || lowerText.includes("switch (")) {
-          return "Saya melihat Anda berbagi kode pemrograman. Berikut adalah analisis dan saran untuk kode tersebut:\n\n```javascript\n// Contoh perbaikan kode\nfunction optimizedFunction() {\n  // Implementasi yang lebih efisien\n  return hasil;\n}\n```\n\nPastikan untuk selalu memberikan komentar pada kode Anda agar mudah dipahami oleh developer lain.";
-        }
-        
-        // Deteksi jika teks berisi struktur data atau algoritma
-        if (lowerText.includes("algorithm") || lowerText.includes("data structure") ||
-            lowerText.includes("complexity") || lowerText.includes("o(n)") ||
-            lowerText.includes("sorting") || lowerText.includes("searching") ||
-            lowerText.includes("linked list") || lowerText.includes("binary tree")) {
-          return "Tampaknya Anda berbagi informasi tentang algoritma atau struktur data. Ini adalah topik yang sangat penting dalam ilmu komputer. Apakah Anda ingin saya menjelaskan lebih detail tentang topik tertentu atau membantu mengoptimalkan suatu algoritma?";
-        }
-        
-        // Deteksi jika teks berisi matematika
-        if (lowerText.includes("math") || lowerText.includes("equation") || 
-            lowerText.includes("formula") || lowerText.includes("calculate") ||
-            lowerText.includes("integral") || lowerText.includes("derivative") ||
-            /\d+[\+\-\*\/]\d+/.test(lowerText)) {
-          return "Saya melihat konten matematika dalam gambar Anda. Matematika adalah dasar dari banyak ilmu termasuk pemrograman dan ilmu data. Apakah Anda ingin saya membantu menjelaskan konsep matematika tertentu atau membantu menyelesaikan persamaan?";
-        }
-        
-        // Deteksi jika teks berisi bahasa asing
-        if (lowerText.includes("english") || lowerText.includes("inggris") ||
-            lowerText.match(/[a-z]+\s+is\s+[a-z]+/i) || lowerText.match(/[a-z]+\s+are\s+[a-z]+/i) ||
-            lowerText.includes("hello") || lowerText.includes("thank you") ||
-            lowerText.includes("good morning") || lowerText.includes("how are you")) {
-          return "Saya mendeteksi teks dalam bahasa Inggris. Berikut adalah terjemahan ke bahasa Indonesia:\n\n```\n" + translateText(ocrText) + "\n```\n\nApakah Anda ingin saya membantu memahami artinya lebih lanjut?";
-        }
-        
-        // Deteksi jika teks berisi resep atau makanan
-        if (lowerText.includes("recipe") || lowerText.includes("resep") ||
-            lowerText.includes("food") || lowerText.includes("makanan") ||
-            lowerText.includes("cook") || lowerText.includes("masak") ||
-            lowerText.includes("ingredient") || lowerText.includes("bahan")) {
-          return "Wah, sepertinya ini resep makanan! Masak adalah kegiatan yang menyenangkan. Berikut adalah analisis resep Anda:\n\n```\nBahan-bahan utama: " + extractIngredients(ocrText) + "\n```\n\nApakah Anda ingin saya membantu menjelaskan langkah-langkahnya atau memberikan saran variasi resep?";
-        }
-        
-        // Deteksi jika teks berisi alamat atau lokasi
-        if (lowerText.includes("address") || lowerText.includes("alamat") ||
-            lowerText.includes("location") || lowerText.includes("lokasi") ||
-            lowerText.includes("map") || lowerText.includes("peta") ||
-            lowerText.includes("street") || lowerText.includes("jalan")) {
-          return "Saya melihat informasi alamat atau lokasi dalam gambar. Berikut adalah informasi yang saya ekstrak:\n\n```\n" + extractAddress(ocrText) + "\n```\n\nApakah Anda perlu bantuan untuk menemukan lokasi tersebut atau mencari rute terdekat?";
-        }
-        
-        // Deteksi jika teks berisi kontak atau informasi telepon
-        if (lowerText.includes("phone") || lowerText.includes("telepon") ||
-            lowerText.includes("contact") || lowerText.includes("kontak") ||
-            lowerText.includes("email") || lowerText.includes("whatsapp") ||
-            lowerText.match(/\d{4}[\-\s]?\d{4}[\-\s]?\d{4}/) || 
-            lowerText.match(/[\w\.-]+@[\w\.-]+\.\w+/)) {
-          return "Ini tampaknya informasi kontak. Hati-hati dalam berbagi informasi pribadi seperti nomor telepon atau email. Pastikan Anda membaginya hanya kepada orang yang terpercaya.";
-        }
-        
-        // Deteksi jika teks berisi dokumen resmi
-        if (lowerText.includes("certificate") || lowerText.includes("sertifikat") ||
-            lowerText.includes("license") || lowerText.includes("lisensi") ||
-            lowerText.includes("document") || lowerText.includes("dokumen") ||
-            lowerText.includes("id card") || lowerText.includes("ktp")) {
-          return "Saya melihat ini tampaknya dokumen resmi. Pastikan untuk melindungi informasi pribadi Anda dan tidak membagikan dokumen sensitif kepada pihak yang tidak terpercaya.";
-        }
-        
-        // Deteksi jika teks berisi kutipan atau motivasi
-        if (ocrText.includes('"') || lowerText.includes("quote") || 
-            lowerText.includes("motivation") || lowerText.includes("inspiration") ||
-            (ocrText.length < 200 && (lowerText.includes("life") || lowerText.includes("success")))) {
-          return "Ini sepertinya kutipan inspiratif! Kutipan yang bagus. Apakah Anda ingin saya mencari kutipan serupa atau menjelaskan makna dari kutipan ini?";
-        }
-        
-        // Respons default untuk teks umum - lebih interaktif seperti ChatGPT
-        const responses = [
-          `Terima kasih telah membagikan teks dari gambar. Saya telah berhasil mengekstrak dan menganalisis teks berikut:\n\n"${ocrText}"\n\nBerdasarkan analisis saya, ini tampaknya adalah teks umum. Apakah ada aspek khusus dari teks ini yang ingin Anda tanyakan atau butuhkan bantuan untuk memahaminya?`,
-
-          `Saya telah mengekstrak teks dari gambar Anda:\n\n"${ocrText}"\n\nTeks ini menarik! Ada yang bisa saya bantu terkait konten ini? Mungkin Anda ingin saya menjelaskan, meringkas, atau mengembangkan ide dari teks tersebut?`,
-
-          `Berhasil! Saya membaca teks dari gambar Anda:\n\n"${ocrText}"\n\nSepertinya ini adalah teks yang bermanfaat. Ada pertanyaan khusus atau sesuatu yang ingin Anda diskusikan dari teks ini? Saya siap membantu!`,
-
-          `Teks berhasil diekstrak dari gambar:\n\n"${ocrText}"\n\nBagus! Sekarang bagaimana saya bisa membantu Anda dengan teks ini? Apakah Anda ingin saya menjelaskan, menerjemahkan, menganalisis, atau melakukan hal lain dengan konten ini?`
-        ];
-        
-        return responses[Math.floor(Math.random() * responses.length)];
-      }
-
-      // Fungsi bantu untuk translate sederhana (simulasi)
-      function translateText(text) {
-        // Ini adalah simulasi sederhana, dalam implementasi nyata akan memanggil API translate
-        const translations = {
-          "hello": "halo",
-          "thank you": "terima kasih",
-          "good morning": "selamat pagi",
-          "how are you": "apa kabar",
-          "please": "tolong",
-          "help": "bantuan",
-          "yes": "ya",
-          "no": "tidak"
-        };
-        
-        let translated = text;
-        for (const [key, value] of Object.entries(translations)) {
-          translated = translated.replace(new RegExp(key, 'gi'), value);
-        }
-        
-        return translated || "Teks tidak dapat diterjemahkan secara otomatis.";
-      }
-
-      // Fungsi bantu untuk ekstrak bahan dari resep (simulasi)
-      function extractIngredients(text) {
-        const lines = text.split('\n');
-        const ingredients = [];
-        
-        for (const line of lines) {
-          if (line.toLowerCase().includes('gram') || line.toLowerCase().includes('kg') || 
-              line.toLowerCase().includes('sendok') || line.toLowerCase().includes('sdt') ||
-              line.match(/\d+\s*(gram|kg|ml|sendok|sdt|buah|butir|siung)/i)) {
-            ingredients.push(line.trim());
-            if (ingredients.length >= 3) break;
-          }
-        }
-        
-        return ingredients.length > 0 ? ingredients.join(', ') : "Tidak dapat mengidentifikasi bahan";
-      }
-
-      // Fungsi bantu untuk ekstrak alamat (simulasi)
-      function extractAddress(text) {
-        const lines = text.split('\n');
-        for (const line of lines) {
-          if (line.toLowerCase().includes('jalan') || line.toLowerCase().includes('jl.') ||
-              line.toLowerCase().includes('street') || line.toLowerCase().includes('st.') ||
-              line.toLowerCase().includes('no.') || line.toLowerCase().includes('rt') ||
-              line.toLowerCase().includes('rw') || line.match(/\d+/)) {
-            return line.trim();
-          }
-        }
-        return "Alamat tidak dapat diidentifikasi secara spesifik";
-      }
+      // Fungsi untuk menghasilkan respons AI (dihapus karena diganti oleh backend)
+      // function generateAIResponse(ocrText) { ... }
+      // Fungsi bantu (dihapus karena diganti oleh backend)
+      // function translateText(text) { ... }
+      // function extractIngredients(text) { ... }
+      // function extractAddress(text) { ... }
 
       window.openOCRModal = function() {
         if (devToolsState.open) {
@@ -1485,7 +1314,6 @@
         const modal = document.getElementById('ocrModal');
         modal.style.display = 'flex';
 
-        // Reset modal state
         document.getElementById('previewImage').style.display = 'none';
         document.getElementById('processBtn').style.display = 'none';
         document.getElementById('progressContainer').style.display = 'none';
@@ -1558,7 +1386,6 @@
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${messageClass}`;
         
-        // Generate unique ID for this message
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         
         messageDiv.innerHTML = `
@@ -1586,19 +1413,16 @@
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
         
-        // Simpan pesan ke database
         saveMessageToDB(sender, text, timestamp);
         
         return messageDiv;
       }
 
-      // Fungsi untuk menyalin teks pesan
       window.copyMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
           const textToCopy = messageTextElement.textContent || messageTextElement.innerText;
           navigator.clipboard.writeText(textToCopy).then(() => {
-            // Tampilkan feedback bahwa teks telah disalin
             const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
             if (copyButton) {
               const originalHtml = copyButton.innerHTML;
@@ -1613,14 +1437,12 @@
         }
       };
 
-      // Fungsi untuk membuat ulang respons AI
       window.regenerateMessage = async function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (!messageTextElement) return;
         
         const originalText = messageTextElement.textContent || messageTextElement.innerText;
         
-        // Tampilkan indikator loading
         const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
         if (regenerateButton) {
           const originalHtml = regenerateButton.innerHTML;
@@ -1628,7 +1450,6 @@
           regenerateButton.disabled = true;
           
           try {
-            // Kirim permintaan ke API untuk membuat ulang respons
             const response = await fetch("/api/chat", {
               method: "POST",
               headers: {
@@ -1651,16 +1472,13 @@
               throw new Error("Respons kosong dari server");
             }
 
-            // Perbarui teks pesan dengan respons baru
             messageTextElement.innerHTML = formatBoldText(aiReply);
             
-            // Perbarui timestamp
             const timeElement = messageTextElement.parentElement.querySelector('.message-time');
             if (timeElement) {
               timeElement.textContent = getCurrentTime();
             }
             
-            // Tampilkan feedback sukses
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
@@ -1691,7 +1509,6 @@
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
-        // Show user message
         const userDiv = addMessage('Anda', text, 'user-message');
 
         const typingDiv = document.createElement("div");
