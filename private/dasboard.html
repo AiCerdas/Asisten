@@ -1249,84 +1249,55 @@
           }
         }
 
-        async function processOCR() {
+        function processOCR() {
           const file = fileInput.files[0];
           if (!file) return;
 
           // Show progress
           processBtn.style.display = 'none';
           progressContainer.style.display = 'flex';
-          progressText.textContent = 'Mengunggah gambar ke Gemini API...';
 
-          try {
-            // Convert file to base64
-            const base64Image = await fileToBase64(file);
-            
-            // Call Gemini API for OCR
-            const response = await fetch('/api/vision', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                image: base64Image,
-                mimeType: file.type
-              })
-            });
-
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+          // Use Tesseract.js for OCR
+          Tesseract.recognize(
+            file,
+            'ind', // Bahasa Indonesia
+            {
+              logger: m => {
+                if (m.status === 'recognizing text') {
+                  progressText.textContent = `Memproses: ${Math.round(m.progress * 100)}%`;
+                }
+              }
             }
-
-            const data = await response.json();
+          ).then(({ data: { text } }) => {
+            // Show result
+            resultText.textContent = text;
+            ocrResult.style.display = 'block';
+            progressContainer.style.display = 'none';
             
-            if (data.success) {
-              // Show result
-              resultText.textContent = data.ocrText;
-              ocrResult.style.display = 'block';
-              progressContainer.style.display = 'none';
-              
-              // Simpan teks hasil OCR untuk dikirim ke AI
-              ocrExtractedText = data.ocrText;
+            // Simpan teks hasil OCR untuk dikirim ke AI
+            ocrExtractedText = text;
 
-              // Auto-scroll to result
-              ocrResult.scrollIntoView({ behavior: 'smooth' });
-              
-              // Otomatis kirim ke AI setelah 1 detik
-              setTimeout(() => {
-                modal.style.display = 'none';
-                sendOCRToAI(data.ocrText, data.explanation);
-              }, 1000);
-            } else {
-              throw new Error(data.error || 'Gagal memproses gambar');
-            }
-          } catch (err) {
+            // Auto-scroll to result
+            ocrResult.scrollIntoView({ behavior: 'smooth' });
+            
+            // Otomatis kirim ke AI setelah 1 detik
+            setTimeout(() => {
+              modal.style.display = 'none';
+              sendOCRToAI(text);
+            }, 1000);
+          }).catch(err => {
             console.error('OCR Error:', err);
             progressText.textContent = 'Error saat memproses gambar';
             setTimeout(() => {
               progressContainer.style.display = 'none';
               processBtn.style.display = 'block';
             }, 2000);
-          }
-        }
-
-        // Helper function to convert file to base64
-        function fileToBase64(file) {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-              // Remove data:image/jpeg;base64, prefix
-              const base64 = reader.result.split(',')[1];
-              resolve(base64);
-            };
-            reader.onerror = error => reject(error);
           });
         }
       }
 
       // Fungsi untuk mengirim hasil OCR ke AI
-      function sendOCRToAI(text, explanation = null) {
+      function sendOCRToAI(text) {
         if (!text || text.trim() === "") return;
         
         // Tampilkan pesan pengguna dengan teks OCR
@@ -1348,57 +1319,17 @@
         chatbox.appendChild(typingDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
 
-        // Jika sudah ada penjelasan dari API, langsung tampilkan
-        if (explanation) {
-          setTimeout(() => {
-            typingDiv.remove();
-            displayAIResponse(explanation);
-          }, 1000);
-        } else {
-          // Jika tidak, kirim ke API chat untuk respons AI
-          setTimeout(() => {
-            typingDiv.remove();
-            
-            // Kirim teks OCR ke API chat untuk mendapatkan respons AI
-            sendOCRToAIChat(text);
-          }, 1000);
-        }
+        // Simulasi respons AI (dalam implementasi nyata, ini akan memanggil API AI)
+        setTimeout(() => {
+          typingDiv.remove();
+          
+          // Respons AI berdasarkan teks yang diekstrak
+          let aiResponse = generateAIResponse(text);
+          displayAIResponse(aiResponse);
+        }, 2000);
       }
 
-      // Fungsi untuk mengirim teks OCR ke API chat
-      async function sendOCRToAIChat(ocrText) {
-        try {
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ 
-              message: `Saya telah mengekstrak teks berikut dari gambar: "${ocrText}". Mohon jelaskan dan analisis teks ini.` 
-            })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          let aiReply = data.reply;
-
-          if (!aiReply || aiReply.trim() === "") {
-            throw new Error("Respons kosong dari server");
-          }
-
-          // Tampilkan respons AI
-          displayAIResponse(aiReply);
-        } catch (error) {
-          console.error("Error sending OCR to AI:", error);
-          // Fallback: tampilkan respons default jika API error
-          displayAIResponse(generateAIResponse(ocrText));
-        }
-      }
-
-      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR (fallback)
+      // Fungsi untuk menghasilkan respons AI berdasarkan teks OCR
       function generateAIResponse(ocrText) {
         // Analisis teks untuk menentukan jenis konten
         const lowerText = ocrText.toLowerCase();
