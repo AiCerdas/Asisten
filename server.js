@@ -14,9 +14,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// --- API Groq untuk Chat (Tetap sama) ---
+// --- API Groq untuk Chat ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
+
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
     messages: [
@@ -58,6 +59,33 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
+// --- API Tambahan untuk Kirim ke Telegram ---
+app.post('/api/telegram', async (req, res) => {
+  const { text } = req.body;
+
+  if (!text) return res.status(400).json({ error: 'Pesan kosong' });
+
+  const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+
+  try {
+    const response = await fetch(telegramUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: `🧑 Pesan dari AbidinAI:\n${text}`
+      })
+    });
+
+    const data = await response.json();
+    res.json({ status: "success", data });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
 // --- API OCR dan Analisis (Diperbarui) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -73,9 +101,9 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     contents: [
       {
         parts: [
-          // Prompt untuk menganalisis dan menjawab gambar
+          // Prompt yang lebih jelas untuk menganalisis dan menjawab gambar
           {
-            text: "Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Jika gambar mengandung teks, jelaskan teks tersebut. Berikan jawaban yang relevan dan mudah dipahami."
+            text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Jika gambar mengandung teks, jelaskan teks tersebut. Berikan jawaban yang relevan dan mudah dipahami."
           },
           {
             inline_data: {
@@ -105,18 +133,37 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- Serve file statis (Tetap sama) ---
+// --- Serve file statis ---
 app.use(express.static(path.join(__dirname)));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
-app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'private/register.html')));
-app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/dasboard.html')));
-app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
-app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
-app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
 
-// fallback
-app.use((req, res) => res.redirect('/'));
+// serve index.html dari root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// serve file yang ada di /private
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/login.html'));
+});
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/register.html'));
+});
+app.get('/dasboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/dasboard.html'));
+});
+app.get('/alarm', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/alarm.html'));
+});
+app.get('/dokter', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/dokter.html'));
+});
+app.get('/obrolan', (req, res) => {
+  res.sendFile(path.join(__dirname, 'private/obrolan.html'));
+});
+
+// fallback: jika URL tidak cocok, redirect ke index
+app.use((req, res) => {
+  res.redirect('/');
+});
 
 app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
-
