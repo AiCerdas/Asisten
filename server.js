@@ -59,7 +59,9 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// --- API Tambahan untuk Kirim ke Telegram ---
+---
+
+// --- API Tambahan untuk Kirim ke Telegram (Tetap sama) ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -86,7 +88,12 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// --- API OCR dan Analisis (Diperbarui) ---
+---
+
+## Perbaikan API OCR dan Analisis
+Berikut adalah bagian kode yang telah diperbaiki. Perubahan utama ada pada permintaan ke API Gemini, di mana kita mengirimkan data gambar yang sudah dienkode (`Base64`) bersamaan dengan prompt teks.
+
+```javascript
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -97,6 +104,11 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   // Mengubah buffer gambar menjadi base64
   const imageBase64 = req.file.buffer.toString('base64');
   const imageMimeType = req.file.mimetype;
+
+  // Pastikan kunci API ada
+  if (!GEMINI_API_KEY) {
+    return res.status(500).json({ error: 'Kunci API Gemini tidak ditemukan di .env' });
+  }
 
   const payload = {
     contents: [
@@ -123,6 +135,12 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
       body: JSON.stringify(payload)
     });
 
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Kesalahan respons dari Gemini:", errorData);
+        return res.status(response.status).json({ error: 'Gemini API Error', details: errorData.error.message });
+    }
+
     const data = await response.json();
     const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
     
@@ -133,7 +151,7 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- Serve file statis (Tetap sama) ---
+​// --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
@@ -142,8 +160,6 @@ app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/da
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
-
-// fallback
+​// fallback
 app.use((req, res) => res.redirect('/'));
-
-app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
+​app.listen(PORT, () => console.log(🚀 AbidinAI Server jalan di port ${PORT}));
