@@ -1141,7 +1141,7 @@
         const progressContainer = document.getElementById('progressContainer');
         const progressText = document.getElementById('progressText');
         const ocrResult = document.getElementById('ocrResult');
-        let selectedFileBase64 = '';
+        let selectedFile = null;
 
         closeBtn.addEventListener('click', () => modal.style.display = 'none');
         modal.addEventListener('click', (e) => {
@@ -1177,7 +1177,7 @@
             handleFileUpload(fileInput.files[0]);
           }
         });
-
+        
         // Event listener diganti ke fungsi baru
         processBtn.addEventListener('click', processOCRWithGemini);
 
@@ -1207,26 +1207,27 @@
             previewImage.style.display = 'block';
             processBtn.style.display = 'block';
             ocrResult.style.display = 'none';
-            selectedFileBase64 = e.target.result;
+            selectedFile = file;
           };
           reader.readAsDataURL(file);
         }
 
         // Fungsi baru untuk memproses OCR dengan Gemini API via backend
         async function processOCRWithGemini() {
-          if (!selectedFileBase64) return;
+          if (!selectedFile) return;
 
           processBtn.style.display = 'none';
           progressContainer.style.display = 'flex';
           progressText.textContent = `Mengirim gambar...`;
 
+          const formData = new FormData();
+          formData.append('image', selectedFile);
+
           try {
-            const response = await fetch("/api/gemini-ocr", {
+            // Perubahan di sini: Mengirim FormData
+            const response = await fetch("/api/ocr", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ image: selectedFileBase64 })
+              body: formData
             });
 
             if (!response.ok) {
@@ -1235,24 +1236,25 @@
             }
 
             const data = await response.json();
-            const { text, analysis } = data;
+            const aiReply = data.reply;
 
-            // Jika tidak ada teks yang diekstrak, beri tahu pengguna
-            if (!text || text.trim() === "") {
-                resultText.textContent = "Tidak dapat mengekstrak teks dari gambar ini.";
+            // Tampilkan hasil analisis dari Gemini
+            if (!aiReply || aiReply.trim() === "") {
+                resultText.textContent = "Tidak dapat menganalisis gambar ini.";
             } else {
-                resultText.textContent = analysis; // Tampilkan analisis dari Gemini
+                resultText.textContent = aiReply;
             }
 
             ocrResult.style.display = 'block';
             progressContainer.style.display = 'none';
             
-            ocrExtractedText = text;
+            ocrExtractedText = aiReply;
             ocrResult.scrollIntoView({ behavior: 'smooth' });
             
+            // Mengirim hasil analisis langsung ke chat
             setTimeout(() => {
               modal.style.display = 'none';
-              sendOCRToAI(text, analysis);
+              sendOCRToAI(aiReply); // Mengirim hasil analisis, bukan teks mentah
             }, 1000);
 
           } catch (err) {
@@ -1267,15 +1269,16 @@
       }
 
       // Fungsi untuk mengirim hasil OCR ke AI (diperbarui)
-      function sendOCRToAI(extractedText, aiAnalysis) {
-        if (!extractedText || extractedText.trim() === "") {
+      function sendOCRToAI(aiAnalysis) {
+        if (!aiAnalysis || aiAnalysis.trim() === "") {
           const chatbox = document.getElementById("chatbox");
-          addMessage('AbidinAI', 'Maaf, saya tidak dapat mendeteksi teks apa pun di dalam gambar.', 'ai-message');
+          addMessage('AbidinAI', 'Maaf, saya tidak dapat menganalisis isi gambar.', 'ai-message');
           chatbox.scrollTop = chatbox.scrollHeight;
           return;
         }
 
-        const userDiv = addMessage('Anda', `[Gambar OCR] Teks yang terdeteksi: "${extractedText}"`, 'user-message');
+        // Buat pesan di chatbox seolah pengguna yang bertanya
+        const userDiv = addMessage('Anda', `[Analisis Gambar]`, 'user-message');
         
         const chatbox = document.getElementById("chatbox");
         const typingDiv = document.createElement("div");
@@ -1285,7 +1288,7 @@
           <div class="message-content">
             <div class="typing-indicator">
               <div class="loading"></div>
-              AbidinAI sedang menganalisis teks dari gambar...
+              AbidinAI sedang menyiapkan respons...
             </div>
           </div>
         `;
