@@ -8,11 +8,8 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Konfigurasi Multer dengan batas ukuran file 5MB
-const upload = multer({ 
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } 
-});
+// Konfigurasi Multer untuk menyimpan file di memori
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
@@ -20,6 +17,7 @@ app.use(express.json());
 // --- API Groq untuk Chat (Tetap sama) ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
+
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
     messages: [
@@ -52,6 +50,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
       },
       body: JSON.stringify(body)
     });
+
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan.";
     res.json({ reply });
@@ -60,7 +59,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// --- API Tambahan untuk Kirim ke Telegram (Tetap sama) ---
+// --- API Tambahan untuk Kirim ke Telegram ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -79,6 +78,7 @@ app.post('/api/telegram', async (req, res) => {
         text: `🧑 Pesan dari AbidinAI:\n${text}`
       })
     });
+
     const data = await response.json();
     res.json({ status: "success", data });
   } catch (error) {
@@ -86,59 +86,51 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// --- API OCR dan Analisis (Perbaikan Akhir) ---
-app.post('/api/ocr', (req, res) => {
-  upload.single('image')(req, res, async (err) => {
-    // Tangani semua kesalahan multer dan kirim JSON
-    if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ error: 'Ukuran file melebihi batas 5MB' });
-      }
-      return res.status(500).json({ error: 'Gagal mengunggah file', details: err.message });
-    } else if (err) {
-      return res.status(500).json({ error: 'Terjadi kesalahan saat mengunggah file', details: err.message });
-    }
+// --- API OCR dan Analisis (Diperbarui) ---
+app.post('/api/ocr', upload.single('image'), async (req, res) => {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'File gambar tidak ditemukan' });
-    }
+  if (!req.file) {
+    return res.status(400).json({ error: 'File gambar tidak ditemukan' });
+  }
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const imageBase64 = req.file.buffer.toString('base64');
-    const imageMimeType = req.file.mimetype;
+  // Mengubah buffer gambar menjadi base64
+  const imageBase64 = req.file.buffer.toString('base64');
+  const imageMimeType = req.file.mimetype;
 
-    const payload = {
-      contents: [{
+  const payload = {
+    contents: [
+      {
         parts: [
-          { text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Berikan jawaban yang relevan dan mudah dipahami." },
-          { inline_data: { mime_type: imageMimeType, data: imageBase64 } }
+          {
+            text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Berikan jawaban yang relevan dan mudah dipahami."
+          },
+          {
+            inline_data: {
+              mime_type: imageMimeType,
+              data: imageBase64,
+            },
+          },
         ]
-      }]
-    };
-
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        return res.status(response.status).json({
-          error: 'Gagal menghubungi Gemini API',
-          details: errorData || 'Tidak dapat membaca respons error dari API'
-        });
       }
+    ]
+  };
 
-      const data = await response.json();
-      const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
-      
-      res.json({ reply: geminiReply });
-    } catch (error) {
-      res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
-    }
-  });
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
+    
+    res.json({ reply: geminiReply });
+  } catch (error) {
+    console.error("Kesalahan Analisis Gambar:", error);
+    res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
+  }
 });
 
 // --- Serve file statis (Tetap sama) ---
@@ -151,10 +143,7 @@ app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
 
-// Middleware penanganan kesalahan umum sebagai fallback terakhir
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Terjadi kesalahan server yang tidak terduga' });
-});
+// fallback
+app.use((req, res) => res.redirect('/'));
 
 app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
