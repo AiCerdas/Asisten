@@ -90,10 +90,7 @@ app.post('/api/telegram', async (req, res) => {
 
 ---
 
-## Perbaikan API OCR dan Analisis
-Berikut adalah bagian kode yang telah diperbaiki. Perubahan utama ada pada permintaan ke API Gemini, di mana kita mengirimkan data gambar yang sudah dienkode (`Base64`) bersamaan dengan prompt teks.
-
-```javascript
+// --- API OCR dan Analisis (Diperbarui) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -151,7 +148,9 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   }
 });
 
-​// --- Serve file statis (Tetap sama) ---
+---
+
+// --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
@@ -160,6 +159,8 @@ app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/da
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
-​// fallback
+
+// fallback
 app.use((req, res) => res.redirect('/'));
-​app.listen(PORT, () => console.log(🚀 AbidinAI Server jalan di port ${PORT}));
+
+app.listen(PORT, () => console.log(`🚀 AbidinAI Server jalan di port ${PORT}`));
