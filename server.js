@@ -14,7 +14,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// --- API Groq untuk Chat (Tetap sama) ---
+// --- API Groq untuk Chat ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
@@ -59,9 +59,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
----
-
-// --- API Tambahan untuk Kirim ke Telegram (Tetap sama) ---
+// --- API Tambahan untuk Kirim ke Telegram ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -88,9 +86,7 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
----
-
-// --- API OCR dan Analisis (Diperbarui) ---
+// --- API OCR dan Analisis (Sudah Diperbaiki) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -101,11 +97,6 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   // Mengubah buffer gambar menjadi base64
   const imageBase64 = req.file.buffer.toString('base64');
   const imageMimeType = req.file.mimetype;
-
-  // Pastikan kunci API ada
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'Kunci API Gemini tidak ditemukan di .env' });
-  }
 
   const payload = {
     contents: [
@@ -131,24 +122,27 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
+    
+    // Perbaikan: Tambahkan pengecekan untuk respons yang tidak sukses
     if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Kesalahan respons dari Gemini:", errorData);
-        return res.status(response.status).json({ error: 'Gemini API Error', details: errorData.error.message });
+      const errorData = await response.json().catch(() => null);
+      console.error("Kesalahan API Gemini:", response.status, errorData);
+      return res.status(response.status).json({
+        error: 'Gagal menghubungi Gemini API',
+        details: errorData || 'Tidak dapat membaca respons error dari API'
+      });
     }
 
     const data = await response.json();
     const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
     
     res.json({ reply: geminiReply });
+
   } catch (error) {
     console.error("Kesalahan Analisis Gambar:", error);
     res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
   }
 });
-
----
 
 // --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
