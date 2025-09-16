@@ -14,7 +14,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// --- API Groq untuk Chat ---
+// --- API Groq untuk Chat (Tetap sama) ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
@@ -59,7 +59,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// --- API Tambahan untuk Kirim ke Telegram ---
+// --- API Tambahan untuk Kirim ke Telegram (Tetap sama) ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -86,62 +86,62 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// --- API OCR dan Analisis (Sudah Diperbaiki) ---
-app.post('/api/ocr', upload.single('image'), async (req, res) => {
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-  if (!req.file) {
-    return res.status(400).json({ error: 'File gambar tidak ditemukan' });
-  }
-
-  // Mengubah buffer gambar menjadi base64
-  const imageBase64 = req.file.buffer.toString('base64');
-  const imageMimeType = req.file.mimetype;
-
-  const payload = {
-    contents: [
-      {
-        parts: [
-          {
-            text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Berikan jawaban yang relevan dan mudah dipahami."
-          },
-          {
-            inline_data: {
-              mime_type: imageMimeType,
-              data: imageBase64,
-            },
-          },
-        ]
-      }
-    ]
-  };
-
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    
-    // Perbaikan: Tambahkan pengecekan untuk respons yang tidak sukses
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error("Kesalahan API Gemini:", response.status, errorData);
-      return res.status(response.status).json({
-        error: 'Gagal menghubungi Gemini API',
-        details: errorData || 'Tidak dapat membaca respons error dari API'
-      });
+// --- API OCR dan Analisis (Perbaikan Lengkap) ---
+app.post('/api/ocr', (req, res) => {
+  upload.single('image')(req, res, async (err) => {
+    // Perbaikan: Tangani error dari Multer secara eksplisit di sini.
+    if (err instanceof multer.MulterError) {
+      console.error("Kesalahan Multer:", err);
+      return res.status(500).json({ error: 'Gagal mengunggah file', details: err.message });
+    } else if (err) {
+      console.error("Kesalahan upload tidak dikenal:", err);
+      return res.status(500).json({ error: 'Terjadi kesalahan saat mengunggah file', details: err.message });
     }
 
-    const data = await response.json();
-    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
-    
-    res.json({ reply: geminiReply });
+    // Periksa apakah file berhasil diunggah
+    if (!req.file) {
+      return res.status(400).json({ error: 'File gambar tidak ditemukan' });
+    }
 
-  } catch (error) {
-    console.error("Kesalahan Analisis Gambar:", error);
-    res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
-  }
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const imageBase64 = req.file.buffer.toString('base64');
+    const imageMimeType = req.file.mimetype;
+
+    const payload = {
+      contents: [{
+        parts: [
+          { text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Berikan jawaban yang relevan dan mudah dipahami." },
+          { inline_data: { mime_type: imageMimeType, data: imageBase64 } }
+        ]
+      }]
+    };
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error("Kesalahan API Gemini:", response.status, errorData);
+        return res.status(response.status).json({
+          error: 'Gagal menghubungi Gemini API',
+          details: errorData || 'Tidak dapat membaca respons error dari API'
+        });
+      }
+
+      const data = await response.json();
+      const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
+      
+      res.json({ reply: geminiReply });
+
+    } catch (error) {
+      console.error("Kesalahan Analisis Gambar:", error);
+      res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
+    }
+  });
 });
 
 // --- Serve file statis (Tetap sama) ---
