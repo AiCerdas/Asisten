@@ -702,7 +702,7 @@
         </div>
         <div class="upload-text">
           <strong>Klik untuk mengunggah gambar</strong><br>
-         
+          
         </div>
         <div style="font-size: 12px; color: #718096;">
           Format yang didukung: JPG, PNG (maks. 5MB)
@@ -772,7 +772,10 @@
         <span>Dokter Kesehatan</span>
       </a>
 
-  
+      <div class="menu-item" id="ocrMenuItem">
+        <i class="fas fa-file-alt"></i>
+        <span>Ekstrak Teks (OCR)</span>
+      </div>
 
       <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
         <i class="fas fa-exclamation-triangle"></i>
@@ -820,7 +823,7 @@
 
       <div class="input-container">
         <div class="input-box">
-          <textarea id="messageInput" placeholder="Kirim Pesan Ke AbidinAI" rows="1" onkeypress="handleKeyPress(event)"></textarea>
+          <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
