@@ -70,7 +70,7 @@
       width: 200px;
       height: 200px;
       border-radius: 50%;
-      background-image: url('https://i.imgur.com/rSOV5AZ.jpg');
+      background-image: url('https://iili.io/FGQm4tt.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -134,7 +134,6 @@
       margin: 20px 0;
       min-height: 50px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
@@ -417,7 +416,7 @@
     if (SpeechRecognition) {
       recognition = new SpeechRecognition();
       recognition.lang = 'id-ID';
-      recognition.continuous = true; // <-- Diubah menjadi true
+      recognition.continuous = true; // Diubah ke mode berkelanjutan
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
@@ -429,32 +428,42 @@
       };
 
       recognition.onresult = async (event) => {
-        const last = event.results.length - 1;
-        const voiceText = event.results[last][0].transcript;
-        updateStatusMessage(`Anda: "${voiceText}"`);
-        
-        // Proses pesan
-        await processVoiceMessage(voiceText);
+        // Hanya proses hasil akhir dari transkripsi
+        const result = event.results[event.results.length - 1];
+        if (result.isFinal) {
+          const voiceText = result[0].transcript;
+          updateStatusMessage(`Anda: "${voiceText}"`);
+          
+          // Proses pesan
+          // Jeda mendengarkan sejenak saat memproses dan berbicara
+          recognition.stop();
+          await processVoiceMessage(voiceText);
+        }
       };
 
       recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        isListening = false;
-        isSpeaking = false;
-        resetOrbState();
-        updateStatusMessage('Maaf, ada masalah. Silakan coba lagi.');
+        if (event.error === 'no-speech' || event.error === 'audio-capture') {
+           updateStatusMessage('Saya tidak mendengar apa pun. Silakan coba lagi.');
+        } else {
+           updateStatusMessage('Maaf, terjadi kesalahan. Coba lagi.');
+        }
+        
+        // Coba mulai lagi setelah error
+        setTimeout(() => {
+          if (!isSpeaking) {
+            startListening();
+          }
+        }, 1000);
       };
 
       recognition.onend = () => {
         isListening = false;
         if (!isSpeaking) {
-          resetOrbState();
-        } else {
-          // Restart recognition after speaking
+          // Restart recognition setelah jeda singkat
+          // Ini memungkinkan asisten untuk terus mendengarkan setelah respons
           setTimeout(() => {
-              if (!isSpeaking) {
-                  startListening();
-              }
+             startListening();
           }, 500);
         }
       };
@@ -463,8 +472,10 @@
     function toggleVoiceChat() {
       if (isListening) {
         stopListening();
+        updateStatusMessage('Mode mendengarkan dihentikan.');
       } else if (isSpeaking) {
         stopSpeaking();
+        updateStatusMessage('Mode berbicara dihentikan.');
       } else {
         startListening();
       }
@@ -494,9 +505,8 @@
       }
       isSpeaking = false;
       resetOrbState();
-      if (isListening) {
-          stopListening();
-      }
+      // Lanjutkan mendengarkan setelah berhenti berbicara
+      startListening();
     }
 
     async function processVoiceMessage(message) {
@@ -504,13 +514,8 @@
       updateStatusMessage('Memproses...');
       addTypingAnimation();
 
-      // Tambahkan pesan pengguna ke riwayat
+      // Simpan ke riwayat
       conversationHistory.push({ role: 'user', content: message });
-      
-      // Batasi riwayat agar tidak terlalu panjang
-      if (conversationHistory.length > 10) {
-        conversationHistory.shift();
-      }
 
       try {
         const response = await fetch("/api/chat", {
@@ -518,8 +523,7 @@
           headers: {
             "Content-Type": "application/json"
           },
-          // Kirim seluruh riwayat percakapan
-          body: JSON.stringify({ conversation: conversationHistory })
+          body: JSON.stringify({ message: message })
         });
 
         if (!response.ok) {
@@ -537,7 +541,7 @@
         
       } catch (error) {
         console.error('Error:', error);
-        const errorMessage = "Maaf, terjadi kesalahan koneksi. Silakan coba lagi.";
+        const errorMessage = "Maaf, terjadi kesalahan koneksi.";
         await speakResponse(errorMessage);
       }
     }
@@ -566,15 +570,15 @@
 
         utterance.onend = () => {
           isSpeaking = false;
+          // Setelah selesai berbicara, mulai mendengarkan lagi
           resetOrbState();
-          // Lanjutkan mendengarkan setelah selesai berbicara
           startListening();
         };
 
         utterance.onerror = () => {
           isSpeaking = false;
           resetOrbState();
-          // Lanjutkan mendengarkan setelah error
+          // Setelah error, coba mulai mendengarkan lagi
           startListening();
         };
 
@@ -584,6 +588,7 @@
         setTimeout(() => {
           isSpeaking = false;
           resetOrbState();
+          // Jika tidak ada speechSynthesis, kembali ke mode mendengarkan
           startListening();
         }, 3000);
       }
@@ -629,8 +634,8 @@
     }
 
     function addWaveAnimation() {
-      removeAnimations();
       const statusDiv = document.querySelector('.status-text');
+      removeAnimations(); // Hapus animasi lama
       const waveDiv = document.createElement('div');
       waveDiv.className = 'wave-animation';
       waveDiv.innerHTML = `
@@ -644,8 +649,8 @@
     }
 
     function addTypingAnimation() {
-      removeAnimations();
       const statusDiv = document.querySelector('.status-text');
+      removeAnimations(); // Hapus animasi lama
       const typingDiv = document.createElement('div');
       typingDiv.className = 'typing-dots';
       typingDiv.innerHTML = `
@@ -677,10 +682,9 @@
     function clearChat() {
       conversationHistory = [];
       updateStatusMessage('Riwayat percakapan dihapus');
-      stopSpeaking(); // Hentikan suara jika sedang berbicara
-      stopListening(); // Hentikan mendengarkan
       setTimeout(() => {
         resetOrbState();
+        startListening(); // Kembali ke mode mendengarkan setelah membersihkan
       }, 2000);
     }
 
@@ -688,6 +692,7 @@
       updateStatusMessage('Pengaturan akan segera tersedia');
       setTimeout(() => {
         resetOrbState();
+        startListening(); // Kembali ke mode mendengarkan
       }, 2000);
     }
 
@@ -695,6 +700,9 @@
     document.addEventListener('DOMContentLoaded', function() {
       if (!SpeechRecognition) {
         updateStatusMessage('Perangkat tidak mendukung pengenalan suara');
+      } else {
+        // Otomatis mulai mendengarkan saat halaman dimuat
+        startListening();
       }
     });
 
