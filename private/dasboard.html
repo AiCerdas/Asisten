@@ -355,7 +355,7 @@
       gap: 8px;
     }
 
-    .voice-btn, .send-btn, .ocr-btn {
+    .voice-btn, .send-btn, .ocr-btn, .audio-spectrum-btn {
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -367,12 +367,12 @@
       transition: all 0.2s;
     }
 
-    .voice-btn {
+    .voice-btn, .audio-spectrum-btn {
       background-color: #f3f4f6;
       color: #4b5563;
     }
 
-    .voice-btn:hover {
+    .voice-btn:hover, .audio-spectrum-btn:hover {
       background-color: #e5e7eb;
     }
 
@@ -734,6 +734,18 @@
     </div>
   </div>
 
+  <div class="modal" id="audioSpectrumModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-chart-bar"></i> Fitur Analisis Audio
+        </div>
+        <button class="close-btn" id="closeAudioModal">&times;</button>
+      </div>
+      <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
+    </div>
+  </div>
+
   <div class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
   </div>
@@ -828,6 +840,9 @@
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
+            </button>
+            <button class="audio-spectrum-btn" onclick="openAudioSpectrumModal()">
+                <i class="fas fa-chart-bar"></i>
             </button>
             <button class="voice-btn" onclick="startVoiceRecognition()">
               <i class="fas fa-microphone-alt"></i>
@@ -1057,6 +1072,7 @@
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
         initOCRModal();
+        initAudioSpectrumModal();
 
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
@@ -1289,12 +1305,27 @@
         }, 1500);
       }
 
-      // Fungsi untuk menghasilkan respons AI (dihapus karena diganti oleh backend)
-      // function generateAIResponse(ocrText) { ... }
-      // Fungsi bantu (dihapus karena diganti oleh backend)
-      // function translateText(text) { ... }
-      // function extractIngredients(text) { ... }
-      // function extractAddress(text) { ... }
+      // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
+      window.openAudioSpectrumModal = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+        const modal = document.getElementById('audioSpectrumModal');
+        modal.style.display = 'flex';
+      };
+
+      function initAudioSpectrumModal() {
+        const modal = document.getElementById('audioSpectrumModal');
+        const closeBtn = document.getElementById('closeAudioModal');
+
+        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+      // ** AKHIR KODE TAMBAHAN **
+
 
       window.openOCRModal = function() {
         if (devToolsState.open) {
