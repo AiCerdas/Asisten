@@ -62,7 +62,6 @@
       padding: 0 10px;
     }
 
-    /* menu digital */
     .menu-badge {
       margin-left: auto;
       background: #4f46e5;
@@ -244,36 +243,33 @@
       position: relative;
     }
 
-    /* Perubahan di sini untuk .code-container */
     .code-container {
       margin: 15px 0;
       border-radius: 8px;
       overflow: hidden;
-      background: #1e293b; /* Warna background untuk keseluruhan container */
-      border: 1px solid #374151; /* Border untuk bingkai kode */
+      background: #1e293b;
+      border: 1px solid #374151;
     }
 
-    /* Gaya baru untuk header blok kode */
     .code-header {
-      background-color: #374151; /* Warna latar belakang header */
-      color: #f8fafc; /* Warna teks di header */
+      background-color: #374151;
+      color: #f8fafc;
       padding: 10px 15px;
       display: flex;
-      justify-content: flex-end; /* Tombol salin di kanan */
+      justify-content: flex-end;
       align-items: center;
-      border-bottom: 1px solid #4a5568; /* Garis pemisah antara header dan kode */
-      font-size: 0.85rem; /* Ukuran font lebih kecil untuk header */
+      border-bottom: 1px solid #4a5568;
+      font-size: 0.85rem;
     }
 
-    /* Gaya baru untuk tombol salin di dalam header kode */
-    .code-container .copy-btn { /* Spesifikasi lebih tinggi agar menimpa gaya umum */
-      position: static; /* Hapus positioning absolut */
-      background: transparent; /* Background transparan */
-      color: #f8fafc; /* Warna teks putih */
-      border: 1px solid #6b7280; /* Border abu-abu */
+    .code-container .copy-btn {
+      position: static;
+      background: transparent;
+      color: #f8fafc;
+      border: 1px solid #6b7280;
       padding: 5px 10px;
       border-radius: 5px;
-      font-size: 0.8rem; /* Ukuran font lebih kecil */
+      font-size: 0.8rem;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
@@ -282,16 +278,16 @@
     }
 
     .code-container .copy-btn:hover {
-      background: #4f46e5; /* Warna ungu saat hover */
+      background: #4f46e5;
       border-color: #4f46e5;
       color: white;
     }
 
     pre {
-      background: #1e293b; /* Warna background untuk kode */
-      color: #f8fafc; /* Warna teks kode */
+      background: #1e293b;
+      color: #f8fafc;
       padding: 15px;
-      border-radius: 0 0 8px 8px; /* Hilangkan border atas, sesuaikan border bawah */
+      border-radius: 0 0 8px 8px;
       overflow-x: auto;
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
@@ -336,7 +332,7 @@
       border-radius: 12px;
       padding: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      position: relative; /* Tambahkan posisi relatif */
+      position: relative;
     }
 
     #messageInput {
@@ -551,7 +547,6 @@
       filter: blur(10px) !important;
     }
 
-    /* Hapus kelas no-select dan ganti dengan selectable */
     .selectable {
       -webkit-touch-callout: text;
       -webkit-user-select: text;
@@ -666,10 +661,9 @@
       color: #10b981;
     }
     
-    /* Tambahan untuk pop-up fitur */
     .feature-popup {
       position: absolute;
-      bottom: 60px; /* Posisi di atas tombol + */
+      bottom: 60px;
       left: 12px;
       width: 250px;
       background: #fff;
@@ -708,7 +702,6 @@
       font-size: 18px;
     }
 
-    /* Gaya untuk tombol obrolan suara aktif */
     .voice-active {
         background-color: #4f46e5;
         color: white;
@@ -910,8 +903,8 @@
       let lastTypingElement = null;
       let db = null;
       let ocrExtractedText = '';
-      let isVoiceChatActive = false; // <-- State baru untuk obrolan suara
-      let recognition = null; // <-- Objek Web Speech API
+      let isVoiceChatActive = false;
+      let recognition = null;
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
@@ -1004,6 +997,13 @@
 
       function formatBoldText(text) {
         return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      }
+      
+      function formatCodeBlocks(text) {
+        return text.replace(/```(?:\w+)?\n?([\s\S]*?)```/g, (match, p1) => {
+            const copyBtnHtml = `<button class="copy-btn" onclick="navigator.clipboard.writeText(\`${p1.replace(/`/g, '\\`')}\`).then(() => { const btn = event.target; btn.innerHTML = '<i class="fas fa-check"></i> Tersalin!'; setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500); });"><i class="fas fa-copy"></i> Salin</button>`;
+            return `<div class="code-container"><div class="code-header">${copyBtnHtml}</div><pre>${p1}</pre></div>`;
+        });
       }
 
       function initDatabase() {
@@ -1126,9 +1126,7 @@
         
         document.getElementById('researchFeature').addEventListener('click', performResearch);
 
-        // <-- Perubahan di sini untuk event listener Obrolan Suara -->
         document.getElementById('voiceChatFeature').addEventListener('click', toggleVoiceChat);
-        // <-- Akhir perubahan -->
         
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
@@ -1481,7 +1479,6 @@
         };
       };
 
-      // <-- Perubahan di sini untuk fungsi obrolan suara baru -->
       async function toggleVoiceChat() {
           if (devToolsState.open) {
               showWarning();
@@ -1497,7 +1494,6 @@
           }
 
           if (isVoiceChatActive) {
-              // Hentikan obrolan suara
               isVoiceChatActive = false;
               voiceChatBtn.classList.remove('voice-active');
               if (recognition) {
@@ -1506,7 +1502,6 @@
               window.speechSynthesis.cancel();
               addMessage('Sistem', 'Obrolan suara dihentikan.', 'ai-message');
           } else {
-              // Mulai obrolan suara
               isVoiceChatActive = true;
               voiceChatBtn.classList.add('voice-active');
               addMessage('Sistem', 'Obrolan suara dimulai. Silakan mulai berbicara.', 'ai-message');
@@ -1545,7 +1540,6 @@
           recognition.onerror = (event) => {
               console.error('Speech recognition error:', event.error);
               if (event.error === 'network') {
-                  // Coba restart jika jaringan terputus
                   if (isVoiceChatActive) {
                       setTimeout(() => recognition.start(), 1000);
                   }
@@ -1590,7 +1584,7 @@
               if (!aiReply || aiReply.trim() === "") {
                   displayMaintenanceMessage();
               } else {
-                  displayAIResponse(aiReply, true); // True untuk mengaktifkan text-to-speech
+                  displayAIResponse(aiReply, true);
               }
           } catch (error) {
               typingDiv.remove();
@@ -1598,8 +1592,6 @@
               console.error("Error:", error);
           }
       }
-      // <-- Akhir perubahan untuk fungsi obrolan suara baru -->
-
 
       window.sendMessage = async function() {
         if (devToolsState.open) {
@@ -1759,6 +1751,7 @@
 
         chatbox.appendChild(container);
         chatbox.scrollTop = chatbox.scrollHeight;
+        saveMessageToDB('AbidinAI', aiReply);
         sendButton.disabled = false;
 
         if (shouldSpeak) {
@@ -1798,6 +1791,49 @@
         }
 
         speakNext(0);
+      }
+      
+      function addMessage(sender, text, messageClass, timestamp = null, shouldSave = true) {
+        const chatbox = document.getElementById("chatbox");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${messageClass}`;
+        
+        const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
+        const contentHtml = messageClass === 'ai-message' 
+          ? formatCodeBlocks(formatBoldText(text))
+          : formatBoldText(text);
+
+        messageDiv.innerHTML = `
+          <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
+            ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
+          </div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">${sender}</span>
+              <span class="message-time">${timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : getCurrentTime()}</span>
+            </div>
+            <div class="message-text" id="${messageId}-text">${contentHtml}</div>
+            ${messageClass === 'ai-message' ? `
+            <div class="message-actions">
+              <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
+                <i class="fas fa-copy"></i> Salin
+              </button>
+              <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
+                <i class="fas fa-redo"></i> Buat Ulang
+              </button>
+            </div>
+            ` : ''}
+          </div>
+        `;
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        
+        if (shouldSave) {
+          saveMessageToDB(sender, text, timestamp);
+        }
+        
+        return messageDiv;
       }
 
       window.copyMessageText = function(messageId) {
@@ -1854,12 +1890,14 @@
               throw new Error("Respons kosong dari server");
             }
 
-            messageTextElement.innerHTML = formatBoldText(aiReply);
+            messageTextElement.innerHTML = formatCodeBlocks(formatBoldText(aiReply));
             
             const timeElement = messageTextElement.parentElement.querySelector('.message-time');
             if (timeElement) {
               timeElement.textContent = getCurrentTime();
             }
+            
+            saveMessageToDB('AbidinAI', aiReply);
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
             setTimeout(() => {
