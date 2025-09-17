@@ -691,7 +691,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title">
-          <i class="fas fa-file-image"></i> OCR - Ekstrak Teks dari Gambar
+          <i class="fas fa-file-image"></i> Unggah Gambar Pintar
         </div>
         <button class="close-btn" id="closeModal">&times;</button>
       </div>
@@ -702,7 +702,7 @@
         </div>
         <div class="upload-text">
           <strong>Klik untuk mengunggah gambar</strong><br>
-          atau seret dan lepas file ke sini
+         
         </div>
         <div style="font-size: 12px; color: #718096;">
           Format yang didukung: JPG, PNG (maks. 5MB)
@@ -713,7 +713,7 @@
       <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
 
       <button id="processBtn" class="process-btn">
-        <i class="fas fa-cogs"></i> Proses OCR
+        <i class="fas fa-cogs"></i> Proses Scan Pintar
       </button>
 
       <div class="ocr-progress" id="progressContainer" style="display: none;">
@@ -723,7 +723,7 @@
 
       <div class="ocr-result" id="ocrResult">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-          <strong>Hasil OCR:</strong>
+          <strong>Hasil Analisis:</strong>
           <button class="copy-btn" id="copyResult" style="position: static; padding: 3px 8px;">
             <i class="fas fa-copy"></i> Salin
           </button>
@@ -772,10 +772,7 @@
         <span>Dokter Kesehatan</span>
       </a>
 
-      <div class="menu-item" id="ocrMenuItem">
-        <i class="fas fa-file-alt"></i>
-        <span>Ekstrak Teks (OCR)</span>
-      </div>
+  
 
       <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
         <i class="fas fa-exclamation-triangle"></i>
@@ -823,7 +820,7 @@
 
       <div class="input-container">
         <div class="input-box">
-          <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+          <textarea id="messageInput" placeholder="Kirim Pesan Ke AbidinAI" rows="1" onkeypress="handleKeyPress(event)"></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
