@@ -1290,28 +1290,112 @@
         }, 1500);
       }
 
-      // ** AWAL PERUBAHAN UTAMA UNTUK FITUR BARU **
+      // Voice recognition functions
       window.openAudioSpectrumModal = function() {
-        if (devToolsState.open) {
-          showWarning();
-          return false;
-        }
-        
-        // Arahkan langsung ke obrolanfull.html dan aktifkan mode suara
-        window.location.href = 'obrolanfull.html?voice=true';
+        startVoiceRecognition();
       };
-      
+
       window.startVoiceRecognition = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        
-        // Arahkan langsung ke obrolanfull.html dan aktifkan mode suara
-        window.location.href = 'obrolanfull.html?voice=true';
-      };
-      // ** AKHIR PERUBAHAN UTAMA **
 
+        if (!('webkitSpeechRecognition' in window)) {
+          alert("Maaf, API pengenalan suara tidak didukung di browser ini. Coba gunakan Google Chrome.");
+          return;
+        }
+
+        if (isVoiceMode) {
+          stopVoiceRecognition();
+          return;
+        }
+
+        isVoiceMode = true;
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'id-ID';
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        const chatbox = document.getElementById("chatbox");
+        const input = document.getElementById("messageInput");
+        
+        listeningElement = document.createElement("div");
+        listeningElement.className = "message user-message";
+        listeningElement.innerHTML = `
+          <div class="avatar">A</div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">Anda</span>
+              <span class="message-time">${getCurrentTime()}</span>
+            </div>
+            <div class="message-text">
+              <i class="fas fa-microphone-alt" style="color:#4f46e5;"></i>
+              <span id="voice-input">Mendengarkan...</span>
+              <div class="loading"></div>
+            </div>
+          </div>
+        `;
+        chatbox.appendChild(listeningElement);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        let finalTranscript = '';
+
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          document.getElementById('voice-input').textContent = finalTranscript || interimTranscript;
+        };
+
+        recognition.onend = () => {
+          if (!finalTranscript) {
+            listeningElement.remove();
+            isVoiceMode = false;
+            return;
+          }
+          if (listeningElement) {
+            listeningElement.remove();
+          }
+          input.value = finalTranscript.trim();
+          sendMessage();
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          if (listeningElement) {
+            listeningElement.remove();
+          }
+          isVoiceMode = false;
+          let errorMessage = "Terjadi kesalahan pada pengenalan suara.";
+          if (event.error === 'not-allowed') {
+            errorMessage = "Akses mikrofon ditolak. Mohon izinkan akses mikrofon di pengaturan browser Anda.";
+          }
+          addMessage('Sistem', `_Pesan suara gagal._ ${errorMessage}`, 'ai-message');
+        };
+
+        recognition.start();
+      };
+
+      function stopVoiceRecognition() {
+        if (!('webkitSpeechRecognition' in window)) return;
+
+        isVoiceMode = false;
+        const recognition = new webkitSpeechRecognition();
+        recognition.onend = () => {}; // Mencegah onend dipanggil setelah stop
+        recognition.stop();
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
+        }
+      }
+      
       window.openOCRModal = function() {
         if (devToolsState.open) {
           showWarning();
@@ -1460,191 +1544,3 @@
         const sendButton = document.getElementById("sendButton");
 
         const userDiv = addMessage('Anda', text, 'user-message');
-
-        const typingDiv = document.createElement("div");
-        typingDiv.className = "message ai-message";
-        typingDiv.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="typing-indicator">
-              <div class="loading"></div>
-              AbidinAI sedang mengetik...
-            </div>
-          </div>
-        `;
-        chatbox.appendChild(typingDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-
-        sendButton.disabled = true;
-        input.value = '';
-        input.style.height = 'auto';
-
-        try {
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: text })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          let aiReply = data.reply;
-
-          typingDiv.remove();
-
-          if (!aiReply || aiReply.trim() === "") {
-            displayMaintenanceMessage();
-          } else {
-            displayAIResponse(aiReply);
-          }
-        } catch (error) {
-          typingDiv.remove();
-          displayMaintenanceMessage();
-          console.error("Error:", error);
-          sendButton.disabled = false;
-        }
-      };
-
-      function displayMaintenanceMessage() {
-        const chatbox = document.getElementById("chatbox");
-        const sendButton = document.getElementById("sendButton");
-
-        if (listeningElement) {
-          listeningElement.remove();
-          listeningElement = null;
-        }
-
-        const maintenanceDiv = addMessage(
-          'AbidinAI',
-          formatBoldText('<i class="fas fa-tools"></i> Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'),
-          'ai-message'
-        );
-
-        sendButton.disabled = false;
-
-        if (isVoiceMode) {
-          readWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
-        }
-        isVoiceMode = false;
-      }
-
-      function displayAIResponse(aiReply) {
-        const chatbox = document.getElementById("chatbox");
-        const sendButton = document.getElementById("sendButton");
-
-        if (listeningElement) {
-          listeningElement.remove();
-          listeningElement = null;
-        }
-
-        const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
-        const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        const container = document.createElement("div");
-        container.className = "message ai-message";
-        container.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="message-header">
-              <span class="message-sender">AbidinAI</span>
-              <span class="message-time">${getCurrentTime()}</span>
-            </div>
-            <div class="message-text" id="${messageId}-text"></div>
-            <div class="message-actions">
-              <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
-                <i class="fas fa-copy"></i> Salin
-              </button>
-              <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
-                <i class="fas fa-redo"></i> Buat Ulang
-              </button>
-            </div>
-          </div>
-        `;
-
-        const messageText = container.querySelector('.message-text');
-        let textToRead = "";
-
-        for (let i = 0; i < parts.length; i++) {
-          if (i % 2 === 0) {
-            const span = document.createElement("span");
-            span.innerHTML = formatBoldText(parts[i]);
-            textToRead += parts[i] + " ";
-            messageText.appendChild(span);
-          } else {
-            const codeContainer = document.createElement("div");
-            codeContainer.className = "code-container";
-
-            const codeHeader = document.createElement("div");
-            codeHeader.className = "code-header";
-
-            const copyButton = document.createElement("button");
-            copyButton.className = "copy-btn";
-            copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
-            copyButton.onclick = () => {
-              navigator.clipboard.writeText(parts[i]).then(() => {
-                copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-                setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
-              });
-            };
-
-            codeHeader.appendChild(copyButton);
-
-            const pre = document.createElement("pre");
-            pre.textContent = parts[i];
-
-            codeContainer.appendChild(codeHeader);
-            codeContainer.appendChild(pre);
-            messageText.appendChild(codeContainer);
-          }
-        }
-
-        chatbox.appendChild(container);
-        chatbox.scrollTop = chatbox.scrollHeight;
-        sendButton.disabled = false;
-
-        if (isVoiceMode) {
-          readWithPauses(textToRead);
-        }
-        isVoiceMode = false;
-      }
-
-      function readWithPauses(text) {
-        if (!('speechSynthesis' in window)) {
-          console.log("Text-to-speech tidak didukung di browser ini");
-          return;
-        }
-
-        const sentences = text.split(/(?<=[.!?])\s+/);
-        const synth = window.speechSynthesis;
-        synth.cancel();
-
-        function cleanText(t) {
-          return t.replace(/[*"`\-+/:;\\]/g, '');
-        }
-
-        function speakNext(index) {
-          if (index >= sentences.length) return;
-
-          const cleanSentence = cleanText(sentences[index]).trim();
-          if (!cleanSentence) return speakNext(index + 1);
-
-          const utter = new SpeechSynthesisUtterance(cleanSentence);
-          utter.lang = 'id-ID';
-          utter.rate = 1.0;
-          utter.pitch = 1.0;
-          utter.volume = 1.0;
-
-          utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
-          synth.speak(utter);
-        }
-
-        speakNext(0);
-      }
-    })();
-  </script>
-</body>
-</html>
