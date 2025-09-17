@@ -228,6 +228,7 @@ app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/da
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
+app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html')));
 
 // fallback
 app.use((req, res) => res.redirect('/'));
