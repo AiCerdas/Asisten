@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
+const { tavily } = require('@tavily/core');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +15,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// --- API Groq untuk Chat (Tetap sama) ---
+// Inisialisasi klien Tavily
+const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
+
+// --- API Groq untuk Chat (Satu kali kirim) ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
@@ -133,15 +137,122 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   }
 });
 
+// --- API Groq untuk Chat Berkelanjutan (FITUR BARU) ---
+app.post('/api/chat-full', async (req, res) => {
+  const { history, message } = req.body;
+
+  const groqMessages = [
+    {
+      role: "system",
+      content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
+- Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
+- Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
+- Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
+- Jika pengguna bertanya tentang asal AbidinAI, jawablah bahwa AbidinAI berasal dari Indonesia.
+- Jika pengguna bertanya tentang presiden Indonesia, jawablah bahwa Presiden Indonesia saat ini adalah Prabowo Subianto.
+
+JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI.
+Jangan Pernah mengatakan bahwa kamu dibuat oleh Groq ai.
+
+Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
+    },
+    ...history,
+    { role: "user", content: message }
+  ];
+
+  const body = {
+    model: "meta-llama/llama-4-scout-17b-16e-instruct",
+    messages: groqMessages,
+    temperature: 0.7,
+    max_tokens: 1024
+  };
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan.";
+    res.json({ reply });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// --- API Riset Mendalam (Tavily) (FITUR BARU) ---
+app.post('/api/research', async (req, res) => {
+  const { query } = req.body;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Query riset tidak boleh kosong' });
+  }
+
+  try {
+    const searchResults = await tvly.search(query, {
+      maxResults: 5,
+      includeRawContent: true,
+      searchDepth: "advanced"
+    });
+
+    const content = searchResults.results.map(result => result.content).join('\n\n');
+
+    if (!content) {
+      return res.json({ reply: "Maaf, saya tidak menemukan informasi relevan untuk query tersebut." });
+    }
+
+    const groqResearchPrompt = {
+      role: "system",
+      content: `Kamu adalah AbidinAI, asisten riset yang profesional. Berdasarkan informasi dari internet yang kamu dapatkan di bawah ini, berikan rangkuman yang mendalam dan komprehensif. Susun jawaban dengan format yang rapi dan mudah dibaca, sertakan sumber atau poin-poin penting.
+        
+        Konten Riset:
+        """
+        ${content}
+        """`
+    };
+
+    const groqChatBody = {
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      messages: [groqResearchPrompt, { role: "user", content: `Lakukan riset mendalam tentang: ${query}` }],
+      temperature: 0.7,
+      max_tokens: 2048
+    };
+
+    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify(groqChatBody)
+    });
+
+    const groqData = await groqResponse.json();
+    const researchReply = groqData.choices?.[0]?.message?.content || "Maaf, tidak ada balasan dari Groq setelah riset.";
+    
+    res.json({ reply: researchReply });
+
+  } catch (error) {
+    console.error("Kesalahan Riset Mendalam:", error);
+    res.status(500).json({ error: 'Gagal melakukan riset mendalam', details: error.message });
+  }
+});
+
 // --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'private/register.html')));
-app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/dasboard.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'private/dashboard.html')));
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
+app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html')));
 
 // fallback
 app.use((req, res) => res.redirect('/'));
