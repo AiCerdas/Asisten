@@ -11,6 +11,6 @@
     "dotenv": "^16.3.1",
     "node-fetch": "^2.6.9",
     "multer": "^1.4.5-lts.1",
-    "@tavily/core": "^0.1.2"
   }
 }
+
