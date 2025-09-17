@@ -734,18 +734,6 @@
     </div>
   </div>
 
-  <div class="modal" id="audioSpectrumModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-chart-bar"></i> Fitur Analisis Audio
-        </div>
-        <button class="close-btn" id="closeAudioModal">&times;</button>
-      </div>
-      <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
-    </div>
-  </div>
-
   <div class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
   </div>
@@ -1034,7 +1022,6 @@
         store.clear();
       }
       
-      // ********* PERUBAHAN ADA DI BAWAH INI *********
       document.addEventListener('DOMContentLoaded', async function() {
         if (devToolsState.open) {
           showWarning();
@@ -1072,7 +1059,6 @@
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
         initOCRModal();
-        initAudioSpectrumModal();
 
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
@@ -1095,7 +1081,6 @@
           }
         });
       });
-      // ********* AKHIR PERUBAHAN *********
 
       function getCurrentTime() {
         const now = new Date();
@@ -1305,27 +1290,27 @@
         }, 1500);
       }
 
-      // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
+      // ** AWAL PERUBAHAN UTAMA UNTUK FITUR BARU **
       window.openAudioSpectrumModal = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        const modal = document.getElementById('audioSpectrumModal');
-        modal.style.display = 'flex';
+        
+        // Arahkan langsung ke obrolanfull.html dan aktifkan mode suara
+        window.location.href = 'obrolanfull.html?voice=true';
       };
-
-      function initAudioSpectrumModal() {
-        const modal = document.getElementById('audioSpectrumModal');
-        const closeBtn = document.getElementById('closeAudioModal');
-
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) modal.style.display = 'none';
-        });
-      }
-      // ** AKHIR KODE TAMBAHAN **
-
+      
+      window.startVoiceRecognition = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+        
+        // Arahkan langsung ke obrolanfull.html dan aktifkan mode suara
+        window.location.href = 'obrolanfull.html?voice=true';
+      };
+      // ** AKHIR PERUBAHAN UTAMA **
 
       window.openOCRModal = function() {
         if (devToolsState.open) {
@@ -1342,65 +1327,6 @@
         document.getElementById('ocrResult').style.display = 'none';
         document.getElementById('fileInput').value = '';
         ocrExtractedText = '';
-      };
-
-      window.startVoiceRecognition = function() {
-        if (devToolsState.open) {
-          showWarning();
-          return false;
-        }
-
-        if (!('webkitSpeechRecognition' in window)) {
-          addMessage('Sistem', 'Browser Anda tidak mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.', 'ai-message');
-          return;
-        }
-
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'id-ID';
-        recognition.start();
-
-        const chatbox = document.getElementById("chatbox");
-        if (listeningElement) {
-          listeningElement.remove();
-        }
-
-        listeningElement = document.createElement("div");
-        listeningElement.className = "message ai-message";
-        listeningElement.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="message-header">
-              <span class="message-sender">Sistem</span>
-              <span class="message-time">${getCurrentTime()}</span>
-            </div>
-            <div class="message-text">
-              <div class="typing-indicator">
-                <div class="loading"></div>
-                Mendengarkan...
-              </div>
-            </div>
-          </div>
-        `;
-        chatbox.appendChild(listeningElement);
-        chatbox.scrollTop = chatbox.scrollHeight;
-
-        recognition.onresult = function(event) {
-          const transcript = event.results[0][0].transcript;
-          document.getElementById("messageInput").value = transcript;
-          isVoiceMode = true;
-          sendMessage();
-        };
-
-        recognition.onerror = function(event) {
-          if (listeningElement) {
-            listeningElement.remove();
-            listeningElement = null;
-          }
-
-          if (event.error !== 'no-speech') {
-            addMessage('Sistem', `Error: ${event.error}`, 'ai-message');
-          }
-        };
       };
 
       function addMessage(sender, text, messageClass, timestamp = null, save = true) {
