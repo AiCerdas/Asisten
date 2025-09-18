@@ -672,40 +672,9 @@
     .action-btn.regenerate {
       color: #10b981;
     }
-
-    /* Gaya untuk pratinjau gambar */
-    #image-preview-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px;
-      border: 1px solid #e5e5e6;
-      border-radius: 8px;
-      background-color: #f9fafb;
-      margin-bottom: 8px;
-      flex-basis: 100%; /* Membuat kontainer ini mengambil lebar penuh */
-    }
-
-    .image-preview {
-      width: 50px;
-      height: 50px;
-      border-radius: 6px;
-      object-fit: cover;
-    }
-
-    .remove-image-btn {
-      background: none;
-      border: none;
-      color: #718096;
-      cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
-    }
   </style>
 </head>
-<body class="selectable">
-  <div class="warning-overlay" id="warningOverlay">
+<body class="selectable"> <div class="warning-overlay" id="warningOverlay">
     <div style="text-align: center;">
       <i class="fas fa-shield-alt" style="font-size: 48px; margin-bottom: 20px; color: #ff0000;"></i>
       <h2>🚫 AKSES TERDETEKSI!</h2>
@@ -740,7 +709,7 @@
       <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
 
       <button id="processBtn" class="process-btn">
-        <i class="fas fa-paper-plane"></i> Kirim Pesan
+        <i class="fas fa-cogs"></i> Proses Scan Pintar
       </button>
 
       <div class="ocr-progress" id="progressContainer" style="display: none;">
@@ -757,18 +726,6 @@
         </div>
         <div id="resultText" style="white-space: pre-line;"></div>
       </div>
-    </div>
-  </div>
-
-  <div class="modal" id="audioSpectrumModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-chart-bar"></i> Fitur Analisis Audio
-        </div>
-        <button class="close-btn" id="closeAudioModal">&times;</button>
-      </div>
-      <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
     </div>
   </div>
 
@@ -862,19 +819,10 @@
 
       <div class="input-container">
         <div class="input-box">
-          <div id="image-preview-container" style="display: none;">
-            <img id="image-preview" class="image-preview" src="" alt="Pratinjau Gambar" />
-            <button class="remove-image-btn" onclick="removeImagePreview()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
           <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
-            </button>
-            <button class="audio-spectrum-btn" onclick="openAudioSpectrumModal()">
-                <i class="fas fa-chart-bar"></i>
             </button>
             <button class="voice-btn" onclick="startVoiceRecognition()">
               <i class="fas fa-microphone-alt"></i>
@@ -902,7 +850,6 @@
       let lastTypingElement = null;
       let db = null;
       let ocrExtractedText = '';
-      let ocrImageURL = null; // Tambahkan variabel untuk URL gambar
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
@@ -1066,7 +1013,7 @@
         const store = transaction.objectStore('conversations');
         store.clear();
       }
-      
+
       document.addEventListener('DOMContentLoaded', async function() {
         if (devToolsState.open) {
           showWarning();
@@ -1080,11 +1027,18 @@
           const chatbox = document.getElementById("chatbox");
           
           if (messages.length === 0) {
-            // Biarkan chatbox kosong, tidak perlu menambahkan pesan apa pun.
+            const welcomeMsg = document.createElement("div");
+            welcomeMsg.innerHTML = `
+                </div>
+                <div class="message-content">
+                  <div class="message-header">
+              </div>
+            `;
+            chatbox.appendChild(welcomeMsg);
           } else {
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
-              addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false); // false untuk tidak menyimpan ulang
+              addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false);
             });
           }
           
@@ -1092,7 +1046,15 @@
         } catch (error) {
           console.error('Error initializing database:', error);
           const chatbox = document.getElementById("chatbox");
-          // Biarkan chatbox kosong bahkan jika ada error
+          const welcomeMsg = document.createElement("div");
+          welcomeMsg.innerHTML = `
+              </div>
+              <div class="message-content">
+                <div class="message-header">
+            </div>
+          `;
+          chatbox.appendChild(welcomeMsg);
+          chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         const textarea = document.getElementById('messageInput');
@@ -1104,7 +1066,6 @@
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
         initOCRModal();
-        initAudioSpectrumModal();
 
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
@@ -1162,19 +1123,6 @@
           isMusicPlaying = false;
         }
       };
-
-      // Fungsi untuk menghapus pratinjau gambar
-      window.removeImagePreview = function() {
-        const imagePreviewContainer = document.getElementById('image-preview-container');
-        const imagePreview = document.getElementById('image-preview');
-        
-        imagePreviewContainer.style.display = 'none';
-        if (ocrImageURL) {
-            URL.revokeObjectURL(ocrImageURL); // Bersihkan URL objek
-            ocrImageURL = null;
-        }
-        ocrExtractedText = '';
-      }
 
       // OCR Functions (Updated to use Gemini API via backend)
       function initOCRModal() {
@@ -1297,15 +1245,13 @@
             progressContainer.style.display = 'none';
             
             ocrExtractedText = aiReply;
+            ocrResult.scrollIntoView({ behavior: 'smooth' });
             
-            // Tambahkan pratinjau gambar ke dalam kotak pesan
-            ocrImageURL = URL.createObjectURL(selectedFile);
-            const imagePreviewElement = document.getElementById('image-preview');
-            const imagePreviewContainer = document.getElementById('image-preview-container');
-            imagePreviewElement.src = ocrImageURL;
-            imagePreviewContainer.style.display = 'flex';
-
-            modal.style.display = 'none';
+            // Mengirim hasil analisis langsung ke chat
+            setTimeout(() => {
+              modal.style.display = 'none';
+              sendOCRToAI(aiReply); // Mengirim hasil analisis, bukan teks mentah
+            }, 1000);
 
           } catch (err) {
             console.error('Gemini OCR Error:', err);
@@ -1318,27 +1264,38 @@
         }
       }
 
-      // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
-      window.openAudioSpectrumModal = function() {
-        if (devToolsState.open) {
-          showWarning();
-          return false;
+      // Fungsi untuk mengirim hasil OCR ke AI (diperbarui)
+      function sendOCRToAI(aiAnalysis) {
+        if (!aiAnalysis || aiAnalysis.trim() === "") {
+          const chatbox = document.getElementById("chatbox");
+          addMessage('AbidinAI', 'Maaf, saya tidak dapat menganalisis isi gambar.', 'ai-message');
+          chatbox.scrollTop = chatbox.scrollHeight;
+          return;
         }
-        const modal = document.getElementById('audioSpectrumModal');
-        modal.style.display = 'flex';
-      };
 
-      function initAudioSpectrumModal() {
-        const modal = document.getElementById('audioSpectrumModal');
-        const closeBtn = document.getElementById('closeAudioModal');
+        // Buat pesan di chatbox seolah pengguna yang bertanya
+        const userDiv = addMessage('Anda', `[Analisis Gambar]`, 'user-message');
+        
+        const chatbox = document.getElementById("chatbox");
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "message ai-message";
+        typingDiv.innerHTML = `
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="typing-indicator">
+              <div class="loading"></div>
+              AbidinAI sedang menyiapkan respons...
+            </div>
+          </div>
+        `;
+        chatbox.appendChild(typingDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
 
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) modal.style.display = 'none';
-        });
+        setTimeout(() => {
+          typingDiv.remove();
+          displayAIResponse(aiAnalysis);
+        }, 1500);
       }
-      // ** AKHIR KODE TAMBAHAN **
-
 
       window.openOCRModal = function() {
         if (devToolsState.open) {
@@ -1487,11 +1444,11 @@
           try {
             // Array dari respons yang berbeda
             const replies = [
-                "Tentu, ini adalah versi jawaban yang berbeda. Semoga lebih membantu!",
-                "Baik, ini jawaban lain yang mungkin Anda cari.",
-                "Ini adalah respons yang diperbarui. Apakah ada lagi yang bisa saya bantu?",
-                "Ini adalah alternatif jawaban untuk pertanyaan Anda sebelumnya.",
-                "Tentu, ini versi lain dari jawaban tersebut."
+                "Baik, ini versi jawaban lain untuk permintaan Anda.",
+                "Tentu, ini adalah jawaban yang berbeda.",
+                "Ini adalah respons yang diperbarui untuk pertanyaan Anda.",
+                "Silakan periksa jawaban alternatif berikut ini.",
+                "Ini adalah versi lain dari jawaban tersebut. Apa ada lagi yang bisa saya bantu?"
             ];
             // Pilih respons secara acak
             const randomIndex = Math.floor(Math.random() * replies.length);
