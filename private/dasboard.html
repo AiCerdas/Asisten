@@ -1485,8 +1485,17 @@
           regenerateButton.disabled = true;
           
           try {
-            // Logika simulasi respons yang lebih sederhana
-            const simulatedReply = "Tentu, ini adalah jawaban yang berbeda dari permintaan Anda. Silakan beri tahu jika Anda membutuhkan bantuan lebih lanjut.";
+            // Array dari respons yang berbeda
+            const replies = [
+                "Tentu, ini adalah versi jawaban yang berbeda. Semoga lebih membantu!",
+                "Baik, ini jawaban lain yang mungkin Anda cari.",
+                "Ini adalah respons yang diperbarui. Apakah ada lagi yang bisa saya bantu?",
+                "Ini adalah alternatif jawaban untuk pertanyaan Anda sebelumnya.",
+                "Tentu, ini versi lain dari jawaban tersebut."
+            ];
+            // Pilih respons secara acak
+            const randomIndex = Math.floor(Math.random() * replies.length);
+            const simulatedReply = replies[randomIndex];
 
             // Simulasikan delay jaringan
             await new Promise(resolve => setTimeout(resolve, 1500));
