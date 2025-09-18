@@ -336,6 +336,7 @@
       border-radius: 12px;
       padding: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      flex-wrap: wrap; /* Menambahkan ini agar preview gambar bisa pindah baris jika terlalu panjang */
     }
 
     #messageInput {
@@ -676,6 +677,36 @@
     .action-btn.regenerate {
       color: #10b981;
     }
+
+    /* Gaya untuk pratinjau gambar */
+    #image-preview-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border: 1px solid #e5e5e6;
+      border-radius: 8px;
+      background-color: #f9fafb;
+      margin-bottom: 8px;
+      flex-basis: 100%; /* Membuat kontainer ini mengambil lebar penuh */
+    }
+
+    .image-preview {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    .remove-image-btn {
+      background: none;
+      border: none;
+      color: #718096;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+    }
   </style>
 </head>
 <body class="selectable">
@@ -714,7 +745,7 @@
       <img id="previewImage" class="preview-image" alt="Pratinjau gambar">
 
       <button id="processBtn" class="process-btn">
-        <i class="fas fa-cogs"></i> Proses Scan Pintar
+        <i class="fas fa-paper-plane"></i> Kirim Pesan
       </button>
 
       <div class="ocr-progress" id="progressContainer" style="display: none;">
@@ -836,6 +867,12 @@
 
       <div class="input-container">
         <div class="input-box">
+          <div id="image-preview-container" style="display: none;">
+            <img id="image-preview" class="image-preview" src="" alt="Pratinjau Gambar" />
+            <button class="remove-image-btn" onclick="removeImagePreview()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
           <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
@@ -870,6 +907,7 @@
       let lastTypingElement = null;
       let db = null;
       let ocrExtractedText = '';
+      let ocrImageURL = null; // Tambahkan variabel untuk URL gambar
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
@@ -1034,7 +1072,6 @@
         store.clear();
       }
       
-      // ********* PERUBAHAN ADA DI BAWAH INI *********
       document.addEventListener('DOMContentLoaded', async function() {
         if (devToolsState.open) {
           showWarning();
@@ -1095,7 +1132,6 @@
           }
         });
       });
-      // ********* AKHIR PERUBAHAN *********
 
       function getCurrentTime() {
         const now = new Date();
@@ -1131,6 +1167,19 @@
           isMusicPlaying = false;
         }
       };
+
+      // Fungsi untuk menghapus pratinjau gambar
+      window.removeImagePreview = function() {
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        
+        imagePreviewContainer.style.display = 'none';
+        if (ocrImageURL) {
+            URL.revokeObjectURL(ocrImageURL); // Bersihkan URL objek
+            ocrImageURL = null;
+        }
+        ocrExtractedText = '';
+      }
 
       // OCR Functions (Updated to use Gemini API via backend)
       function initOCRModal() {
@@ -1253,13 +1302,15 @@
             progressContainer.style.display = 'none';
             
             ocrExtractedText = aiReply;
-            ocrResult.scrollIntoView({ behavior: 'smooth' });
             
-            // Mengirim hasil analisis langsung ke chat
-            setTimeout(() => {
-              modal.style.display = 'none';
-              sendOCRToAI(aiReply); // Mengirim hasil analisis, bukan teks mentah
-            }, 1000);
+            // Tambahkan pratinjau gambar ke dalam kotak pesan
+            ocrImageURL = URL.createObjectURL(selectedFile);
+            const imagePreviewElement = document.getElementById('image-preview');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            imagePreviewElement.src = ocrImageURL;
+            imagePreviewContainer.style.display = 'flex';
+
+            modal.style.display = 'none';
 
           } catch (err) {
             console.error('Gemini OCR Error:', err);
@@ -1270,39 +1321,6 @@
             }, 2000);
           }
         }
-      }
-
-      // Fungsi untuk mengirim hasil OCR ke AI (diperbarui)
-      function sendOCRToAI(aiAnalysis) {
-        if (!aiAnalysis || aiAnalysis.trim() === "") {
-          const chatbox = document.getElementById("chatbox");
-          addMessage('AbidinAI', 'Maaf, saya tidak dapat menganalisis isi gambar.', 'ai-message');
-          chatbox.scrollTop = chatbox.scrollHeight;
-          return;
-        }
-
-        // Buat pesan di chatbox seolah pengguna yang bertanya
-        const userDiv = addMessage('Anda', `[Analisis Gambar]`, 'user-message');
-        
-        const chatbox = document.getElementById("chatbox");
-        const typingDiv = document.createElement("div");
-        typingDiv.className = "message ai-message";
-        typingDiv.innerHTML = `
-          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-          <div class="message-content">
-            <div class="typing-indicator">
-              <div class="loading"></div>
-              AbidinAI sedang menyiapkan respons...
-            </div>
-          </div>
-        `;
-        chatbox.appendChild(typingDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-
-        setTimeout(() => {
-          typingDiv.remove();
-          displayAIResponse(aiAnalysis);
-        }, 1500);
       }
 
       // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
@@ -1467,7 +1485,7 @@
         
         const originalText = messageTextElement.textContent || messageTextElement.innerText;
         
-        const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
+        const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')']`);
         if (regenerateButton) {
           const originalHtml = regenerateButton.innerHTML;
           regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
@@ -1527,8 +1545,22 @@
         }
 
         const input = document.getElementById("messageInput");
-        const text = input.value.trim();
-        if (!text) return;
+        let text = input.value.trim();
+        
+        // Gabungkan teks dari input dengan hasil OCR jika ada
+        if (ocrExtractedText) {
+            text = `[Analisis Gambar] ${ocrExtractedText}\n\n${text}`;
+        }
+
+        if (!text) {
+          // Jika tidak ada teks dan tidak ada gambar, jangan kirim pesan
+          if (ocrImageURL) {
+            // Jika ada gambar tapi tidak ada teks, kirim pesan dengan "Analisis Gambar" saja
+             text = "[Analisis Gambar]";
+          } else {
+            return;
+          }
+        }
 
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
@@ -1552,6 +1584,7 @@
         sendButton.disabled = true;
         input.value = '';
         input.style.height = 'auto';
+        removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
 
         try {
           const response = await fetch("/api/chat", {
