@@ -15,16 +15,70 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// --- API Groq untuk Chat (Tetap sama) ---
+// --- API Chat yang Sudah Diperbaiki (Groq & Hugging Face) ---
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
+  
+  if (!message) {
+    return res.status(400).json({ error: 'Pesan kosong' });
+  }
 
-  const body = {
-    model: "meta-llama/llama-4-scout-17b-16e-instruct",
-    messages: [
-      {
-        role: "system",
-        content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
+  const generateImageKeyword = "buatkan gambar";
+  const isImageRequest = message.toLowerCase().includes(generateImageKeyword);
+
+  if (isImageRequest) {
+    // Logika untuk membuat gambar dengan Hugging Face
+    const prompt = message.toLowerCase().replace(generateImageKeyword, '').trim();
+
+    if (!prompt) {
+      return res.json({ reply: "Maaf, Anda harus memberikan deskripsi gambar yang ingin dibuat." });
+    }
+
+    const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY; 
+    const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev";
+
+    if (!HUGGINGFACE_API_KEY) {
+      return res.status(500).json({ error: 'HUGGINGFACE_API_KEY tidak dikonfigurasi di Vercel' });
+    }
+
+    try {
+      const response = await fetch(HUGGINGFACE_API_URL, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${HUGGINGFACE_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inputs: prompt })
+      });
+
+      if (!response.ok) {
+        // Tangani error API Hugging Face dengan pesan yang lebih jelas
+        const errorText = await response.text();
+        console.error("Kesalahan API Hugging Face:", response.status, response.statusText, errorText);
+        throw new Error(`Gagal membuat gambar: ${response.statusText}. Mungkin API key salah atau model tidak tersedia.`);
+      }
+
+      // Pastikan respons adalah gambar (array buffer)
+      const imageArrayBuffer = await response.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
+      
+      // Kirim gambar sebagai respons langsung
+      res.setHeader('Content-Type', 'image/jpeg');
+      return res.send(imageBuffer);
+
+    } catch (error) {
+      console.error("Kesalahan pembuatan gambar:", error);
+      return res.status(500).json({ error: 'Gagal membuat gambar', details: error.message });
+    }
+
+  } else {
+    // Logika asli untuk chat dengan Groq
+    const body = {
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      messages: [
+        {
+          role: "system",
+          content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 - Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
 - Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
@@ -35,28 +89,29 @@ JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI.
 Jangan Pernah mengatakan bahwa kamu dibuat oleh Groq ai.
 
 Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
-      },
-      { role: "user", content: message }
-    ],
-    temperature: 0.7,
-    max_tokens: 1024
-  };
+        },
+        { role: "user", content: message }
+      ],
+      temperature: 0.7,
+      max_tokens: 1024
+    };
 
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify(body)
-    });
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        },
+        body: JSON.stringify(body)
+      });
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan.";
-    res.json({ reply });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+      const data = await response.json();
+      const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan.";
+      res.json({ reply });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 
@@ -220,46 +275,6 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
-// --- API BARU untuk Membuat Gambar dengan Hugging Face (DIPERBAIKI) ---
-app.post('/api/generate-image', async (req, res) => {
-  const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt teks tidak ditemukan' });
-  }
-
-  const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY; 
-  const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev";
-
-  if (!HUGGINGFACE_API_KEY) {
-    return res.status(500).json({ error: 'HUGGINGFACE_API_KEY tidak dikonfigurasi' });
-  }
-
-  try {
-    const response = await fetch(HUGGINGFACE_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${HUGGINGFACE_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ inputs: prompt })
-    });
-
-    if (!response.ok) {
-        throw new Error(`Kesalahan API Hugging Face: ${response.status} ${response.statusText}`);
-    }
-
-    const imageArrayBuffer = await response.arrayBuffer();
-    const imageBuffer = Buffer.from(imageArrayBuffer);
-    
-    res.setHeader('Content-Type', 'image/jpeg');
-    res.send(imageBuffer);
-
-  } catch (error) {
-    console.error("Kesalahan pembuatan gambar:", error);
-    res.status(500).json({ error: 'Gagal membuat gambar', details: error.message });
-  }
-});
 
 // --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
