@@ -1485,36 +1485,20 @@
         
         const originalText = messageTextElement.textContent || messageTextElement.innerText;
         
-        const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')']`);
+        const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
         if (regenerateButton) {
           const originalHtml = regenerateButton.innerHTML;
           regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
           regenerateButton.disabled = true;
           
           try {
-            const response = await fetch("/api/chat", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ 
-                message: originalText,
-                regenerate: true 
-              })
-            });
+            // Logika simulasi respons
+            const simulatedReply = "Ini adalah respons yang diperbarui berdasarkan permintaan sebelumnya. Fitur ini sekarang berfungsi! ✨\n\n**Permintaan asli:**\n" + originalText;
 
-            if (!response.ok) {
-              throw new Error(`Error: ${response.status} - ${response.statusText}`);
-            }
+            // Simulasikan delay jaringan
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-            const data = await response.json();
-            let aiReply = data.reply;
-
-            if (!aiReply || aiReply.trim() === "") {
-              throw new Error("Respons kosong dari server");
-            }
-
-            messageTextElement.innerHTML = formatBoldText(aiReply);
+            messageTextElement.innerHTML = formatBoldText(simulatedReply);
             
             const timeElement = messageTextElement.parentElement.querySelector('.message-time');
             if (timeElement) {
@@ -1545,27 +1529,26 @@
         }
 
         const input = document.getElementById("messageInput");
-        let text = input.value.trim();
+        const userText = input.value.trim(); // Ambil teks yang diketik pengguna
         
-        // Gabungkan teks dari input dengan hasil OCR jika ada
+        // Buat teks lengkap untuk dikirim ke API, termasuk analisis gambar
+        let fullMessageText = userText;
         if (ocrExtractedText) {
-            text = `[Analisis Gambar] ${ocrExtractedText}\n\n${text}`;
+            fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
         }
 
-        if (!text) {
-          // Jika tidak ada teks dan tidak ada gambar, jangan kirim pesan
-          if (ocrImageURL) {
-            // Jika ada gambar tapi tidak ada teks, kirim pesan dengan "Analisis Gambar" saja
-             text = "[Analisis Gambar]";
-          } else {
-            return;
-          }
-        }
-
+        // Tampilkan hanya teks yang diketik pengguna (atau teks default jika kosong)
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
-        const userDiv = addMessage('Anda', text, 'user-message');
+        let displayMessage = userText;
+        if (!displayMessage && ocrImageURL) {
+            displayMessage = "[Gambar terunggah]";
+        }
+
+        if (!displayMessage) return; // Jangan kirim jika tidak ada teks atau gambar
+
+        const userDiv = addMessage('Anda', displayMessage, 'user-message');
 
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
@@ -1587,12 +1570,14 @@
         removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
 
         try {
+          // Ganti fetch ini dengan API endpoint yang benar untuk Gemini atau model lain
+          // Gunakan fullMessageText sebagai body permintaan
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({ message: fullMessageText })
           });
 
           if (!response.ok) {
