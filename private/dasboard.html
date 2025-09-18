@@ -197,6 +197,14 @@
     .ai-message {
       background-color: #f9fafb;
     }
+    
+    .ai-message .generated-image {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 8px;
+        margin-top: 10px;
+        border: 1px solid #e5e5e6;
+    }
 
     .avatar {
       width: 36px;
@@ -1562,26 +1570,38 @@
         }
 
         const input = document.getElementById("messageInput");
-        const userText = input.value.trim(); // Ambil teks yang diketik pengguna
-        
-        // Buat teks lengkap untuk dikirim ke API, termasuk analisis gambar
-        let fullMessageText = userText;
-        if (ocrExtractedText) {
-            fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
-        }
-
-        // Tampilkan hanya teks yang diketik pengguna (atau teks default jika kosong)
+        const userText = input.value.trim();
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
+        const lowerCaseText = userText.toLowerCase();
 
+        if (!userText && !ocrImageURL) return;
+
+        let isImageRequest = false;
+        let promptForImage = userText;
+
+        const imageKeywords = ["buat gambar", "generate gambar", "gambar dari", "bikin gambar", "lukisan"];
+        if (imageKeywords.some(keyword => lowerCaseText.includes(keyword))) {
+          isImageRequest = true;
+          // Ekstrak prompt setelah keyword
+          for (const keyword of imageKeywords) {
+            const index = lowerCaseText.indexOf(keyword);
+            if (index !== -1) {
+              promptForImage = userText.substring(index + keyword.length).trim();
+              break;
+            }
+          }
+        }
+
+        // Tampilkan pesan pengguna di chatbox
         let displayMessage = userText;
+        if (isImageRequest) {
+            displayMessage = `Permintaan membuat gambar: "${promptForImage}"`;
+        }
         if (!displayMessage && ocrImageURL) {
             displayMessage = "[Gambar terunggah]";
         }
-
-        if (!displayMessage) return; // Jangan kirim jika tidak ada teks atau gambar
-
-        const userDiv = addMessage('Anda', displayMessage, 'user-message');
+        addMessage('Anda', displayMessage, 'user-message');
 
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
@@ -1603,29 +1623,65 @@
         removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
 
         try {
-          // Ganti fetch ini dengan API endpoint yang benar untuk Gemini atau model lain
-          // Gunakan fullMessageText sebagai body permintaan
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: fullMessageText })
-          });
+          if (isImageRequest) {
+            // Panggil API pembuatan gambar
+            const response = await fetch("/api/generate-image", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ prompt: promptForImage })
+            });
 
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
+            if (!response.ok) {
+              throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            }
 
-          const data = await response.json();
-          let aiReply = data.reply;
+            // Dapatkan gambar sebagai Blob
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob);
 
-          typingDiv.remove();
+            typingDiv.remove();
+            
+            // Tampilkan gambar di chatbox
+            const imageDiv = document.createElement("div");
+            imageDiv.innerHTML = `
+                <p>Berikut gambar yang berhasil saya buat dari prompt: "${promptForImage}"</p>
+                <img src="${imageUrl}" class="generated-image" alt="Generated image" onclick="window.open(this.src)">
+                <p style="font-size: 12px; color: #718096; margin-top: 5px;">*Klik gambar untuk melihat dalam ukuran penuh.</p>
+            `;
+            
+            displayAIResponse(imageDiv.innerHTML);
 
-          if (!aiReply || aiReply.trim() === "") {
-            displayMaintenanceMessage();
           } else {
-            displayAIResponse(aiReply);
+            // Logika chat biasa (sudah ada)
+            let fullMessageText = userText;
+            if (ocrExtractedText) {
+                fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
+            }
+
+            const response = await fetch("/api/chat", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ message: fullMessageText })
+            });
+
+            if (!response.ok) {
+              throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            let aiReply = data.reply;
+
+            typingDiv.remove();
+
+            if (!aiReply || aiReply.trim() === "") {
+              displayMaintenanceMessage();
+            } else {
+              displayAIResponse(aiReply);
+            }
           }
         } catch (error) {
           typingDiv.remove();
