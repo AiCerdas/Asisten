@@ -220,7 +220,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
-// --- API BARU untuk Membuat Gambar dengan Hugging Face ---
+// --- API BARU untuk Membuat Gambar dengan Hugging Face (DIPERBAIKI) ---
 app.post('/api/generate-image', async (req, res) => {
   const { prompt } = req.body;
 
@@ -228,12 +228,12 @@ app.post('/api/generate-image', async (req, res) => {
     return res.status(400).json({ error: 'Prompt teks tidak ditemukan' });
   }
 
-  // Ganti URL dan API key dengan informasi dari Hugging Face
-  const HUGGINGFACE_API_KEY = process.env.HF_TOKEN; 
+  // Gunakan nama variabel yang konsisten dengan yang disetel di Vercel
+  const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY; 
   const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev";
 
   if (!HUGGINGFACE_API_KEY) {
-    return res.status(500).json({ error: 'HUGGINGFACE_API_KEY tidak dikonfigurasi' });
+    return res.status(500).json({ error: 'HUGGINGFACE_API_KEY tidak dikonfigurasi di Vercel' });
   }
 
   try {
@@ -247,11 +247,12 @@ app.post('/api/generate-image', async (req, res) => {
     });
 
     if (!response.ok) {
-        throw new Error(`Kesalahan API Hugging Face: ${response.status} ${response.statusText}`);
+        throw new Error(`Kesalahan API Hugging Face: ${response.status} ${response.statusText} - ${await response.text()}`);
     }
 
-    // Mengambil gambar sebagai buffer
-    const imageBuffer = await response.buffer();
+    // Mengambil gambar sebagai ArrayBuffer
+    const imageArrayBuffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(imageArrayBuffer);
     
     // Mengirim gambar kembali ke klien dengan header yang sesuai
     res.setHeader('Content-Type', 'image/jpeg'); // Sesuaikan dengan tipe gambar yang dihasilkan
