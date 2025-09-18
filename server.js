@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
+const { HfInference } = require('@huggingface/inference');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -216,6 +217,47 @@ app.post('/api/unlimited-chat', async (req, res) => {
     res.json({ reply });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// --- API BARU untuk Membuat Gambar dengan Hugging Face (DIPERBAIKI) ---
+app.post('/api/generate-image', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt teks tidak ditemukan' });
+  }
+
+  const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY; 
+  const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev";
+
+  if (!HUGGINGFACE_API_KEY) {
+    return res.status(500).json({ error: 'HUGGINGFACE_API_KEY tidak dikonfigurasi' });
+  }
+
+  try {
+    const response = await fetch(HUGGINGFACE_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${HUGGINGFACE_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: prompt })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Kesalahan API Hugging Face: ${response.status} ${response.statusText}`);
+    }
+
+    const imageArrayBuffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(imageArrayBuffer);
+    
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.send(imageBuffer);
+
+  } catch (error) {
+    console.error("Kesalahan pembuatan gambar:", error);
+    res.status(500).json({ error: 'Gagal membuat gambar', details: error.message });
   }
 });
 
