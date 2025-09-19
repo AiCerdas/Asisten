@@ -1479,7 +1479,7 @@
         sendBtn.onclick = function() {
             const query = input.value.trim();
             if (query) {
-                sendMessageWithCommand(`/riset ${query}`);
+                sendMessageWithCommand(query); // Ganti dengan fungsi baru
                 modal.style.display = 'none';
             }
         };
@@ -1503,16 +1503,13 @@
         });
       }
       
-      // Fungsi untuk mengirim pesan dengan perintah
-      async function sendMessageWithCommand(command) {
+      // Fungsi baru untuk mengirim pesan dengan perintah riset
+      async function sendMessageWithCommand(query) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
         const messageInput = document.getElementById("messageInput");
 
-        // Tambahkan pesan pengguna ke chatbox
-        addMessage('Anda', command, 'user-message');
-
-        // Tampilkan indikator mengetik
+        // Tampilkan pesan "sedang riset" dari bot
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
         typingDiv.innerHTML = `
@@ -1531,11 +1528,11 @@
         messageInput.value = '';
 
         try {
-          // Panggil endpoint chat di server dengan perintah riset
-          const response = await fetch("/api/chat", {
+          // Panggil endpoint riset di server dengan query yang bersih
+          const response = await fetch("/api/research", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: command })
+            body: JSON.stringify({ query: query })
           });
 
           if (!response.ok) {
@@ -1545,11 +1542,26 @@
           const data = await response.json();
           typingDiv.remove();
 
-          if (!data.reply || data.reply.trim() === "") {
-              displayMaintenanceMessage();
+          // Format hasil riset
+          let replyText = "Berikut hasil riset untuk **" + query + "**:\n\n";
+          
+          if (data.wikipedia.title) {
+            replyText += `**Wikipedia:**\n- Judul: ${data.wikipedia.title}\n- Ringkasan: ${data.wikipedia.extract}\n- Link: ${data.wikipedia.link}\n\n`;
           } else {
-              displayAIResponse(data.reply);
+            replyText += `**Wikipedia:**\n- ${data.wikipedia.message || 'Tidak ada hasil yang ditemukan.'}\n\n`;
           }
+
+          if (data.openalex && data.openalex.length > 0) {
+            replyText += `**OpenAlex (Publikasi Ilmiah):**\n`;
+            data.openalex.forEach(item => {
+                replyText += `- Judul: ${item.title}\n- Tanggal Publikasi: ${item.publication_date}\n- DOI: ${item.doi || 'Tidak tersedia'}\n\n`;
+            });
+          } else {
+            replyText += `**OpenAlex (Publikasi Ilmiah):**\n- ${data.openalex.message || 'Tidak ada hasil yang ditemukan.'}`;
+          }
+
+          displayAIResponse(replyText);
+
         } catch (error) {
           console.error("Error sending command:", error);
           typingDiv.remove();
@@ -1783,17 +1795,29 @@
         }
 
         const input = document.getElementById("messageInput");
-        const userText = input.value.trim(); // Ambil teks yang diketik pengguna
+        const userText = input.value.trim();
+        const sendButton = document.getElementById("sendButton");
+        const chatbox = document.getElementById("chatbox");
         
-        // Buat teks lengkap untuk dikirim ke API, termasuk analisis gambar
+        // Cek jika input adalah perintah /riset
+        if (userText.startsWith('/riset')) {
+            const researchQuery = userText.substring(6).trim();
+            
+            // Tampilkan pesan pengguna sebagai balasan, bukan perintah
+            addMessage('Anda', 'Riset untuk: ' + researchQuery, 'user-message');
+            
+            // Jalankan fungsi riset
+            sendMessageWithCommand(researchQuery);
+            input.value = '';
+            input.style.height = 'auto';
+            return;
+        }
+        
+        // Logika untuk chat normal
         let fullMessageText = userText;
         if (ocrExtractedText) {
             fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
         }
-
-        // Tampilkan hanya teks yang diketik pengguna (atau teks default jika kosong)
-        const chatbox = document.getElementById("chatbox");
-        const sendButton = document.getElementById("sendButton");
 
         let displayMessage = userText;
         if (!displayMessage && ocrImageURL) {
@@ -1821,11 +1845,9 @@
         sendButton.disabled = true;
         input.value = '';
         input.style.height = 'auto';
-        removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
+        removeImagePreview();
 
         try {
-          // Ganti fetch ini dengan API endpoint yang benar untuk Gemini atau model lain
-          // Gunakan fullMessageText sebagai body permintaan
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: {
