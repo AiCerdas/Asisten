@@ -902,9 +902,9 @@
       let lastTypingElement = null;
       let db = null;
       let ocrExtractedText = '';
-      let ocrImageURL = null; // Tambahkan variabel untuk URL gambar
+      let ocrImageURL = null;
 
-      const devToolsState = {open: false, orientation: null};
+      const devToolsState = { open: false, orientation: null };
       const devToolsThreshold = 160;
 
       document.addEventListener('contextmenu', e => e.preventDefault());
@@ -931,7 +931,7 @@
 
       const detectDevTools = () => {
         if (window.outerHeight - window.innerHeight > devToolsThreshold ||
-            window.outerWidth - window.innerWidth > devToolsThreshold) {
+          window.outerWidth - window.innerWidth > devToolsThreshold) {
           if (!devToolsState.open) {
             devToolsState.open = true;
             showWarning();
@@ -1000,20 +1000,20 @@
       function initDatabase() {
         return new Promise((resolve, reject) => {
           const request = indexedDB.open('AbidinAIChatDB', 1);
-          
+
           request.onerror = () => {
             console.error('IndexedDB error:', request.error);
             reject(request.error);
           };
-          
+
           request.onsuccess = () => {
             db = request.result;
             resolve(db);
           };
-          
+
           request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            
+
             if (!db.objectStoreNames.contains('conversations')) {
               const store = db.createObjectStore('conversations', { keyPath: 'id', autoIncrement: true });
               store.createIndex('timestamp', 'timestamp', { unique: false });
@@ -1024,16 +1024,16 @@
 
       function saveMessageToDB(sender, text, timestamp) {
         if (!db) return;
-        
+
         const transaction = db.transaction(['conversations'], 'readwrite');
         const store = transaction.objectStore('conversations');
-        
+
         const message = {
           sender: sender,
           text: text,
           timestamp: timestamp || new Date().getTime()
         };
-        
+
         store.add(message);
       }
 
@@ -1043,16 +1043,16 @@
             resolve([]);
             return;
           }
-          
+
           const transaction = db.transaction(['conversations'], 'readonly');
           const store = transaction.objectStore('conversations');
           const index = store.index('timestamp');
           const request = index.getAll();
-          
+
           request.onsuccess = () => {
             resolve(request.result);
           };
-          
+
           request.onerror = () => {
             reject(request.error);
           };
@@ -1061,12 +1061,12 @@
 
       function clearConversationFromDB() {
         if (!db) return;
-        
+
         const transaction = db.transaction(['conversations'], 'readwrite');
         const store = transaction.objectStore('conversations');
         store.clear();
       }
-      
+
       document.addEventListener('DOMContentLoaded', async function() {
         if (devToolsState.open) {
           showWarning();
@@ -1075,10 +1075,10 @@
 
         try {
           await initDatabase();
-          
+
           const messages = await loadMessagesFromDB();
           const chatbox = document.getElementById("chatbox");
-          
+
           if (messages.length === 0) {
             // Biarkan chatbox kosong, tidak perlu menambahkan pesan apa pun.
           } else {
@@ -1087,7 +1087,7 @@
               addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false); // false untuk tidak menyimpan ulang
             });
           }
-          
+
           chatbox.scrollTop = chatbox.scrollHeight;
         } catch (error) {
           console.error('Error initializing database:', error);
@@ -1112,9 +1112,9 @@
               await clearConversationFromDB();
               const chatbox = document.getElementById("chatbox");
               chatbox.innerHTML = '';
-              
+
               const confirmationMsg = addMessage('Sistem', 'Riwayat percakapan telah dihapus.', 'ai-message', null, false);
-              
+
               setTimeout(() => {
                 if (confirmationMsg && confirmationMsg.parentNode) {
                   confirmationMsg.parentNode.removeChild(confirmationMsg);
@@ -1163,20 +1163,18 @@
         }
       };
 
-      // Fungsi untuk menghapus pratinjau gambar
       window.removeImagePreview = function() {
         const imagePreviewContainer = document.getElementById('image-preview-container');
         const imagePreview = document.getElementById('image-preview');
-        
+
         imagePreviewContainer.style.display = 'none';
         if (ocrImageURL) {
-            URL.revokeObjectURL(ocrImageURL); // Bersihkan URL objek
-            ocrImageURL = null;
+          URL.revokeObjectURL(ocrImageURL);
+          ocrImageURL = null;
         }
         ocrExtractedText = '';
       }
 
-      // OCR Functions (Updated to use Gemini API via backend)
       function initOCRModal() {
         const modal = document.getElementById('ocrModal');
         const closeBtn = document.getElementById('closeModal');
@@ -1225,8 +1223,7 @@
             handleFileUpload(fileInput.files[0]);
           }
         });
-        
-        // Event listener diganti ke fungsi baru
+
         processBtn.addEventListener('click', processOCRWithGemini);
 
         copyResultBtn.addEventListener('click', () => {
@@ -1260,7 +1257,6 @@
           reader.readAsDataURL(file);
         }
 
-        // Fungsi baru untuk memproses OCR dengan Gemini API via backend
         async function processOCRWithGemini() {
           if (!selectedFile) return;
 
@@ -1272,8 +1268,8 @@
           formData.append('image', selectedFile);
 
           try {
-            // Perubahan di sini: Mengirim FormData
-            const response = await fetch("/api/ocr", {
+            // PERUBAHAN DI SINI: Mengubah endpoint ke /api/server
+            const response = await fetch("/api/server", {
               method: "POST",
               body: formData
             });
@@ -1286,19 +1282,17 @@
             const data = await response.json();
             const aiReply = data.reply;
 
-            // Tampilkan hasil analisis dari Gemini
             if (!aiReply || aiReply.trim() === "") {
-                resultText.textContent = "Tidak dapat menganalisis gambar ini.";
+              resultText.textContent = "Tidak dapat menganalisis gambar ini.";
             } else {
-                resultText.textContent = aiReply;
+              resultText.textContent = aiReply;
             }
 
             ocrResult.style.display = 'block';
             progressContainer.style.display = 'none';
-            
+
             ocrExtractedText = aiReply;
-            
-            // Tambahkan pratinjau gambar ke dalam kotak pesan
+
             ocrImageURL = URL.createObjectURL(selectedFile);
             const imagePreviewElement = document.getElementById('image-preview');
             const imagePreviewContainer = document.getElementById('image-preview-container');
@@ -1318,7 +1312,6 @@
         }
       }
 
-      // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
       window.openAudioSpectrumModal = function() {
         if (devToolsState.open) {
           showWarning();
@@ -1337,8 +1330,6 @@
           if (e.target === modal) modal.style.display = 'none';
         });
       }
-      // ** AKHIR KODE TAMBAHAN **
-
 
       window.openOCRModal = function() {
         if (devToolsState.open) {
@@ -1368,7 +1359,7 @@
           return;
         }
 
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'id-ID';
         recognition.start();
 
@@ -1420,9 +1411,9 @@
         const chatbox = document.getElementById("chatbox");
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${messageClass}`;
-        
+
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        
+
         messageDiv.innerHTML = `
           <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
             ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
@@ -1447,11 +1438,11 @@
         `;
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
-        
+
         if (save) {
           saveMessageToDB(sender, text, timestamp);
         }
-        
+
         return messageDiv;
       }
 
@@ -1478,14 +1469,13 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (!messageTextElement) return;
 
-        // Cari pesan pengguna sebelumnya yang terkait
         const messageDiv = messageTextElement.closest('.message');
         const prevMessageDiv = messageDiv.previousElementSibling;
         if (!prevMessageDiv || !prevMessageDiv.classList.contains('user-message')) {
-            addMessage('Sistem', 'Tidak dapat membuat ulang pesan. Pesan asli pengguna tidak ditemukan.', 'ai-message', null, false);
-            return;
+          addMessage('Sistem', 'Tidak dapat membuat ulang pesan. Pesan asli pengguna tidak ditemukan.', 'ai-message', null, false);
+          return;
         }
-        
+
         const userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
 
         const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
@@ -1494,17 +1484,16 @@
           regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
           regenerateButton.disabled = true;
 
-          // Hapus konten pesan AI yang lama dan ganti dengan indikator mengetik
           messageTextElement.innerHTML = `<div class="typing-indicator">
               <div class="loading"></div>
               AbidinAI sedang mengetik ulang...
           </div>`;
           messageDiv.classList.remove('ai-message');
-          messageDiv.classList.add('user-message'); // ubah kelas sementara agar loading indicator tampil berbeda
-          
+          messageDiv.classList.add('user-message');
+
           try {
-            // Panggil API chat dengan pesan pengguna yang relevan
-            const response = await fetch("/api/chat", {
+            // PERUBAHAN DI SINI: Mengubah endpoint ke /api/server
+            const response = await fetch("/api/server", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"
@@ -1519,27 +1508,25 @@
             const data = await response.json();
             const aiReply = data.reply;
 
-            // Hapus indikator mengetik
-            messageTextElement.innerHTML = ''; 
+            messageTextElement.innerHTML = '';
             messageDiv.classList.remove('user-message');
             messageDiv.classList.add('ai-message');
-            
-            // Tampilkan respons baru
+
             if (!aiReply || aiReply.trim() === "") {
-                displayMaintenanceMessage();
+              displayMaintenanceMessage();
             } else {
-                displayAIResponse(aiReply, messageTextElement);
+              displayAIResponse(aiReply, messageTextElement);
             }
-            
+
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
               regenerateButton.disabled = false;
             }, 2000);
-            
+
           } catch (error) {
             console.error("Error regenerating message:", error);
-            
+
             messageTextElement.innerHTML = `<div class="typing-indicator">
               <i class="fas fa-exclamation-triangle"></i> Gagal membuat ulang.
             </div>`;
@@ -1562,24 +1549,22 @@
         }
 
         const input = document.getElementById("messageInput");
-        const userText = input.value.trim(); // Ambil teks yang diketik pengguna
-        
-        // Buat teks lengkap untuk dikirim ke API, termasuk analisis gambar
+        const userText = input.value.trim();
+
         let fullMessageText = userText;
         if (ocrExtractedText) {
-            fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
+          fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
         }
 
-        // Tampilkan hanya teks yang diketik pengguna (atau teks default jika kosong)
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
         let displayMessage = userText;
         if (!displayMessage && ocrImageURL) {
-            displayMessage = "[Gambar terunggah]";
+          displayMessage = "[Gambar terunggah]";
         }
 
-        if (!displayMessage) return; // Jangan kirim jika tidak ada teks atau gambar
+        if (!displayMessage) return;
 
         const userDiv = addMessage('Anda', displayMessage, 'user-message');
 
@@ -1600,12 +1585,11 @@
         sendButton.disabled = true;
         input.value = '';
         input.style.height = 'auto';
-        removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
+        removeImagePreview();
 
         try {
-          // Ganti fetch ini dengan API endpoint yang benar untuk Gemini atau model lain
-          // Gunakan fullMessageText sebagai body permintaan
-          const response = await fetch("/api/chat", {
+          // PERUBAHAN DI SINI: Mengubah endpoint ke /api/server
+          const response = await fetch("/api/server", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
@@ -1666,41 +1650,41 @@
           listeningElement.remove();
           listeningElement = null;
         }
-        
+
         let messageTextContainer;
         if (targetElement) {
-            messageTextContainer = targetElement;
+          messageTextContainer = targetElement;
         } else {
-            const container = document.createElement("div");
-            container.className = "message ai-message";
-            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            container.innerHTML = `
-              <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-              <div class="message-content">
-                <div class="message-header">
-                  <span class="message-sender">AbidinAI</span>
-                  <span class="message-time">${getCurrentTime()}</span>
-                </div>
-                <div class="message-text" id="${messageId}-text"></div>
-                <div class="message-actions">
-                  <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
-                    <i class="fas fa-copy"></i> Salin
-                  </button>
-                  <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
-                    <i class="fas fa-redo"></i> Buat Ulang
-                  </button>
-                </div>
+          const container = document.createElement("div");
+          container.className = "message ai-message";
+          const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+          container.innerHTML = `
+            <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-sender">AbidinAI</span>
+                <span class="message-time">${getCurrentTime()}</span>
               </div>
-            `;
-            chatbox.appendChild(container);
-            messageTextContainer = container.querySelector('.message-text');
-            saveMessageToDB('AbidinAI', aiReply);
+              <div class="message-text" id="${messageId}-text"></div>
+              <div class="message-actions">
+                <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
+                  <i class="fas fa-copy"></i> Salin
+                </button>
+                <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
+                  <i class="fas fa-redo"></i> Buat Ulang
+                </button>
+              </div>
+            </div>
+          `;
+          chatbox.appendChild(container);
+          messageTextContainer = container.querySelector('.message-text');
+          saveMessageToDB('AbidinAI', aiReply);
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
         let textToRead = "";
-        
-        messageTextContainer.innerHTML = ''; // Clear previous content if regenerating
+
+        messageTextContainer.innerHTML = '';
 
         for (let i = 0; i < parts.length; i++) {
           if (i % 2 === 0) {
@@ -1735,7 +1719,7 @@
             messageTextContainer.appendChild(codeContainer);
           }
         }
-        
+
         chatbox.scrollTop = chatbox.scrollHeight;
         sendButton.disabled = false;
 
