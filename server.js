@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
+const FormData = require('form-data');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +15,20 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
+
+// Inisialisasi GoogleGenerativeAI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+
+// Fungsi untuk mengonversi buffer gambar ke format yang dikenali Gemini
+function fileToGenerativePart(buffer, mimeType) {
+    return {
+        inlineData: {
+            data: buffer.toString("base64"),
+            mimeType
+        },
+    };
+}
 
 // --- API Groq untuk Chat (Tetap sama) ---
 app.post('/api/chat', async (req, res) => {
@@ -42,7 +58,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   };
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +102,7 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// --- API OCR dan Analisis (Diperbarui) ---
+// --- API OCR dan Analisis (Diperbarui dengan kode yang Anda berikan) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -202,7 +218,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
   };
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -217,6 +233,86 @@ app.post('/api/unlimited-chat', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// --- API untuk terjemahan bahasa ---
+app.post("/api/translate", async (req, res) => {
+    try {
+        const { text, targetLang } = req.body;
+        const API_KEY = process.env.GOOGLE_TRANSLATE_API_KEY;
+
+        if (!text || !targetLang) {
+            return res.status(400).json({ error: "Teks dan bahasa target diperlukan." });
+        }
+
+        const formData = new FormData();
+        formData.append('q', text);
+        formData.append('target', targetLang);
+        formData.append('key', API_KEY);
+
+        const response = await fetch("[https://translation.googleapis.com/language/translate/v2](https://translation.googleapis.com/language/translate/v2)", {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.error("Google Translate API Error:", data.error);
+            return res.status(500).json({ error: "Gagal menerjemahkan teks." });
+        }
+
+        const translatedText = data.data.translations[0].translatedText;
+        res.json({ translatedText });
+    } catch (error) {
+        console.error("Translation API Error:", error);
+        res.status(500).json({ error: "Terjadi kesalahan saat menerjemahkan." });
+    }
+});
+
+// --- API untuk pemindaian URL/file (Antivirus) ---
+app.post("/api/antivirus", async (req, res) => {
+    try {
+        const { url } = req.body;
+        const API_KEY = process.env.VIRUSTOTAL_API_KEY;
+
+        if (!API_KEY) {
+            return res.status(500).json({ error: "Kunci API VirusTotal tidak dikonfigurasi." });
+        }
+        
+        if (!url) {
+            return res.status(400).json({ error: "URL diperlukan." });
+        }
+
+        const response = await fetch("[https://www.virustotal.com/api/v3/urls](https://www.virustotal.com/api/v3/urls)", {
+            method: "POST",
+            headers: {
+                "x-apikey": API_KEY,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: url }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            console.error("VirusTotal API Error:", data.error);
+            return res.status(500).json({ error: "Gagal memindai URL." });
+        }
+
+        const analysisId = data.data.id;
+        
+        const analysisResponse = await fetch(`https://www.virustotal.com/api/v3/analyses/${analysisId}`, {
+            headers: { "x-apikey": API_KEY }
+        });
+        const analysisData = await analysisResponse.json();
+        
+        res.json({ result: analysisData.data.attributes.results });
+
+    } catch (error) {
+        console.error("Antivirus API Error:", error);
+        res.status(500).json({ error: "Terjadi kesalahan saat pemindaian." });
+    }
 });
 
 // --- Serve file statis (Tetap sama) ---
