@@ -397,7 +397,6 @@
     </div>
   </div>
 
-  <!-- Hidden chat processing -->
   <div class="hidden-chat" id="hiddenChat"></div>
   
   <audio id="audioPlayer" loop>
@@ -432,6 +431,9 @@
         const voiceText = event.results[0][0].transcript;
         updateStatusMessage(`Anda: "${voiceText}"`);
         
+        // 🔥 Otomatis berhenti mendengarkan setelah ada hasil
+        recognition.stop();
+
         // Proses pesan
         await processVoiceMessage(voiceText);
       };
@@ -444,17 +446,13 @@
 
       recognition.onend = () => {
         isListening = false;
-        if (!isSpeaking) {
-          resetOrbState();
-        }
+        // Tidak lagi memanggil resetOrbState di onend
       };
     }
 
     function toggleVoiceChat() {
       if (isListening) {
         stopListening();
-      } else if (isSpeaking) {
-        stopSpeaking();
       } else {
         startListening();
       }
@@ -487,6 +485,11 @@
     }
 
     async function processVoiceMessage(message) {
+      // Hentikan pengenalan suara (jika belum) sebelum memproses
+      if (isListening) {
+        recognition.stop();
+      }
+
       updateOrbState('processing');
       updateStatusMessage('Memproses...');
       addTypingAnimation();
@@ -549,11 +552,15 @@
         utterance.onend = () => {
           isSpeaking = false;
           resetOrbState();
+          // 🔥 Setelah selesai berbicara, mulai mendengarkan lagi secara otomatis
+          startListening();
         };
 
         utterance.onerror = () => {
           isSpeaking = false;
           resetOrbState();
+          // 🔥 Jika ada kesalahan, kembali mendengarkan
+          startListening();
         };
 
         window.speechSynthesis.speak(utterance);
@@ -562,6 +569,8 @@
         setTimeout(() => {
           isSpeaking = false;
           resetOrbState();
+          // 🔥 Jika tidak ada synthesis, tetap kembali mendengarkan
+          startListening();
         }, 3000);
       }
     }
@@ -608,6 +617,7 @@
 
     function addWaveAnimation() {
       const statusDiv = document.querySelector('.status-text');
+      removeAnimations(); // Hapus animasi lama
       const waveDiv = document.createElement('div');
       waveDiv.className = 'wave-animation';
       waveDiv.innerHTML = `
@@ -622,6 +632,7 @@
 
     function addTypingAnimation() {
       const statusDiv = document.querySelector('.status-text');
+      removeAnimations(); // Hapus animasi lama
       const typingDiv = document.createElement('div');
       typingDiv.className = 'typing-dots';
       typingDiv.innerHTML = `
