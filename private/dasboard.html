@@ -2017,7 +2017,7 @@
             if (!aiReply || aiReply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
-                displayAIResponse(aiReply, messageTextElement);
+                displayAIResponse(aiReply, messageTextContainer);
             }
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
@@ -2048,11 +2048,12 @@
 
       // --- START: NEW TRANSLATION FUNCTIONS ---
       async function translateText(text, targetLang) {
-          if (targetLang === 'en' || !text) { // Change this to check for 'en'
+          if (targetLang === 'id' || !text) { // Ubah bahasa default menjadi 'id' (Indonesia)
               return text;
           }
           try {
-              const response = await fetch("/api/translate", {
+              // Ganti endpoint ke API Groq
+              const response = await fetch("/api/translate-groq", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ text: text, targetLang: targetLang })
@@ -2064,7 +2065,7 @@
               return data.translatedText;
           } catch (error) {
               console.error("Translation failed:", error);
-              return text; // Return original text on failure
+              return text; // Kembalikan teks asli jika gagal
           }
       }
       // --- END: NEW TRANSLATION FUNCTIONS ---
@@ -2123,7 +2124,7 @@
 
         try {
           // Translate user message to English if needed
-          if (selectedLanguage !== 'en') {
+          if (selectedLanguage !== 'id') {
               translatedUserText = await translateText(fullMessageText, 'en');
           }
 
@@ -2146,7 +2147,7 @@
             displayMaintenanceMessage();
           } else {
             // Translate AI reply back to the user's selected language
-            if (selectedLanguage !== 'en') {
+            if (selectedLanguage !== 'id') {
                 translatedAiReply = await translateText(aiReply, selectedLanguage);
             } else {
                 translatedAiReply = aiReply;
