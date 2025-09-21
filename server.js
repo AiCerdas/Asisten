@@ -58,7 +58,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   };
 
   try {
-    const response = await fetch("[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -218,7 +218,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
   };
 
   try {
-    const response = await fetch("[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -235,40 +235,46 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
-// --- API untuk terjemahan bahasa ---
+// --- API untuk terjemahan bahasa (Menggunakan Groq) ---
 app.post("/api/translate", async (req, res) => {
     try {
         const { text, targetLang } = req.body;
-        const API_KEY = process.env.GOOGLE_TRANSLATE_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
         if (!text || !targetLang) {
             return res.status(400).json({ error: "Teks dan bahasa target diperlukan." });
         }
 
-        const formData = new FormData();
-        formData.append('q', text);
-        formData.append('target', targetLang);
-        formData.append('key', API_KEY);
+        const prompt = `Terjemahkan teks berikut ke dalam bahasa dengan kode '${targetLang}'. Hanya berikan hasil terjemahannya, tanpa ada tambahan teks atau penjelasan. Teks asli: ${text}`;
+        
+        const body = {
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            messages: [
+                { role: "user", content: prompt }
+            ],
+            temperature: 0.1, // Suhu rendah untuk terjemahan yang lebih akurat
+            max_tokens: 1024
+        };
 
-        const response = await fetch("[https://translation.googleapis.com/language/translate/v2](https://translation.googleapis.com/language/translate/v2)", {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            body: formData,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();
+        const translatedText = data.choices?.[0]?.message?.content || "Gagal menerjemahkan.";
 
-        if (data.error) {
-            console.error("Google Translate API Error:", data.error);
-            return res.status(500).json({ error: "Gagal menerjemahkan teks." });
-        }
-
-        const translatedText = data.data.translations[0].translatedText;
         res.json({ translatedText });
     } catch (error) {
-        console.error("Translation API Error:", error);
+        console.error("Groq Translation API Error:", error);
         res.status(500).json({ error: "Terjadi kesalahan saat menerjemahkan." });
     }
 });
+
 
 // --- API untuk pemindaian URL/file (Antivirus) ---
 app.post("/api/antivirus", async (req, res) => {
@@ -284,7 +290,7 @@ app.post("/api/antivirus", async (req, res) => {
             return res.status(400).json({ error: "URL diperlukan." });
         }
 
-        const response = await fetch("[https://www.virustotal.com/api/v3/urls](https://www.virustotal.com/api/v3/urls)", {
+        const response = await fetch("https://www.virustotal.com/api/v3/urls", {
             method: "POST",
             headers: {
                 "x-apikey": API_KEY,
@@ -314,6 +320,7 @@ app.post("/api/antivirus", async (req, res) => {
         res.status(500).json({ error: "Terjadi kesalahan saat pemindaian." });
     }
 });
+
 
 // --- Serve file statis (Tetap sama) ---
 app.use(express.static(path.join(__dirname)));
