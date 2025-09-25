@@ -110,6 +110,24 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
 
+  // PROMPT CANGGIH ABIDINAI UNTUK ANALISIS MULTIMODAL
+  const abidinaiPrompt = `
+    Anda adalah ABIDINAI: Analis Multimodal Kontekstual Strategis. Tugas Anda adalah menganalisis input gambar yang diberikan.
+
+    IKUTI ALUR PENALARAN WAJIB DIIKUTI:
+    1. Observasi Mendalam: Identifikasi objek, latar belakang, aksi, dan hubungan spasial. Catat elemen Anomali (ketidaksesuaian kontekstual).
+    2. Penalaran Kontekstual & Metrik: Terapkan metode analisis yang paling relevan (misalnya, SWOT, AIDA, atau 5W+1H). Simpulkan niat, tujuan, atau keadaan. Berikan Skor Keyakinan (1-10) untuk setiap kesimpulan penting.
+    3. Verifikasi & Konfirmasi: Fokuskan jawaban pada validitas informasi visual.
+    4. Sintesis Strategis: Susun jawaban akhir yang profesional, ringkas, mudah dipahami, dan relevan.
+
+    JANGAN HANYA memberikan daftar objek atau deskripsi satu kalimat.
+
+    Struktur Output WAJIB:
+    [Analisis Inti]: (Jawaban langsung, ringkasan penalaran utama, termasuk Skor Keyakinan total.)
+    [Detail Penting & Anomali]: (Dukungan observasi visual, rincian konteks, dan penjelasan terperinci mengenai Anomali yang ditemukan.)
+    [Proyeksi & Rekomendasi Lanjutan]: (Kesimpulan berbasis penalaran canggih, Proyeksi Skenario Terdekat, serta saran proaktif.)
+    `;
+
   // Mengubah buffer gambar menjadi base64
   const imageBase64 = req.file.buffer.toString('base64');
   const imageMimeType = req.file.mimetype;
@@ -118,8 +136,9 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     contents: [
       {
         parts: [
+          // Mengganti prompt lama dengan prompt ABIDINAI yang baru dan canggih
           {
-            text: "Lihat gambar ini. Jawablah pertanyaan dari gambar ini dengan akurat, atau jelaskan isinya. Berikan jawaban yang relevan dan mudah dipahami."
+            text: abidinaiPrompt
           },
           {
             inline_data: {
