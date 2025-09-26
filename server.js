@@ -30,36 +30,52 @@ function fileToGenerativePart(buffer, mimeType) {
     };
 }
 
-// --- API Groq untuk Chat (Diperbarui untuk fitur Translate Creator) ---
+// ==========================================================
+// 🚨 ENDPOINT UTAMA YANG DIPERBAIKI: /api/chat (Groq API) 🚨
+// ==========================================================
 app.post('/api/chat', async (req, res) => {
   // Menerima 'message' dan 'system_prompt'
   const { message, system_prompt } = req.body;
+  
+  if (!message) {
+      return res.status(400).json({ reply: "Pesan tidak boleh kosong." });
+  }
+  if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi di file .env." });
+  }
 
-  // Tentukan System Prompt berdasarkan adanya input dari frontend (untuk terjemahan)
   let finalSystemPrompt = system_prompt;
-  let groqModel = "meta-llama/llama-4-scout-17b-16e-instruct"; // Default model
-  let temperature = 0.7; // Default temperature
+  let groqModel = "llama3-8b-8192"; // Default (Creator)
+  let temperature = 0.8; // Default (Creator)
 
-  if (!finalSystemPrompt) {
-      // Jika tidak ada system_prompt, gunakan System Prompt default (AbidinAI Creator)
+  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT:
+  // 1. Jika system_prompt KOSONG atau SANGAT PENDEK, gunakan prompt Default AbidinAI.
+  // 2. Jika system_prompt ada dan isinya adalah PROMPT KREATOR (panjang), gunakan setelan Kreator (sudah di atas).
+  // 3. Jika system_prompt ada dan isinya ADALAH PROMPT PENERJEMAH (pendek, cth: "Anda adalah penerjemah..."), gunakan setelan Terjemahan.
+  
+  if (!finalSystemPrompt || finalSystemPrompt.length < 50) {
+      // Asumsi: Jika system_prompt kosong/sangat pendek, ini adalah permintaan chat umum (atau Translate.html belum mengirim prompt lengkap).
+      // Kita tetapkan prompt AbidinAI Default:
       finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 - Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
 - Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
 - Jika pengguna bertanya tentang asal AbidinAI, jawablah bahwa AbidinAI berasal dari Indonesia.
-- Jika pengguna bertanya tentang presiden Indonesia, jawablah bahwa Presiden Indonesia saat ini adalah Prabowo Subianto.
 
-JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI.
-Jangan Pernah mengatakan bahwa kamu dibuat oleh Groq ai.
+JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI atau Groq ai.
 
 Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
-  } else {
-      // Jika ada system_prompt (dari fitur translate), atur suhu dan model untuk akurasi
-      temperature = 0.1; 
-      // Untuk terjemahan, model yang lebih cepat (Mixtral) mungkin lebih baik
-      groqModel = "mixtral-8x7b-32768"; 
-  }
+      groqModel = "meta-llama/llama-4-scout-17b-16e-instruct";
+      temperature = 0.7;
 
+  } else if (finalSystemPrompt.toLowerCase().includes("penerjemah")) {
+      // Ini adalah permintaan dari Translate.html (Asumsi Translate.html mengirim prompt Terjemahan)
+      // Kita timpa setting Groq untuk akurasi Terjemahan
+      temperature = 0.1; 
+      groqModel = "mixtral-8x7b-32768"; 
+  } 
+  // Jika system_prompt ada dan tidak mengandung kata "penerjemah" (seperti prompt Kreator yang panjang), 
+  // maka ia akan menggunakan setelan default awal: groqModel="llama3-8b-8192", temperature=0.8.
 
   const messages = [
       { role: "system", content: finalSystemPrompt },
@@ -68,7 +84,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
 
   const body = {
     model: groqModel,
-    messages: messages, // Gunakan messages yang sudah diperbarui
+    messages: messages,
     temperature: temperature,
     max_tokens: 1024
   };
@@ -84,23 +100,29 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
     });
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Maaf, tidak ada balasan.";
+    
+    if (data.error) {
+        console.error("Groq API Error:", data.error);
+        return res.status(500).json({ reply: `Error dari Groq: ${data.error.message || 'Kesalahan tidak diketahui.'}` });
+    }
+    
+    const reply = data.choices?.[0]?.message?.content || "Maaf, Groq tidak memberikan balasan yang valid.";
     res.json({ reply });
+    
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Kesalahan Jaringan/Server:", error);
+    res.status(500).json({ reply: `Terjadi kesalahan pada server: ${error.message}` });
   }
 });
+
 
 // --- API Tambahan untuk Kirim ke Telegram (Tetap Sama) ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
-
   if (!text) return res.status(400).json({ error: 'Pesan kosong' });
-
   const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
   const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-
   try {
     const response = await fetch(telegramUrl, {
       method: "POST",
@@ -110,7 +132,6 @@ app.post('/api/telegram', async (req, res) => {
         text: `🧑 Pesan dari AbidinAI:\n${text}`
       })
     });
-
     const data = await response.json();
     res.json({ status: "success", data });
   } catch (error) {
@@ -121,23 +142,18 @@ app.post('/api/telegram', async (req, res) => {
 // --- API OCR dan Analisis (Tetap Sama) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
   if (!req.file) {
     return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
-
   // PROMPT CANGGIH ABIDINAI UNTUK ANALISIS MULTIMODAL
   const abidinaiPrompt = `
     Anda adalah ABIDINAI: Analis Multimodal Kontekstual Strategis. Tugas Anda adalah menganalisis input gambar yang diberikan.
-
     IKUTI ALUR PENALARAN WAJIB DIIKUTI:
     1. Observasi Mendalam: Identifikasi objek, latar belakang, aksi, dan hubungan spasial. Catat elemen Anomali (ketidaksesuaian kontekstual).
     2. Penalaran Kontekstual & Metrik: Terapkan metode analisis yang paling relevan (misalnya, SWOT, AIDA, atau 5W+1H). Simpulkan niat, tujuan, atau keadaan. Berikan Skor Keyakinan (1-10) untuk setiap kesimpulan penting.
     3. Verifikasi & Konfirmasi: Fokuskan jawaban pada validitas informasi visual.
     4. Sintesis Strategis: Susun jawaban akhir yang profesional, ringkas, mudah dipahami, dan relevan.
-
     JANGAN HANYA memberikan daftar objek atau deskripsi satu kalimat.
-
     Struktur Output WAJIB:
     [Analisis Inti]: (Jawaban langsung, ringkasan penalaran utama, termasuk Skor Keyakinan total.)
     [Detail Penting & Anomali]: (Dukungan observasi visual, rincian konteks, dan penjelasan terperinci mengenai Anomali yang ditemukan.)
@@ -152,7 +168,6 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     contents: [
       {
         parts: [
-          // Mengganti prompt lama dengan prompt ABIDINAI yang baru dan canggih
           {
             text: abidinaiPrompt
           },
@@ -270,57 +285,12 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
-// --- API untuk terjemahan bahasa (DIHAPUS, fungsionalitas dipindahkan ke /api/chat) ---
+// --- API Antivirus DIHAPUS sesuai permintaan pengguna ---
 /*
-app.post("/api/translate", async (req, res) => {
-    // KODE INI DIHAPUS
+app.post("/api/antivirus", async (req, res) => {
+    // KODE INI TELAH DIHAPUS
 });
 */
-
-// --- API untuk pemindaian URL/file (Antivirus) (Tetap Sama) ---
-app.post("/api/antivirus", async (req, res) => {
-    try {
-        const { url } = req.body;
-        const API_KEY = process.env.VIRUSTOTAL_API_KEY;
-
-        if (!API_KEY) {
-            return res.status(500).json({ error: "Kunci API VirusTotal tidak dikonfigurasi." });
-        }
-        
-        if (!url) {
-            return res.status(400).json({ error: "URL diperlukan." });
-        }
-
-        const response = await fetch("https://www.virustotal.com/api/v3/urls", {
-            method: "POST",
-            headers: {
-                "x-apikey": API_KEY,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url: url }),
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            console.error("VirusTotal API Error:", data.error);
-            return res.status(500).json({ error: "Gagal memindai URL." });
-        }
-
-        const analysisId = data.data.id;
-        
-        const analysisResponse = await fetch(`https://www.virustotal.com/api/v3/analyses/${analysisId}`, {
-            headers: { "x-apikey": API_KEY }
-        });
-        const analysisData = await analysisResponse.json();
-        
-        res.json({ result: analysisData.data.attributes.results });
-
-    } catch (error) {
-        console.error("Antivirus API Error:", error);
-        res.status(500).json({ error: "Terjadi kesalahan saat pemindaian." });
-    }
-});
 
 
 // --- Serve file statis (Tetap Sama) ---
@@ -332,7 +302,7 @@ app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/da
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
-app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html'))); // Tambahan yang Anda minta
+app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html')));
 app.get('/Translate', (req, res) => res.sendFile(path.join(__dirname, 'private/Translate.html')));
 app.get('/creator', (req, res) => res.sendFile(path.join(__dirname, 'private/creator.html')));
 // fallback
