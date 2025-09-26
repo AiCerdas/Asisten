@@ -994,12 +994,15 @@
               <i class="fas fa-paper-plane"></i>
             </button>
             <!-- Banner Iklan Bawah -->
-<!-- Banner Iklan Horizontal Bawah -->
+<!-- Banner Iklan Horizontal -->
 <div id="banner-iklan" style="
     width: 100%;
+    max-width: 100%;
+    height: 60px;  /* tipis horizontal */
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
     margin-top: 8px;
     margin-bottom: 8px;
 ">
@@ -1007,8 +1010,8 @@
       atOptions = {
           'key' : '7f61e0aea42da6e5969115b7f0f34ad8',
           'format' : 'iframe',
-          'height' : 50,   // tipis horizontal (ubah ke 100 kalau mau lebih tinggi)
-          'width' : 320,   // panjang pas di layar HP
+          'height' : 60,   // lebih tipis (horizontal)
+          'width' : 320,   // ukuran landscape
           'params' : {}
       };
   </script>
