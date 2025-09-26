@@ -12,11 +12,6 @@
       --jarvis-cyan: #00ffff;
       --jarvis-text: #e0f7fa;
       --jarvis-accent: rgba(0, 255, 255, 0.4);
-      /* Warna Emosi Baru */
-      --emotion-happy: #ffdd00;
-      --emotion-sad: #87ceeb;
-      --emotion-angry: #ff4500;
-      --emotion-default: var(--jarvis-cyan);
     }
 
     * {
@@ -146,7 +141,6 @@
       border-radius: 50%;
       border: 2px solid var(--jarvis-cyan);
       animation: orb-rotate 10s linear infinite;
-      transition: border-color 0.5s ease; /* Tambahan transisi */
     }
 
     .orb-lines::before {
@@ -157,7 +151,6 @@
       border-radius: 50%;
       border: 2px solid var(--jarvis-blue-light);
       animation: orb-rotate-reverse 12s linear infinite;
-      transition: border-color 0.5s ease; /* Tambahan transisi */
     }
 
     @keyframes orb-rotate {
@@ -178,19 +171,7 @@
       transition: all 0.5s ease;
     }
 
-    /* Status Orb Default (Idle) */
-    .voice-orb .orb-glow {
-      box-shadow: 0 0 40px var(--emotion-default), 0 0 80px var(--emotion-default), inset 0 0 20px var(--emotion-default);
-    }
-    .voice-orb .orb-lines {
-      border-color: var(--emotion-default);
-    }
-    .voice-orb .orb-icon {
-      color: var(--emotion-default);
-      text-shadow: 0 0 10px var(--emotion-default), 0 0 20px var(--emotion-default);
-    }
-
-    /* Status Orb Utama */
+    /* Status Orb */
     .voice-orb.listening .orb-glow {
       animation: orb-pulse 2s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
     }
@@ -208,71 +189,6 @@
       color: var(--jarvis-blue-light);
       text-shadow: 0 0 10px var(--jarvis-blue-light), 0 0 20px var(--jarvis-blue-light);
     }
-
-    /* --- Status Orb Emosi Baru --- */
-    /* Emosi Senang */
-    .voice-orb.happy .orb-glow {
-      box-shadow: 0 0 40px var(--emotion-happy), 0 0 80px var(--emotion-happy), inset 0 0 20px var(--emotion-happy);
-      animation: orb-pulse-happy 3s infinite ease-in-out;
-    }
-    .voice-orb.happy .orb-lines {
-      border-color: var(--emotion-happy);
-    }
-    .voice-orb.happy .orb-icon {
-      color: var(--emotion-happy);
-      text-shadow: 0 0 10px var(--emotion-happy), 0 0 20px var(--emotion-happy);
-    }
-
-    @keyframes orb-pulse-happy {
-      0%, 100% { transform: scale(0.98); opacity: 0.9; }
-      50% { transform: scale(1.02); opacity: 1; }
-    }
-
-    /* Emosi Sedih */
-    .voice-orb.sad .orb-glow {
-      box-shadow: 0 0 40px var(--emotion-sad), 0 0 80px var(--emotion-sad), inset 0 0 20px var(--emotion-sad);
-      animation: orb-pulse-sad 5s infinite alternate;
-      border: 1px solid var(--emotion-sad);
-    }
-    .voice-orb.sad .orb-lines {
-      border-color: var(--emotion-sad);
-      opacity: 0.5;
-    }
-    .voice-orb.sad .orb-icon {
-      color: var(--emotion-sad);
-      text-shadow: 0 0 10px var(--emotion-sad), 0 0 20px var(--emotion-sad);
-    }
-    @keyframes orb-pulse-sad {
-      from { opacity: 0.5; }
-      to { opacity: 0.7; }
-    }
-    
-    /* Emosi Marah (atau kecewa/sakit) */
-    .voice-orb.angry .orb-glow {
-      box-shadow: 0 0 40px var(--emotion-angry), 0 0 80px var(--emotion-angry), inset 0 0 20px var(--emotion-angry);
-      animation: orb-pulse-angry 0.5s infinite alternate;
-    }
-    .voice-orb.angry .orb-lines {
-      border-color: var(--emotion-angry);
-    }
-    .voice-orb.angry .orb-icon {
-      color: var(--emotion-angry);
-      text-shadow: 0 0 10px var(--emotion-angry), 0 0 20px var(--emotion-angry);
-    }
-    @keyframes orb-pulse-angry {
-      from { transform: scale(1.0); }
-      to { transform: scale(1.05); }
-    }
-
-    /* Gabungkan status berbicara dengan emosi (jika perlu) */
-    .voice-orb.speaking.happy .orb-glow {
-      box-shadow: 0 0 40px var(--emotion-happy), 0 0 80px var(--emotion-happy), inset 0 0 20px var(--emotion-happy);
-    }
-    .voice-orb.speaking.sad .orb-glow {
-      box-shadow: 0 0 40px var(--emotion-sad), 0 0 80px var(--emotion-sad), inset 0 0 20px var(--emotion-sad);
-    }
-    /* --- Akhir Status Orb Emosi Baru --- */
-
 
     @keyframes orb-pulse {
       0%, 100% { transform: scale(0.9); }
@@ -304,7 +220,7 @@
       color: var(--jarvis-text);
       letter-spacing: 1px;
       text-shadow: 0 0 5px var(--jarvis-cyan);
-      animation: typing-effect 4s steps(40, end);
+      animation: typing-effect 4s steps(40, end); /* Diperbaiki: Durasi 4 detik */
       overflow: hidden;
       white-space: nowrap;
     }
@@ -503,8 +419,7 @@
     let recognition;
     let currentAudio = null;
     let conversationHistory = [];
-    let currentEmotion = 'idle'; // State emosi baru
-
+    
     // Inisialisasi pengenalan suara
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
@@ -554,10 +469,8 @@
     }
 
     function startListening() {
-      if (recognition && !isListening && !isSpeaking) {
+      if (recognition && !isListening) {
         try {
-          // Reset emosi ke default/idle sebelum mulai mendengarkan
-          updateOrbEmotion('idle');
           recognition.start();
         } catch (error) {
           console.error('Error starting recognition:', error);
@@ -581,33 +494,13 @@
       resetOrbState();
     }
 
-    // ⭐ Fungsi baru untuk menentukan emosi berdasarkan input (simulasi)
-    function determineEmotion(text) {
-      const lowerText = text.toLowerCase();
-      if (lowerText.includes('terima kasih') || lowerText.includes('senang') || lowerText.includes('hebat') || lowerText.includes('bagus') || lowerText.includes('cinta')) {
-        return 'happy';
-      }
-      if (lowerText.includes('sedih') || lowerText.includes('gagal') || lowerText.includes('kecewa') || lowerText.includes('menangis') || lowerText.includes('putus asa')) {
-        return 'sad';
-      }
-      if (lowerText.includes('marah') || lowerText.includes('sakit') || lowerText.includes('buruk') || lowerText.includes('kesal') || lowerText.includes('bodoh') || lowerText.includes('rusak')) {
-        return 'angry';
-      }
-      return 'idle'; // Emosi default
-    }
-
     async function processVoiceMessage(message) {
       // Hentikan pengenalan suara (jika belum) sebelum memproses
       if (isListening) {
         recognition.stop();
       }
 
-      // ⭐ Tentukan emosi awal berdasarkan pesan pengguna (simulasi suara hati AI)
-      const emotionBasedOnInput = determineEmotion(message);
-      
       updateOrbState('processing');
-      // ⭐ Tetapkan emosi saat memproses
-      updateOrbEmotion(emotionBasedOnInput); 
       updateStatusMessage('Memproses...');
       addTypingAnimation();
 
@@ -615,49 +508,38 @@
       conversationHistory.push({ role: 'user', content: message });
 
       try {
-        // --- SIMULASI RESPONS API CHAT ---
-        // Anda harus mengganti bagian ini dengan panggilan ke server AI (seperti /api/chat) yang sebenarnya.
-        
-        // Simulasikan menentukan emosi AI berdasarkan *respons* yang akan diberikan
-        let aiReply;
-        if (emotionBasedOnInput === 'happy') {
-             aiReply = "Saya juga ikut senang! Ada hal lain yang bisa saya bantu dengan semangat ini? Ikon saya ikut tertawa.";
-        } else if (emotionBasedOnInput === 'sad') {
-             aiReply = "Saya turut prihatin. Apakah Anda ingin bercerita lebih lanjut? Saya siap mendengarkan. Ikon saya terlihat sedih.";
-        } else if (emotionBasedOnInput === 'angry') {
-             aiReply = "Saya mengerti Anda sedang marah atau kecewa. Mohon jelaskan situasinya agar saya bisa membantu dengan lebih tenang. Ikon saya merah karena marah.";
-        } else {
-             aiReply = "Permintaan Anda telah diproses. Apakah ada instruksi lain? Saya kembali netral.";
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: message })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
 
-        // Tunda 2 detik untuk simulasi loading
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        // --- AKHIR SIMULASI RESPONS API CHAT ---
-
+        const data = await response.json();
+        let aiReply = data.reply || "Maaf, saya tidak bisa menjawab itu saat ini.";
         
         // Simpan respons ke riwayat
         conversationHistory.push({ role: 'assistant', content: aiReply });
         
-        // Tampilkan dan bacakan respons, menggunakan emosi yang telah ditentukan
-        await speakResponse(aiReply, emotionBasedOnInput);
+        // Tampilkan dan bacakan respons
+        await speakResponse(aiReply);
         
       } catch (error) {
         console.error('Error:', error);
-        const errorMessage = "Maaf, terjadi kesalahan koneksi. Saya merasa sakit karena kegagalan ini.";
-        // Jika ada error, set emosi menjadi angry/sad
-        await speakResponse(errorMessage, 'angry'); 
+        const errorMessage = "Maaf, terjadi kesalahan koneksi.";
+        await speakResponse(errorMessage);
       }
     }
 
-    // ⭐ Tambahkan parameter emotion ke speakResponse
-    async function speakResponse(text, emotion = 'idle') {
-      isSpeaking = true;
-      // ⭐ Tetapkan emosi sebelum berbicara
-      updateOrbEmotion(emotion); 
-      // Tetapkan state berbicara (yang mungkin akan menimpa animasi glow emosi)
-      updateOrbState('speaking'); 
+    async function speakResponse(text) {
+      updateOrbState('speaking');
       updateStatusMessage('AbidinAI sedang berbicara...');
-
+      isSpeaking = true;
 
       if ('speechSynthesis' in window) {
         // Bersihkan teks dari markdown dan karakter khusus
@@ -679,16 +561,15 @@
 
         utterance.onend = () => {
           isSpeaking = false;
-          // ⭐ Setelah berbicara, kembali ke state idle dengan emosi yang terakhir
           resetOrbState();
-          // Mulai mendengarkan lagi secara otomatis
+          // 🔥 Setelah selesai berbicara, mulai mendengarkan lagi secara otomatis
           startListening();
         };
 
         utterance.onerror = () => {
           isSpeaking = false;
           resetOrbState();
-          // Jika ada kesalahan, kembali mendengarkan
+          // 🔥 Jika ada kesalahan, kembali mendengarkan
           startListening();
         };
 
@@ -698,40 +579,9 @@
         setTimeout(() => {
           isSpeaking = false;
           resetOrbState();
-          // Jika tidak ada synthesis, tetap kembali mendengarkan
+          // 🔥 Jika tidak ada synthesis, tetap kembali mendengarkan
           startListening();
         }, 3000);
-      }
-    }
-
-    // ⭐ Fungsi baru untuk mengupdate emosi dan ikon
-    function updateOrbEmotion(emotion) {
-      const orb = document.getElementById('voiceOrb');
-      const icon = document.getElementById('orbIcon');
-      
-      // Hapus semua kelas emosi
-      orb.classList.remove('happy', 'sad', 'angry');
-
-      switch(emotion) {
-        case 'happy':
-          orb.classList.add('happy');
-          icon.className = 'fas fa-face-laugh-beam orb-icon'; // Senang/Bahagia
-          currentEmotion = 'happy';
-          break;
-        case 'sad':
-          orb.classList.add('sad');
-          icon.className = 'fas fa-face-frown-open orb-icon'; // Sedih/Kecewa/Menangis
-          currentEmotion = 'sad';
-          break;
-        case 'angry':
-          orb.classList.add('angry');
-          icon.className = 'fas fa-face-angry orb-icon'; // Marah/Sakit
-          currentEmotion = 'angry';
-          break;
-        default:
-          // Default/Idle
-          // Jangan ubah ikon saat idle, biarkan ikon mikrofon
-          currentEmotion = 'idle';
       }
     }
 
@@ -739,32 +589,24 @@
       const orb = document.getElementById('voiceOrb');
       const icon = document.getElementById('orbIcon');
       
-      // Hapus state utama (pertahankan kelas emosi jika ada)
-      orb.classList.remove('listening', 'processing', 'speaking');
+      // Reset classes
+      orb.className = 'voice-orb';
       
       switch(state) {
         case 'listening':
           orb.classList.add('listening');
-          // Ikon mikrofon kembali hanya saat mendengarkan (state utama)
-          icon.className = 'fas fa-microphone orb-icon'; 
-          // Pastikan emosi juga direset ke default saat mendengarkan
-          updateOrbEmotion('idle'); 
+          icon.className = 'fas fa-microphone orb-icon';
           break;
         case 'processing':
           orb.classList.add('processing');
-          // Ikon Brain/Otak saat memproses (emosi tetap dipertahankan dari input)
           icon.className = 'fas fa-brain orb-icon';
           break;
         case 'speaking':
           orb.classList.add('speaking');
-          // Ikon Speaker saat berbicara (emosi tetap dipertahankan)
           icon.className = 'fas fa-volume-up orb-icon';
           break;
         default:
-          // 'idle'
           icon.className = 'fas fa-microphone orb-icon';
-          // Pastikan kembali ke keadaan awal
-          updateOrbEmotion('idle'); 
       }
     }
 
@@ -832,8 +674,6 @@
     function clearChat() {
       conversationHistory = [];
       updateStatusMessage('Riwayat percakapan dihapus');
-      // ⭐ Pastikan Orb di-reset setelah pesan dihapus
-      updateOrbEmotion('idle'); 
       setTimeout(() => {
         resetOrbState();
       }, 2000);
@@ -841,8 +681,6 @@
 
     function toggleSettings() {
       updateStatusMessage('Pengaturan akan segera tersedia');
-      // ⭐ Pastikan Orb di-reset setelah pesan
-      updateOrbEmotion('idle');
       setTimeout(() => {
         resetOrbState();
       }, 2000);
@@ -853,8 +691,6 @@
       if (!SpeechRecognition) {
         updateStatusMessage('Perangkat tidak mendukung pengenalan suara');
       }
-      // ⭐ Tetapkan emosi awal saat DOMContentLoaded
-      updateOrbEmotion('idle'); 
     });
 
     // Prevent context menu on long press
