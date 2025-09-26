@@ -30,16 +30,19 @@ function fileToGenerativePart(buffer, mimeType) {
     };
 }
 
-// --- API Groq untuk Chat (Tetap sama) ---
+// --- API Groq untuk Chat (Diperbarui untuk fitur Translate Creator) ---
 app.post('/api/chat', async (req, res) => {
-  const { message } = req.body;
+  // Menerima 'message' dan 'system_prompt'
+  const { message, system_prompt } = req.body;
 
-  const body = {
-    model: "meta-llama/llama-4-scout-17b-16e-instruct",
-    messages: [
-      {
-        role: "system",
-        content: `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
+  // Tentukan System Prompt berdasarkan adanya input dari frontend (untuk terjemahan)
+  let finalSystemPrompt = system_prompt;
+  let groqModel = "meta-llama/llama-4-scout-17b-16e-instruct"; // Default model
+  let temperature = 0.7; // Default temperature
+
+  if (!finalSystemPrompt) {
+      // Jika tidak ada system_prompt, gunakan System Prompt default (AbidinAI Creator)
+      finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 - Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
 - Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
@@ -49,11 +52,24 @@ app.post('/api/chat', async (req, res) => {
 JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI.
 Jangan Pernah mengatakan bahwa kamu dibuat oleh Groq ai.
 
-Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
-      },
+Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
+  } else {
+      // Jika ada system_prompt (dari fitur translate), atur suhu dan model untuk akurasi
+      temperature = 0.1; 
+      // Untuk terjemahan, model yang lebih cepat (Mixtral) mungkin lebih baik
+      groqModel = "mixtral-8x7b-32768"; 
+  }
+
+
+  const messages = [
+      { role: "system", content: finalSystemPrompt },
       { role: "user", content: message }
-    ],
-    temperature: 0.7,
+  ];
+
+  const body = {
+    model: groqModel,
+    messages: messages, // Gunakan messages yang sudah diperbarui
+    temperature: temperature,
     max_tokens: 1024
   };
 
@@ -75,7 +91,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`
   }
 });
 
-// --- API Tambahan untuk Kirim ke Telegram ---
+// --- API Tambahan untuk Kirim ke Telegram (Tetap Sama) ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -102,7 +118,7 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// --- API OCR dan Analisis (Diperbarui dengan kode yang Anda berikan) ---
+// --- API OCR dan Analisis (Tetap Sama) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -168,7 +184,7 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- API untuk fitur Riset Mendalam ---
+// --- API untuk fitur Riset Mendalam (Tetap Sama) ---
 app.post('/api/research', async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
@@ -218,13 +234,13 @@ app.post('/api/research', async (req, res) => {
   res.json(results);
 });
 
-// --- API Obrolan Sepuasnya dengan Groq (Tidak membatasi `max_tokens`) ---
+// --- API Obrolan Sepuasnya dengan Groq (Tetap Sama) ---
 app.post('/api/unlimited-chat', async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Pesan kosong' });
 
   const body = {
-    model: "meta-llama/llama-4-scout-17b-16e-instruct", // Anda bisa gunakan model Groq lainnya
+    model: "meta-llama/llama-4-scout-17b-16e-instruct", 
     messages: [
       {
         role: "system",
@@ -254,48 +270,14 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
-// --- API untuk terjemahan bahasa (Menggunakan Groq) ---
+// --- API untuk terjemahan bahasa (DIHAPUS, fungsionalitas dipindahkan ke /api/chat) ---
+/*
 app.post("/api/translate", async (req, res) => {
-    try {
-        const { text, targetLang } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!text || !targetLang) {
-            return res.status(400).json({ error: "Teks dan bahasa target diperlukan." });
-        }
-
-        const prompt = `Terjemahkan teks berikut ke dalam bahasa dengan kode '${targetLang}'. Hanya berikan hasil terjemahannya, tanpa ada tambahan teks atau penjelasan. Teks asli: ${text}`;
-        
-        const body = {
-            model: "meta-llama/llama-4-scout-17b-16e-instruct",
-            messages: [
-                { role: "user", content: prompt }
-            ],
-            temperature: 0.1, // Suhu rendah untuk terjemahan yang lebih akurat
-            max_tokens: 1024
-        };
-
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${GROQ_API_KEY}`
-            },
-            body: JSON.stringify(body)
-        });
-
-        const data = await response.json();
-        const translatedText = data.choices?.[0]?.message?.content || "Gagal menerjemahkan.";
-
-        res.json({ translatedText });
-    } catch (error) {
-        console.error("Groq Translation API Error:", error);
-        res.status(500).json({ error: "Terjadi kesalahan saat menerjemahkan." });
-    }
+    // KODE INI DIHAPUS
 });
+*/
 
-
-// --- API untuk pemindaian URL/file (Antivirus) ---
+// --- API untuk pemindaian URL/file (Antivirus) (Tetap Sama) ---
 app.post("/api/antivirus", async (req, res) => {
     try {
         const { url } = req.body;
@@ -341,7 +323,7 @@ app.post("/api/antivirus", async (req, res) => {
 });
 
 
-// --- Serve file statis (Tetap sama) ---
+// --- Serve file statis (Tetap Sama) ---
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
@@ -350,8 +332,9 @@ app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/da
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
-app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html')));
-
+app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html'))); // Tambahan yang Anda minta
+app.get('/Translate', (req, res) => res.sendFile(path.join(__dirname, 'private/Translate.html')));
+app.get('/creator', (req, res) => res.sendFile(path.join(__dirname, 'private/creator.html')));
 // fallback
 app.use((req, res) => res.redirect('/'));
 
