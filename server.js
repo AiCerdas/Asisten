@@ -10,17 +10,17 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Konfigurasi Multer
+// Konfigurasi Multer untuk menyimpan file di memori
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
 
-// Inisialisasi GoogleGenerativeAI (hanya untuk /api/ocr)
+// Inisialisasi GoogleGenerativeAI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Tidak diperlukan di sini
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
-// Fungsi utilitas (dibiarkan jika API OCR digunakan)
+// Fungsi untuk mengonversi buffer gambar ke format yang dikenali Gemini
 function fileToGenerativePart(buffer, mimeType) {
     return {
         inlineData: {
@@ -31,54 +31,51 @@ function fileToGenerativePart(buffer, mimeType) {
 }
 
 // ==========================================================
-// 🚀 ENDPOINT UTAMA YANG DIPERBAIKI TOTAL: /api/chat (Groq AI) 🚀
+// 🚨 ENDPOINT UTAMA YANG DIPERBAIKI: /api/chat (Groq API) 🚨
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
+  // Menerima 'message' dan 'system_prompt'
   const { message, system_prompt } = req.body;
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
+  
   if (!message) {
       return res.status(400).json({ reply: "Pesan tidak boleh kosong." });
   }
-  
-  if (!GROQ_API_KEY) {
-      console.error("GROQ_API_KEY tidak ditemukan di .env!");
-      return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi. Mohon cek file .env." });
+  if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi di file .env." });
   }
 
   let finalSystemPrompt = system_prompt;
-  let groqModel = "llama3-8b-8192"; // Default Model (cocok untuk Kreator)
-  let temperature = 0.8; // Default Temperature (cocok untuk Kreator)
+  let groqModel = "llama3-8b-8192"; // Default (Creator)
+  let temperature = 0.8; // Default (Creator)
 
-  // LOGIKA DETEKSI MODE:
-  // 1. MODE KREATOR (Menggunakan prompt yang dikirim dari creator.html)
-  if (finalSystemPrompt && finalSystemPrompt.toLowerCase().includes("konten kreator")) {
-      // Creator.html mengirim prompt panjang, kita gunakan setelan default Kreator di atas.
-      // finalSystemPrompt tetap menggunakan prompt dari HTML.
-      groqModel = "llama3-8b-8192";
-      temperature = 0.8;
-      
-  } 
-  // 2. MODE TERJEMAHAN (Asumsi Translate.html)
-  else if (finalSystemPrompt && finalSystemPrompt.toLowerCase().includes("penerjemah") || finalSystemPrompt.toLowerCase().includes("translate")) {
-      // Setelan untuk akurasi terjemahan
-      finalSystemPrompt = "Anda adalah penerjemah profesional. Jawablah permintaan pengguna dengan akurat dan singkat. Berikan HANYA teks terjemahan yang diminta tanpa tambahan apapun.";
+  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT:
+  // 1. Jika system_prompt KOSONG atau SANGAT PENDEK, gunakan prompt Default AbidinAI.
+  // 2. Jika system_prompt ada dan isinya adalah PROMPT KREATOR (panjang), gunakan setelan Kreator (sudah di atas).
+  // 3. Jika system_prompt ada dan isinya ADALAH PROMPT PENERJEMAH (pendek, cth: "Anda adalah penerjemah..."), gunakan setelan Terjemahan.
+  
+  if (!finalSystemPrompt || finalSystemPrompt.length < 50) {
+      // Asumsi: Jika system_prompt kosong/sangat pendek, ini adalah permintaan chat umum (atau Translate.html belum mengirim prompt lengkap).
+      // Kita tetapkan prompt AbidinAI Default:
+      finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
+- Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
+- Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
+- Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
+- Jika pengguna bertanya tentang asal AbidinAI, jawablah bahwa AbidinAI berasal dari Indonesia.
+
+JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI atau Groq ai.
+
+Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
+      groqModel = "meta-llama/llama-4-scout-17b-16e-instruct";
+      temperature = 0.7;
+
+  } else if (finalSystemPrompt.toLowerCase().includes("penerjemah")) {
+      // Ini adalah permintaan dari Translate.html (Asumsi Translate.html mengirim prompt Terjemahan)
+      // Kita timpa setting Groq untuk akurasi Terjemahan
       temperature = 0.1; 
       groqModel = "mixtral-8x7b-32768"; 
-      
   } 
-  // 3. MODE DEFAULT (Obrolan umum / obrolanfull.html)
-  else {
-      // Setelan untuk obrolan umum/default AbidinAI
-      finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh Abidin. Jawab dengan ramah dan informatif. Jangan pernah menyebut OpenAI atau Groq.`;
-      groqModel = "llama3-8b-8192";
-      temperature = 0.7;
-  }
-  
-  // Pastikan finalSystemPrompt ada (jika ada masalah pengiriman dari front-end)
-  if (!finalSystemPrompt) {
-       finalSystemPrompt = `Anda adalah chatbot. Jawab pertanyaan pengguna.`;
-  }
+  // Jika system_prompt ada dan tidak mengandung kata "penerjemah" (seperti prompt Kreator yang panjang), 
+  // maka ia akan menggunakan setelan default awal: groqModel="llama3-8b-8192", temperature=0.8.
 
   const messages = [
       { role: "system", content: finalSystemPrompt },
@@ -89,7 +86,7 @@ app.post('/api/chat', async (req, res) => {
     model: groqModel,
     messages: messages,
     temperature: temperature,
-    max_tokens: 2048 // Menaikkan token maksimal untuk fleksibilitas
+    max_tokens: 1024
   };
 
   try {
@@ -97,31 +94,24 @@ app.post('/api/chat', async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify(body)
     });
 
     const data = await response.json();
     
-    // Penanganan error dari Groq API
     if (data.error) {
-        console.error(`Groq API returned an error for model ${groqModel}:`, data.error);
-        return res.status(500).json({ reply: `Error dari Groq: ${data.error.message || 'Kesalahan API Groq tidak diketahui.'}` });
+        console.error("Groq API Error:", data.error);
+        return res.status(500).json({ reply: `Error dari Groq: ${data.error.message || 'Kesalahan tidak diketahui.'}` });
     }
     
-    const reply = data.choices?.[0]?.message?.content;
-    
-    if (!reply) {
-        console.warn(`Groq did not return a reply. Full data:`, data);
-        return res.status(500).json({ reply: "Maaf, Groq tidak memberikan balasan yang valid. Cek log server." });
-    }
-    
+    const reply = data.choices?.[0]?.message?.content || "Maaf, Groq tidak memberikan balasan yang valid.";
     res.json({ reply });
     
   } catch (error) {
     console.error("Kesalahan Jaringan/Server:", error);
-    res.status(500).json({ reply: `Terjadi kesalahan jaringan pada server: ${error.message}` });
+    res.status(500).json({ reply: `Terjadi kesalahan pada server: ${error.message}` });
   }
 });
 
@@ -129,13 +119,10 @@ app.post('/api/chat', async (req, res) => {
 // --- API Tambahan untuk Kirim ke Telegram (Tetap Sama) ---
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
-
   if (!text) return res.status(400).json({ error: 'Pesan kosong' });
-
   const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
   const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-
   try {
     const response = await fetch(telegramUrl, {
       method: "POST",
@@ -145,7 +132,6 @@ app.post('/api/telegram', async (req, res) => {
         text: `🧑 Pesan dari AbidinAI:\n${text}`
       })
     });
-
     const data = await response.json();
     res.json({ status: "success", data });
   } catch (error) {
@@ -156,16 +142,21 @@ app.post('/api/telegram', async (req, res) => {
 // --- API OCR dan Analisis (Tetap Sama) ---
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
   if (!req.file) {
     return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
-
   // PROMPT CANGGIH ABIDINAI UNTUK ANALISIS MULTIMODAL
   const abidinaiPrompt = `
     Anda adalah ABIDINAI: Analis Multimodal Kontekstual Strategis. Tugas Anda adalah menganalisis input gambar yang diberikan.
     IKUTI ALUR PENALARAN WAJIB DIIKUTI:
-    ... (Prompt dipersingkat untuk brevity) ...
+    1. Observasi Mendalam: Identifikasi objek, latar belakang, aksi, dan hubungan spasial. Catat elemen Anomali (ketidaksesuaian kontekstual).
+    2. Penalaran Kontekstual & Metrik: Terapkan metode analisis yang paling relevan (misalnya, SWOT, AIDA, atau 5W+1H). Simpulkan niat, tujuan, atau keadaan. Berikan Skor Keyakinan (1-10) untuk setiap kesimpulan penting.
+    3. Verifikasi & Konfirmasi: Fokuskan jawaban pada validitas informasi visual.
+    4. Sintesis Strategis: Susun jawaban akhir yang profesional, ringkas, mudah dipahami, dan relevan.
+    JANGAN HANYA memberikan daftar objek atau deskripsi satu kalimat.
+    Struktur Output WAJIB:
+    [Analisis Inti]: (Jawaban langsung, ringkasan penalaran utama, termasuk Skor Keyakinan total.)
+    [Detail Penting & Anomali]: (Dukungan observasi visual, rincian konteks, dan penjelasan terperinci mengenai Anomali yang ditemukan.)
     [Proyeksi & Rekomendasi Lanjutan]: (Kesimpulan berbasis penalaran canggih, Proyeksi Skenario Terdekat, serta saran proaktif.)
     `;
 
@@ -177,7 +168,9 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     contents: [
       {
         parts: [
-          { text: abidinaiPrompt },
+          {
+            text: abidinaiPrompt
+          },
           {
             inline_data: {
               mime_type: imageMimeType,
@@ -212,9 +205,7 @@ app.post('/api/research', async (req, res) => {
   if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
 
   let results = { wikipedia: {}, openalex: {} };
-  // ... (kode pencarian Wikipedia dan OpenAlex) ...
-  // Dibiarkan tanpa perubahan karena tidak terkait dengan Groq chat
-  
+
   // --- Cari di Wikipedia ---
   try {
     const wikiUrl = `https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
@@ -235,10 +226,12 @@ app.post('/api/research', async (req, res) => {
 
   // --- Cari di OpenAlex ---
   try {
+    // URL OpenAlex untuk mencari works (artikel, buku, dll)
     const openAlexUrl = `https://api.openalex.org/works?search=${encodeURIComponent(query)}`;
     const openAlexRes = await fetch(openAlexUrl);
     const openAlexData = await openAlexRes.json();
     if (openAlexData.results && openAlexData.results.length > 0) {
+      // Ambil 3 hasil teratas
       const topResults = openAlexData.results.slice(0, 3).map(item => ({
         title: item.title,
         abstract: item.abstract_inverted_index ? Object.values(item.abstract_inverted_index).flat().join(' ').replace(/_i/g, '') : "Tidak ada abstrak",
@@ -261,11 +254,6 @@ app.post('/api/unlimited-chat', async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Pesan kosong' });
 
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
-  if (!GROQ_API_KEY) {
-      return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi." });
-  }
-
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct", 
     messages: [
@@ -276,6 +264,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
       { role: "user", content: message }
     ],
     temperature: 0.7,
+    // Di sini kita tidak menyertakan max_tokens untuk memungkinkan respons yang lebih panjang.
   };
 
   try {
@@ -283,7 +272,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify(body)
     });
@@ -296,6 +285,13 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
+// --- API Antivirus DIHAPUS sesuai permintaan pengguna ---
+/*
+app.post("/api/antivirus", async (req, res) => {
+    // KODE INI TELAH DIHAPUS
+});
+*/
+
 
 // --- Serve file statis (Tetap Sama) ---
 app.use(express.static(path.join(__dirname)));
@@ -307,7 +303,7 @@ app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
 app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolan.html')));
 app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html')));
-app.get('/Translate', (req, res) => res.sendFile(path.join(__dirname, 'private/Translate.html')));
+app.get('/translate', (req, res) => res.sendFile(path.join(__dirname, 'private/translate.html')));
 app.get('/creator', (req, res) => res.sendFile(path.join(__dirname, 'private/creator.html')));
 // fallback
 app.use((req, res) => res.redirect('/'));
