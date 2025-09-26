@@ -379,8 +379,10 @@
       sendButton.disabled = true;
 
       // Logika Prompt Groq AI untuk Terjemahan
+      // System Prompt digabung ke dalam pesan untuk meniru pola dokter.html
       const systemPrompt = `Anda adalah ahli terjemahan profesional. Tugas Anda adalah menerjemahkan teks pengguna ke dalam bahasa ${targetLang} (${targetLangCode}). Berikan HANYA teks hasil terjemahan tanpa penjelasan, salam, atau teks tambahan apa pun. Teks harus akurat dan alami.`;
-      const userMessage = sourceText;
+      const finalMessage = `${systemPrompt} Teks untuk diterjemahkan: ${sourceText}`;
+
 
       try {
         // ASUMSI: Endpoint /api/chat di server.js Anda menangani Groq AI
@@ -390,8 +392,7 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ 
-            message: userMessage,
-            system_prompt: systemPrompt 
+            message: finalMessage // Mengirim gabungan System Prompt dan Teks Sumber
           })
         });
 
