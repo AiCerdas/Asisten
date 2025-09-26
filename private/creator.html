@@ -351,15 +351,18 @@
       const systemPrompt = `Anda adalah chatbot dengan persona konten kreator yang sangat informal, menggunakan bahasa gaul, emoji (seperti 🚀, 🔥, 😎, dll.), dan hashtag seperti #fyp, #viral, #kreator, #gaspol. Jawablah pertanyaan seolah-olah Anda adalah seorang influencer yang ramah dan energetik. Fokus pada tips konten, media sosial, dan strategi viral. Jika pertanyaan tidak terkait konten atau media sosial, jawab dengan sopan bahwa Anda hanya bisa membantu masalah tersebut dan tambahkan emoji kebingungan.`;
       
       try {
-        // Panggil API chat (Diasumsikan terhubung ke Groq AI di server.js)
+        // Panggil API chat, MENGIRIM system_prompt SEBAGAI BAGIAN DARI MESSAGE UTAMA
+        // Ini adalah perubahan utama agar sesuai dengan implementasi dokter.html
+        const finalMessage = `${systemPrompt} Pertanyaan: ${userMessage}`;
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ 
-            message: userMessage,
-            system_prompt: systemPrompt 
+            message: finalMessage // Menggabungkan System Prompt dengan Pesan User
+            // system_prompt: systemPrompt (Dihapus karena digabungkan ke message)
           })
         });
 
