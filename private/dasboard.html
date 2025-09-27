@@ -769,6 +769,70 @@
     .modal-body-research {
         padding: 10px;
     }
+
+    .modal-antivirus-body {
+        padding: 10px;
+    }
+
+    .antivirus-options {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .antivirus-option-btn {
+        flex: 1;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        color: #4a5568;
+    }
+
+    .antivirus-option-btn i {
+        font-size: 30px;
+        color: #4f46e5;
+        margin-bottom: 8px;
+    }
+
+    .antivirus-option-btn:hover {
+        background-color: #eef2ff;
+        border-color: #4f46e5;
+    }
+
+    .antivirus-option-btn.active {
+        background-color: #eef2ff;
+        border-color: #4f46e5;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .antivirus-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .antivirus-input-group input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .antivirus-result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f9fafb;
+        border: 1px solid #e5e5e6;
+        display: none;
+    }
   </style>
 </head>
 <body class="selectable">
@@ -831,12 +895,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title">
-          <i class="fas fa-search"></i> Riset Mendalam
+          <i class="fas fa-search"></i> Risetan Mendalam
         </div>
         <button class="close-btn" id="closeDeepResearchModal">&times;</button>
       </div>
       <div class="modal-body-research">
-        <p>Masukkan pertanyaan Anda. AbidinAI akan mengumpulkan informasi mendalam dari basis pengetahuan global dan riset ilmiah terbaru..</p>
+        <p>Ketikkan topik atau pertanyaan yang ingin Anda riset. Hasil akan mencari di Wikipedia dan jurnal ilmiah OpenAlex.</p>
         <div style="margin-top: 15px;">
           <input type="text" id="researchQueryInput" placeholder="Contoh: Efek rumah kaca..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px;">
         </div>
@@ -859,6 +923,62 @@
     </div>
   </div>
 
+  <div class="modal" id="antivirusModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-shield-virus"></i> Antivirus
+            </div>
+            <button class="close-btn" id="closeAntivirusModal">&times;</button>
+        </div>
+        <div class="modal-antivirus-body">
+            <div class="antivirus-options">
+                <button class="antivirus-option-btn active" id="scanFileBtn">
+                    <i class="fas fa-file-upload"></i>
+                    <div>Pindai File</div>
+                </button>
+                <button class="antivirus-option-btn" id="scanUrlBtn">
+                    <i class="fas fa-link"></i>
+                    <div>Pindai URL</div>
+                </button>
+            </div>
+
+            <div id="fileScanSection">
+                <div class="upload-area" id="antivirusUploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <strong>Klik untuk mengunggah file</strong>
+                    </div>
+                    <div style="font-size: 12px; color: #718096;">
+                        Semua format file didukung (maks. 50MB)
+                    </div>
+                    <input type="file" id="antivirusFileInput" class="file-input">
+                </div>
+            </div>
+
+            <div id="urlScanSection" style="display: none;">
+                <div class="antivirus-input-group">
+                    <input type="text" id="antivirusUrlInput" placeholder="Masukkan URL, contoh: https://...">
+                    <button id="startUrlScanBtn" class="process-btn" style="display: flex; margin: 0; width: 40px; height: 40px; justify-content: center; align-items: center;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="antivirus-result" id="antivirusResult">
+                <strong>Hasil Pemindaian:</strong>
+                <p id="antivirusResultText" style="margin-top: 5px;"></p>
+                <div id="antivirusProgress" style="display: none;">
+                    <div class="loading"></div>
+                    <span id="antivirusProgressText">Sedang memindai...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
   <div class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
   </div>
@@ -876,16 +996,29 @@
         <i class="fas fa-comment-dots"></i>
         <span>Obrolan AI</span>
       </a>
-
-      <a href="creator.html" class="menu-item" id="creatorMenuItem">
-        <i class="fas fa-paint-brush"></i>
-        <span>ABIDINAI CREATOR</span>
-      </a>
-
-<a href="translate.html" class="menu-item" id="creatorMenuItem">
-  <i class="fas fa-language"></i>
-  <span>Terjemahan Otomatis</span>
-</a>
+      
+      <div class="menu-item">
+        <i class="fas fa-language"></i>
+        <span>Pilih Bahasa</span>
+        <select id="languageSelector" style="margin-left: auto; padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px;">
+            <option value="id">Indonesia</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="jv">Jawa</option>
+            <option value="su">Sunda</option>
+            <option value="ko">Korean</option>
+            <option value="ar">Arabic</option>
+            <option value="de">German</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+            <option value="hi">Hindi</option>
+            <option value="ru">Russian</option>
+            <option value="pt">Portuguese</option>
+            <option value="th">Thai</option>
+            <option value="vi">Vietnamese</option>
+        </select>
+      </div>
       <a href="https://lynk.id/abidincerdas" class="menu-item" target="_blank">
         <i class="fas fa-shopping-cart"></i>
        <span>Jualan Produk Digital</span>
@@ -899,14 +1032,9 @@
 
       <a href="obrolan.html" class="menu-item">
         <i class="fas fa-comments"></i>
-        <span>Obrolan AI</span>
+        <span>Obrolan Grup</span>
       </a>
-      
-<a href="obrolanfull.html" class="menu-item">
-  <i class="fas fa-brain"></i>
-  <span>Obrolan AI Full</span>
-</a>
-      
+
       <a href="dokter.html" class="menu-item">
         <i class="fas fa-user-md"></i>
         <span>Dokter Kesehatan</span>
@@ -980,10 +1108,13 @@
               </button>
               <div class="plus-menu" id="plusMenu">
                 <button class="menu-item" onclick="openDeepResearchModal()">
-                  <i class="fas fa-search"></i> Riset Mendalam
+                  <i class="fas fa-search"></i> Risetan Mendalam
                 </button>
                 <button class="menu-item" onclick="openAudioSpectrumModal()">
                   <i class="fas fa-chart-bar"></i> Analisis Audio
+                </button>
+                <button class="menu-item" onclick="openAntivirusModal()">
+                  <i class="fas fa-shield-virus"></i> Antivirus
                 </button>
               </div>
             </div>
@@ -1017,6 +1148,9 @@
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
+
+      // Add a global variable to store the current language
+      let currentLanguage = 'id';
 
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('selectstart', e => e.preventDefault());
@@ -1217,6 +1351,7 @@
         initOCRModal();
         initAudioSpectrumModal();
         initDeepResearchModal(); // Inisialisasi modal riset
+        initAntivirusModal(); // Inisialisasi modal antivirus
 
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
@@ -1237,6 +1372,14 @@
               addMessage('Sistem', 'Gagal menghapus riwayat percakapan.', 'ai-message', null, false);
             }
           }
+        });
+
+        // Add event listener for language selector
+        document.getElementById('languageSelector').addEventListener('change', function() {
+            currentLanguage = this.value;
+            // You might want to reload the welcome message or a user message to show the change.
+            // For now, we'll just update the global variable.
+            alert(`Bahasa telah diubah ke: ${this.options[this.selectedIndex].text}`);
         });
       });
 
@@ -1517,6 +1660,117 @@
         });
       }
       
+      // Fungsi untuk membuka modal Antivirus
+      window.openAntivirusModal = function() {
+          const modal = document.getElementById('antivirusModal');
+          const fileScanSection = document.getElementById('fileScanSection');
+          const urlScanSection = document.getElementById('urlScanSection');
+          const scanFileBtn = document.getElementById('scanFileBtn');
+          const scanUrlBtn = document.getElementById('scanUrlBtn');
+          const antivirusResult = document.getElementById('antivirusResult');
+          antivirusResult.style.display = 'none'; // Sembunyikan hasil saat modal dibuka
+
+          modal.style.display = 'flex';
+          togglePlusMenu();
+
+          scanFileBtn.classList.add('active');
+          scanUrlBtn.classList.remove('active');
+          fileScanSection.style.display = 'block';
+          urlScanSection.style.display = 'none';
+
+          scanFileBtn.onclick = () => {
+              scanFileBtn.classList.add('active');
+              scanUrlBtn.classList.remove('active');
+              fileScanSection.style.display = 'block';
+              urlScanSection.style.display = 'none';
+          };
+
+          scanUrlBtn.onclick = () => {
+              scanUrlBtn.classList.add('active');
+              scanFileBtn.classList.remove('active');
+              urlScanSection.style.display = 'block';
+              fileScanSection.style.display = 'none';
+          };
+      };
+
+      // Fungsi untuk menginisialisasi modal Antivirus
+      function initAntivirusModal() {
+          const modal = document.getElementById('antivirusModal');
+          const closeBtn = document.getElementById('closeAntivirusModal');
+          const uploadArea = document.getElementById('antivirusUploadArea');
+          const fileInput = document.getElementById('antivirusFileInput');
+          const urlInput = document.getElementById('antivirusUrlInput');
+          const startUrlScanBtn = document.getElementById('startUrlScanBtn');
+          const resultDiv = document.getElementById('antivirusResult');
+          const resultText = document.getElementById('antivirusResultText');
+          const progressDiv = document.getElementById('antivirusProgress');
+          const progressText = document.getElementById('antivirusProgressText');
+
+          closeBtn.addEventListener('click', () => modal.style.display = 'none');
+          modal.addEventListener('click', (e) => {
+              if (e.target === modal) modal.style.display = 'none';
+          });
+
+          uploadArea.addEventListener('click', () => fileInput.click());
+
+          fileInput.addEventListener('change', () => {
+              if (fileInput.files.length) {
+                  const file = fileInput.files[0];
+                  if (file.size > 50 * 1024 * 1024) {
+                      resultText.textContent = "Ukuran file maksimal 50MB!";
+                      resultDiv.style.backgroundColor = '#fee2e2';
+                      resultDiv.style.borderColor = '#ef4444';
+                      resultDiv.style.display = 'block';
+                      return;
+                  }
+                  
+                  showAntivirusProgress(`Memindai file: ${file.name}`);
+                  // Simulasi pemindaian, ganti dengan API call
+                  setTimeout(() => {
+                      const isMalicious = file.name.includes('virus') || file.name.includes('malware');
+                      showAntivirusResult(isMalicious ? `File "${file.name}" terdeteksi berbahaya.` : `File "${file.name}" aman.`);
+                  }, 2000);
+              }
+          });
+
+          startUrlScanBtn.addEventListener('click', () => {
+              const url = urlInput.value.trim();
+              if (!url) {
+                  resultText.textContent = "Silakan masukkan URL.";
+                  resultDiv.style.backgroundColor = '#fee2e2';
+                  resultDiv.style.borderColor = '#ef4444';
+                  resultDiv.style.display = 'block';
+                  return;
+              }
+              
+              showAntivirusProgress(`Memindai URL: ${url}`);
+              // Simulasi pemindaian, ganti dengan API call
+              setTimeout(() => {
+                  const isMalicious = url.includes('malicious') || url.includes('virus');
+                  showAntivirusResult(isMalicious ? `URL "${url}" terdeteksi berbahaya.` : `URL "${url}" aman.`);
+              }, 2000);
+          });
+          
+          function showAntivirusProgress(message) {
+              resultDiv.style.display = 'none';
+              progressDiv.style.display = 'flex';
+              progressText.textContent = message;
+          }
+
+          function showAntivirusResult(message) {
+              progressDiv.style.display = 'none';
+              resultDiv.style.display = 'block';
+              resultText.textContent = message;
+              if (message.includes('berbahaya')) {
+                  resultDiv.style.backgroundColor = '#fee2e2';
+                  resultDiv.style.borderColor = '#ef4444';
+              } else {
+                  resultDiv.style.backgroundColor = '#f0fdf4';
+                  resultDiv.style.borderColor = '#22c55e';
+              }
+          }
+      }
+
       // Fungsi untuk mengirim pesan dengan perintah
       async function sendMessageWithCommand(command) {
         const chatbox = document.getElementById("chatbox");
@@ -1763,13 +2017,15 @@
             if (!aiReply || aiReply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
-                displayAIResponse(aiReply, messageTextElement);
+                displayAIResponse(aiReply, messageTextContainer);
             }
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
               regenerateButton.disabled = false;
+              messageDiv.classList.remove('user-message');
+              messageDiv.classList.add('ai-message');
             }, 2000);
             
           } catch (error) {
@@ -1790,6 +2046,30 @@
         }
       };
 
+      // --- START: NEW TRANSLATION FUNCTIONS ---
+      async function translateText(text, targetLang) {
+          if (targetLang === 'id' || !text) { // Ubah bahasa default menjadi 'id' (Indonesia)
+              return text;
+          }
+          try {
+              // Ganti endpoint ke API Groq
+              const response = await fetch("/api/translate-groq", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ text: text, targetLang: targetLang })
+              });
+              if (!response.ok) {
+                  throw new Error(`Translation API Error: ${response.status} - ${response.statusText}`);
+              }
+              const data = await response.json();
+              return data.translatedText;
+          } catch (error) {
+              console.error("Translation failed:", error);
+              return text; // Kembalikan teks asli jika gagal
+          }
+      }
+      // --- END: NEW TRANSLATION FUNCTIONS ---
+
       window.sendMessage = async function() {
         if (devToolsState.open) {
           showWarning();
@@ -1797,13 +2077,18 @@
         }
 
         const input = document.getElementById("messageInput");
-        const userText = input.value.trim(); // Ambil teks yang diketik pengguna
+        const userText = input.value.trim();
         
         // Buat teks lengkap untuk dikirim ke API, termasuk analisis gambar
         let fullMessageText = userText;
         if (ocrExtractedText) {
             fullMessageText = `[Analisis Gambar] ${ocrExtractedText}\n\n${userText}`;
         }
+
+        // Cek bahasa yang dipilih
+        const selectedLanguage = document.getElementById('languageSelector').value;
+        let translatedUserText = fullMessageText;
+        let translatedAiReply = '';
 
         // Tampilkan hanya teks yang diketik pengguna (atau teks default jika kosong)
         const chatbox = document.getElementById("chatbox");
@@ -1814,7 +2099,7 @@
             displayMessage = "[Gambar terunggah]";
         }
 
-        if (!displayMessage) return; // Jangan kirim jika tidak ada teks atau gambar
+        if (!displayMessage) return;
 
         const userDiv = addMessage('Anda', displayMessage, 'user-message');
 
@@ -1835,17 +2120,18 @@
         sendButton.disabled = true;
         input.value = '';
         input.style.height = 'auto';
-        removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
+        removeImagePreview();
 
         try {
-          // Ganti fetch ini dengan API endpoint yang benar untuk Gemini atau model lain
-          // Gunakan fullMessageText sebagai body permintaan
+          // Translate user message to English if needed
+          if (selectedLanguage !== 'id') {
+              translatedUserText = await translateText(fullMessageText, 'en');
+          }
+
           const response = await fetch("/api/chat", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: fullMessageText })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: translatedUserText })
           });
 
           if (!response.ok) {
@@ -1860,7 +2146,13 @@
           if (!aiReply || aiReply.trim() === "") {
             displayMaintenanceMessage();
           } else {
-            displayAIResponse(aiReply);
+            // Translate AI reply back to the user's selected language
+            if (selectedLanguage !== 'id') {
+                translatedAiReply = await translateText(aiReply, selectedLanguage);
+            } else {
+                translatedAiReply = aiReply;
+            }
+            displayAIResponse(translatedAiReply);
           }
         } catch (error) {
           typingDiv.remove();
