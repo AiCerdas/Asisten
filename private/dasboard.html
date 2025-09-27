@@ -325,6 +325,9 @@
       bottom: 0;
       background: #f7f7f8;
       border-top: 1px solid #e5e5e6;
+      /* --- START OF CHANGE --- */
+      padding-bottom: 30px; 
+      /* --- END OF CHANGE --- */
     }
 
     .input-box {
@@ -998,8 +1001,7 @@
       </div>
     </div>
   </div>
-  <!-- Banner Iklan Full Baris di Bawah (super tipis 20px) -->
-<div id="banner-iklan" style="
+  <div id="banner-iklan" style="
     position: fixed;
     bottom: 0;
     left: 0;
@@ -1024,10 +1026,7 @@
   <script type="text/javascript" src="//nearlyoffenderimpure.com/5da105dcd0d41b83b4e4a100a60fb0f4/invoke.js"></script>
 </div>
 
-<!-- Biar konten tidak ketiban -->
-<div style="margin-bottom:50px;"></div>
-  
-  <audio id="audioPlayer" loop>
+<audio id="audioPlayer" loop>
     <source src="https://d.top4top.io/m_33403we8x0.mp3" type="audio/mpeg">
   </audio>
 
@@ -1791,7 +1790,7 @@
             if (!aiReply || aiReply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
-                displayAIResponse(aiReply, messageTextElement);
+                displayAIResponse(aiReply, messageTextContainer);
             }
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
