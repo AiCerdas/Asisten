@@ -16,7 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
-// Inisialisasi GoogleGenerativeAI
+// Inisialisasi GoogleGenerativeAI (tetap ada meskipun tidak digunakan di /api/ocr)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
@@ -139,12 +139,16 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
-// --- API OCR dan Analisis (Tetap Sama) ---
+// ==========================================================
+// ✅ API OCR dan Analisis (TELAH DIPERBAIKI) ✅
+// ==========================================================
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
   if (!req.file) {
     return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
+
   // PROMPT CANGGIH ABIDINAI UNTUK ANALISIS MULTIMODAL
   const abidinaiPrompt = `
     Anda adalah ABIDINAI: Analis Multimodal Kontekstual Strategis. Tugas Anda adalah menganalisis input gambar yang diberikan.
@@ -183,6 +187,7 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
   };
 
   try {
+    // Menggunakan fetch ke endpoint Gemini API, sama seperti di kode kedua
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -198,6 +203,7 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
   }
 });
+
 
 // --- API untuk fitur Riset Mendalam (Tetap Sama) ---
 app.post('/api/research', async (req, res) => {
@@ -284,14 +290,6 @@ app.post('/api/unlimited-chat', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// --- API Antivirus DIHAPUS sesuai permintaan pengguna ---
-/*
-app.post("/api/antivirus", async (req, res) => {
-    // KODE INI TELAH DIHAPUS
-});
-*/
-
 
 // --- Serve file statis (Tetap Sama) ---
 app.use(express.static(path.join(__dirname)));
