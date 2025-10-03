@@ -88,6 +88,20 @@
       background-color: #f3f4f6;
       color: #4f46e5;
     }
+    
+    /* Gaya untuk tombol logout */
+    .logout-item {
+      background-color: #fef2f2;
+      color: #ef4444;
+      font-weight: 500;
+      margin-top: 15px; /* Tambahkan jarak dari menu di atasnya */
+      border: 1px solid #fca5a5;
+    }
+
+    .logout-item:hover {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
 
     .menu-item.active {
       background-color: #eef2ff;
@@ -770,6 +784,19 @@
         padding: 10px;
     }
   </style>
+  
+  <script>
+    // ** MODIFIKASI: Cek token login saat halaman dimuat **
+    if (!localStorage.getItem("abidinai_token")) {
+      // Jika token TIDAK ada, arahkan kembali ke halaman login.html
+      // Asumsi dasboard.html ada di private/ dan login.html di private/
+      // Kita perlu naik satu tingkat (../) untuk kembali ke index atau langsung ke login.html
+      // Karena login.html dan dasboard.html diasumsikan ada di folder yang sama (private/), 
+      // kita harus kembali ke halaman awal (`index.html`) yang akan me-redirect ke login.html
+      window.location.href = "../index.html"; 
+    }
+  </script>
+  
 </head>
 <body class="selectable">
   <div class="warning-overlay" id="warningOverlay">
@@ -926,7 +953,12 @@
         <i class="fas fa-music"></i>
         <span>Putar Musik</span>
       </div>
-    </div>
+      
+      <div class="menu-item logout-item" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Keluar</span>
+      </div>
+      </div>
 
     <div class="sidebar-footer">
       <div class="user-profile">
@@ -1013,7 +1045,7 @@
       let lastTypingElement = null;
       let db = null;
       let ocrExtractedText = '';
-      let ocrImageURL = null; // Tambahkan variabel untuk URL gambar
+      let ocrImageURL = null; 
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
@@ -1244,6 +1276,17 @@
         const now = new Date();
         return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
+      
+      // ** MODIFIKASI: FUNGSI LOGOUT BARU **
+      window.logout = function() {
+          // Hapus token dari localStorage
+          localStorage.removeItem("abidinai_token");
+          // Hapus riwayat percakapan dari database lokal (opsional, tapi disarankan)
+          clearConversationFromDB();
+          // Arahkan kembali ke halaman utama (index.html), yang akan me-redirect ke login
+          window.location.href = "../index.html"; 
+      };
+      // ** AKHIR MODIFIKASI **
 
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
