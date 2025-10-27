@@ -1052,9 +1052,19 @@
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      document.addEventListener('contextmenu', e => e.preventDefault());
-      document.addEventListener('selectstart', e => e.preventDefault());
-      document.addEventListener('dragstart', e => e.preventDefault());
+      // --- MODIFIKASI: Izinkan Pilih Teks Hanya di Android ---
+      const isAndroid = /android/i.test(navigator.userAgent);
+
+      // Jika BUKAN Android (PC/Laptop), maka terapkan blokir
+      if (!isAndroid) {
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+      }
+      // Jika Android, event listener di atas tidak akan ditambahkan,
+      // sehingga text selection (pilih teks) dan context menu (tahan lama) akan berfungsi.
+      // --- AKHIR MODIFIKASI ---
+
 
       document.addEventListener('keydown', function(e) {
         if (
