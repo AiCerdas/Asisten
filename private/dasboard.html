@@ -203,7 +203,6 @@
       padding: 12px 16px;
       border-radius: 8px;
       animation: fadeIn 0.3s ease;
-      position: relative; /* Tambahkan ini untuk positioning menu aksi */
     }
 
     .user-message {
@@ -721,24 +720,10 @@
 
     /* Gaya untuk tombol aksi pesan */
     .message-actions {
-      display: none; /* Sembunyikan secara default */
+      display: flex;
       justify-content: flex-end;
       gap: 8px;
       margin-top: 10px;
-      padding: 8px 10px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid #e5e5e6;
-      border-radius: 6px;
-      position: absolute;
-      right: 10px; /* Posisi relatif terhadap message-content */
-      top: -10px;
-      z-index: 5;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Gaya untuk aksi pesan di mobile (tahan lama) */
-    .message-actions.active {
-        display: flex;
     }
 
     .action-btn {
@@ -761,9 +746,19 @@
     .action-btn.copy {
       color: #4f46e5;
     }
+    
+    /* GAYA UNTUK TOMBOL BAGIKAN (SHARE) */
+    .action-btn.share {
+      color: #10b981; /* Warna hijau untuk Share */
+    }
 
     .action-btn.regenerate {
       color: #10b981;
+    }
+    
+    /* Perubahan untuk warna tombol regenerate agar tidak sama dengan share */
+    .action-btn.regenerate {
+      color: #f59e0b; /* Warna kuning-orange untuk Regenerate */
     }
 
     /* Gaya untuk pratinjau gambar */
@@ -902,7 +897,7 @@
       <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
     </div>
   </div>
-  
+
   <div class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
   </div>
@@ -1066,61 +1061,56 @@
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
-      let longPressTimer = null;
-      const LONG_PRESS_DURATION = 500; // 500ms untuk tahan lama
-      let activeMessageActions = null; // Melacak menu aksi yang sedang terbuka
 
-      // --- MODIFIKASI: Cek perangkat untuk blokir/izin ---
+      // --- MODIFIKASI: Izinkan Pilih Teks Hanya di Android ---
       const isAndroid = /android/i.test(navigator.userAgent);
-      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-      // Jika BUKAN Android/Mobile (PC/Laptop), maka terapkan blokir
-      if (!isAndroid && !isMobile) {
+      // Jika BUKAN Android (PC/Laptop), maka terapkan blokir
+      if (!isAndroid) {
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('selectstart', e => e.preventDefault());
         document.addEventListener('dragstart', e => e.preventDefault());
-
-        const detectDevTools = () => {
-          if (window.outerHeight - window.innerHeight > devToolsThreshold ||
-              window.outerWidth - window.innerWidth > devToolsThreshold) {
-            if (!devToolsState.open) {
-              devToolsState.open = true;
-              showWarning();
-            }
-          } else {
-            if (devToolsState.open) {
-              devToolsState.open = false;
-              hideWarning();
-            }
-          }
-        };
-
-        setInterval(detectDevTools, 300);
-
-        document.addEventListener('keydown', function(e) {
-          if (
-            e.key === 'F12' ||
-            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-            (e.ctrlKey && e.shiftKey && e.key === 'C') ||
-            (e.ctrlKey && e.shiftKey && e.key ==='J') ||
-            (e.ctrlKey && e.key === 'U') ||
-            (e.ctrlKey && e.key === 'S') ||
-            e.key === 'F5' ||
-            (e.ctrlKey && e.key === 'r')
-          ) {
-            e.preventDefault();
-            e.stopPropagation();
-            showWarning();
-            return false;
-          }
-        });
-        
-        window.addEventListener('resize', detectDevTools);
-      } 
-      // Jika Android atau Mobile, semua event listener di atas (termasuk deteksi devtools) tidak akan ditambahkan,
-      // sehingga text selection, context menu, dan devtools akan berfungsi normal/tidak diblokir.
+      }
+      // Jika Android, event listener di atas tidak akan ditambahkan,
+      // sehingga text selection (pilih teks) dan context menu (tahan lama) akan berfungsi.
       // --- AKHIR MODIFIKASI ---
-      
+
+
+      document.addEventListener('keydown', function(e) {
+        if (
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+          (e.ctrlKey && e.shiftKey && e.key ==='J') ||
+          (e.ctrlKey && e.key === 'U') ||
+          (e.ctrlKey && e.key === 'S') ||
+          e.key === 'F5' ||
+          (e.ctrlKey && e.key === 'r')
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          showWarning();
+          return false;
+        }
+      });
+
+      const detectDevTools = () => {
+        if (window.outerHeight - window.innerHeight > devToolsThreshold ||
+            window.outerWidth - window.innerWidth > devToolsThreshold) {
+          if (!devToolsState.open) {
+            devToolsState.open = true;
+            showWarning();
+          }
+        } else {
+          if (devToolsState.open) {
+            devToolsState.open = false;
+            hideWarning();
+          }
+        }
+      };
+
+      setInterval(detectDevTools, 300);
+
       const clearConsole = () => {
         if (typeof console !== 'undefined') {
           console.clear();
@@ -1129,20 +1119,9 @@
           console.log('%cHalaman ini dilindungi sistem keamanan AbidinAI. Akses tidak sah akan diblokir!', 'color: red; font-size: 14px;');
         }
       };
-      
-      // Jika PC/Laptop, aktifkan clear console dan debug trap
-      if (!isAndroid && !isMobile) {
-        setInterval(clearConsole, 1000);
-        clearConsole();
-        (() => {
-          const debugTrap = () => {
-            debugger;
-          };
-          setInterval(debugTrap, 100);
-        })();
-        window.addEventListener('blur', clearConsole);
-        window.addEventListener('focus', clearConsole);
-      }
+
+      setInterval(clearConsole, 1000);
+      clearConsole();
 
       function showWarning() {
         const overlay = document.getElementById('warningOverlay');
@@ -1163,6 +1142,17 @@
           document.body.style.overflow = 'auto';
         }
       }
+
+      (() => {
+        const debugTrap = () => {
+          debugger;
+        };
+        setInterval(debugTrap, 100);
+      })();
+
+      window.addEventListener('blur', clearConsole);
+      window.addEventListener('focus', clearConsole);
+      window.addEventListener('resize', detectDevTools);
 
       document.getElementById('mobileMenuBtn').addEventListener('click', function() {
         document.getElementById('sidebar').classList.toggle('open');
@@ -1243,7 +1233,7 @@
       }
       
       document.addEventListener('DOMContentLoaded', async function() {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return;
         }
@@ -1302,80 +1292,7 @@
             }
           }
         });
-        
-        // --- MODIFIKASI: Menambahkan event listener untuk pesan AI ---
-        document.getElementById('chatbox').addEventListener('mousedown', handleMessageStart);
-        document.getElementById('chatbox').addEventListener('mouseup', handleMessageEnd);
-        document.getElementById('chatbox').addEventListener('touchstart', handleMessageStart, { passive: true });
-        document.getElementById('chatbox').addEventListener('touchend', handleMessageEnd);
-        document.addEventListener('click', closeActiveActionsMenu);
       });
-      
-      // Fungsi untuk menutup menu aksi yang sedang terbuka
-      function closeActiveActionsMenu(event) {
-          if (activeMessageActions) {
-              const isActionClick = event.target.closest('.message-actions') || event.target.closest('.message');
-              if (!isActionClick || event.target.closest('.user-message')) {
-                  activeMessageActions.classList.remove('active');
-                  activeMessageActions = null;
-              }
-          }
-      }
-
-      function handleMessageStart(event) {
-          const aiMessage = event.target.closest('.ai-message');
-          if (!aiMessage) return;
-
-          // Hapus menu yang sudah terbuka sebelum memulai timer baru
-          if (activeMessageActions) {
-              activeMessageActions.classList.remove('active');
-              activeMessageActions = null;
-          }
-          
-          // Reset timer
-          if (longPressTimer) {
-              clearTimeout(longPressTimer);
-          }
-
-          // Mulai timer untuk long press (hanya di mobile/android)
-          if (isMobile || isAndroid) {
-              longPressTimer = setTimeout(() => {
-                  showActionsMenu(aiMessage);
-              }, LONG_PRESS_DURATION);
-          } else {
-              // Untuk PC/Laptop, kita gunakan right-click (contextmenu)
-              aiMessage.addEventListener('contextmenu', function(e) {
-                  e.preventDefault();
-                  showActionsMenu(aiMessage);
-              }, { once: true });
-          }
-      }
-
-      function handleMessageEnd(event) {
-          if (longPressTimer) {
-              clearTimeout(longPressTimer);
-              longPressTimer = null;
-          }
-      }
-
-      function showActionsMenu(aiMessage) {
-          const actionsMenu = aiMessage.querySelector('.message-actions');
-          if (actionsMenu) {
-              actionsMenu.classList.add('active');
-              activeMessageActions = actionsMenu;
-              
-              // Tutup saat di-scroll
-              document.getElementById('chatbox').addEventListener('scroll', closeActionsMenuOnScroll, { once: true });
-          }
-      }
-      
-      function closeActionsMenuOnScroll() {
-          if (activeMessageActions) {
-              activeMessageActions.classList.remove('active');
-              activeMessageActions = null;
-          }
-      }
-      // --- AKHIR MODIFIKASI: Event listener untuk pesan AI ---
 
       function getCurrentTime() {
         const now = new Date();
@@ -1393,24 +1310,19 @@
       };
       // ** AKHIR MODIFIKASI **
 
-      // --- MODIFIKASI: Nonaktifkan pengiriman pesan dengan Enter ---
       window.handleKeyPress = function(event) {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return false;
         }
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
-          // HANYA CEK apakah ada teks, JANGAN KIRIM
-          // if (document.getElementById("messageInput").value.trim() || ocrImageURL) {
-          //    sendMessage(); 
-          // }
+          sendMessage();
         }
       };
-      // --- AKHIR MODIFIKASI: Nonaktifkan pengiriman pesan dengan Enter ---
 
       function toggleAudio() {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return false;
         }
@@ -1610,7 +1522,7 @@
       });
       
       window.openAudioSpectrumModal = function() {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return false;
         }
@@ -1726,10 +1638,48 @@
         }
       }
       // ** AKHIR KODE TAMBAHAN **
+      
+      // ** FUNGSI BARU UNTUK BERBAGI PESAN **
+      window.shareMessageText = function(messageId) {
+        const messageTextElement = document.getElementById(`${messageId}-text`);
+        if (messageTextElement) {
+          const rawText = messageTextElement.textContent || messageTextElement.innerText;
+          const shareText = `*Balasan dari AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
+
+          if (navigator.share) {
+            // Gunakan Web Share API jika tersedia (lebih baik di mobile)
+            navigator.share({
+              title: 'Balasan AbidinAI',
+              text: shareText
+            }).catch(error => {
+              if (error.name !== 'AbortError') {
+                console.error('Error sharing:', error);
+                // Fallback ke WhatsApp jika Web Share gagal atau dibatalkan
+                const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
+                window.open(whatsappUrl, '_blank');
+              }
+            });
+          } else {
+            // Fallback ke WhatsApp di desktop/browser lama
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+            window.open(whatsappUrl, '_blank');
+          }
+          
+          const shareButton = document.querySelector(`button[onclick="shareMessageText('${messageId}')"]`);
+          if (shareButton) {
+            const originalHtml = shareButton.innerHTML;
+            shareButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
+            setTimeout(() => {
+              shareButton.innerHTML = originalHtml;
+            }, 2000);
+          }
+        }
+      };
+      // ** AKHIR FUNGSI BARU **
 
 
       window.openOCRModal = function() {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return false;
         }
@@ -1746,7 +1696,7 @@
       };
 
       window.startVoiceRecognition = function() {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return false;
         }
@@ -1811,6 +1761,7 @@
         
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         
+        // MODIFIKASI: Tambahkan tombol "Bagikan" di sini
         messageDiv.innerHTML = `
           <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
             ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
@@ -1826,6 +1777,9 @@
               <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
                 <i class="fas fa-copy"></i> Salin
               </button>
+              <button class="action-btn share" onclick="shareMessageText('${messageId}')">
+                <i class="fas fa-share-alt"></i> Bagikan
+              </button>
               <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
                 <i class="fas fa-redo"></i> Buat Ulang
               </button>
@@ -1833,6 +1787,8 @@
             ` : ''}
           </div>
         `;
+        // AKHIR MODIFIKASI
+
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
         
@@ -1846,7 +1802,9 @@
       window.copyMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
-          const textToCopy = messageTextElement.textContent || messageTextElement.innerText;
+          // MODIFIKASI: Pastikan untuk mengambil konten mentah dari semua tag di dalam message-text
+          const textToCopy = messageTextElement.innerText; 
+          
           navigator.clipboard.writeText(textToCopy).then(() => {
             const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
             if (copyButton) {
@@ -1854,12 +1812,6 @@
               copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
               setTimeout(() => {
                 copyButton.innerHTML = originalHtml;
-                // Tutup menu setelah berhasil disalin
-                const actionsMenu = copyButton.closest('.message-actions');
-                if (actionsMenu) {
-                    actionsMenu.classList.remove('active');
-                    activeMessageActions = null;
-                }
               }, 2000);
             }
           }).catch(err => {
@@ -1881,14 +1833,6 @@
         }
         
         const userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
-        
-        // Tutup menu aksi
-        const actionsMenu = messageDiv.querySelector('.message-actions');
-        if (actionsMenu) {
-            actionsMenu.classList.remove('active');
-            activeMessageActions = null;
-        }
-
 
         const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
         if (regenerateButton) {
@@ -1896,6 +1840,12 @@
           regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
           regenerateButton.disabled = true;
           
+          // Nonaktifkan tombol lain saat memproses
+          const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
+          const shareButton = document.querySelector(`button[onclick="shareMessageText('${messageId}')"]`);
+          if (copyButton) copyButton.disabled = true;
+          if (shareButton) shareButton.disabled = true;
+
 
           // Hapus konten pesan AI yang lama dan ganti dengan indikator mengetik
           messageTextElement.innerHTML = `<div class="typing-indicator">
@@ -1935,6 +1885,9 @@
             }
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
+            if (copyButton) copyButton.disabled = false;
+            if (shareButton) shareButton.disabled = false;
+            
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
               regenerateButton.disabled = false;
@@ -1948,6 +1901,9 @@
             </div>`;
 
             regenerateButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Gagal';
+            if (copyButton) copyButton.disabled = false;
+            if (shareButton) shareButton.disabled = false;
+            
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
               regenerateButton.disabled = false;
@@ -1959,7 +1915,7 @@
       };
 
       window.sendMessage = async function() {
-        if (!isAndroid && !isMobile && devToolsState.open) {
+        if (devToolsState.open) {
           showWarning();
           return false;
         }
@@ -2071,18 +2027,14 @@
         }
         
         let messageTextContainer;
-        let messageDiv;
         if (targetElement) {
             messageTextContainer = targetElement;
-            messageDiv = targetElement.closest('.message');
-            // Hapus aksi lama jika ada saat regenerate
-            const oldActions = messageDiv.querySelector('.message-actions');
-            if(oldActions) oldActions.remove();
+            // Jika meregenerasi, kita harus memastikan semua tombol aksi ada
         } else {
-            messageDiv = document.createElement("div");
-            messageDiv.className = "message ai-message";
+            const container = document.createElement("div");
+            container.className = "message ai-message";
             const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            messageDiv.innerHTML = `
+            container.innerHTML = `
               <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
               <div class="message-content">
                 <div class="message-header">
@@ -2090,10 +2042,21 @@
                   <span class="message-time">${getCurrentTime()}</span>
                 </div>
                 <div class="message-text" id="${messageId}-text"></div>
+                <div class="message-actions">
+                  <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
+                    <i class="fas fa-copy"></i> Salin
+                  </button>
+                  <button class="action-btn share" onclick="shareMessageText('${messageId}')">
+                    <i class="fas fa-share-alt"></i> Bagikan
+                  </button>
+                  <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
+                    <i class="fas fa-redo"></i> Buat Ulang
+                  </button>
+                </div>
               </div>
             `;
-            chatbox.appendChild(messageDiv);
-            messageTextContainer = messageDiv.querySelector('.message-text');
+            chatbox.appendChild(container);
+            messageTextContainer = container.querySelector('.message-text');
             saveMessageToDB('AbidinAI', aiReply);
         }
 
@@ -2134,22 +2097,6 @@
             codeContainer.appendChild(pre);
             messageTextContainer.appendChild(codeContainer);
           }
-        }
-        
-        // Tambahkan tombol aksi pesan ke pesan AI
-        if(messageDiv.classList.contains('ai-message')) {
-            const messageId = messageTextContainer.id.replace('-text', '');
-            const actionDiv = document.createElement("div");
-            actionDiv.className = "message-actions";
-            actionDiv.innerHTML = `
-                <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
-                    <i class="fas fa-copy"></i> Salin
-                </button>
-                <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
-                    <i class="fas fa-redo"></i> Buat Ulang
-                </button>
-            `;
-            messageDiv.querySelector('.message-content').appendChild(actionDiv);
         }
         
         chatbox.scrollTop = chatbox.scrollHeight;
