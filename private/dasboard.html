@@ -1310,16 +1310,62 @@
       };
       // ** AKHIR MODIFIKASI **
 
+      // ** MODIFIKASI KUNCI DI SINI **
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-          sendMessage();
+        
+        // 1. Cek apakah tombol yang ditekan adalah 'Enter'
+        if (event.key === 'Enter') {
+          // 2. Cek apakah 'Shift' juga ditekan (untuk memungkinkan line break pada desktop)
+          if (event.shiftKey) {
+            // Biarkan default action (line break)
+            return true;
+          }
+          
+          // 3. Jika hanya 'Enter' (termasuk tombol kirim default di keyboard HP)
+          
+          // CEK JIKA ANDROID (HP)
+          if (isAndroid) {
+            // Pada HP, kita ingin 'Enter' hanya menjadi line break, BUKAN mengirim.
+            // Biarkan perilaku default textarea, yang mana adalah line break, 
+            // karena tombol kirim di HP biasanya memicu Enter tanpa Shift.
+            // Namun, karena ini adalah event onkeypress, kita tidak perlu memanggil sendMessage()
+            // dan cukup mencegah pengiriman default dari form jika ada. 
+            // Karena ini textarea tanpa form, kita hanya perlu memastikan tidak ada sendMessage.
+            // Untuk memastikan ini *selalu* menjadi line break di HP:
+            
+            // Dapatkan nilai textarea saat ini
+            const textarea = document.getElementById("messageInput");
+            const cursorPosition = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPosition);
+            const textAfter = textarea.value.substring(cursorPosition, textarea.value.length);
+            
+            // Masukkan karakter baris baru (\n) secara manual
+            textarea.value = textBefore + '\n' + textAfter;
+            
+            // Posisikan kursor setelah baris baru
+            textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
+            
+            // Sesuaikan tinggi textarea
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+
+            // Cegah tindakan default tombol Enter (biasanya mengirim form jika ada)
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+          } else {
+            // Pada Desktop (bukan Android), kita masih ingin 'Enter' mengirim pesan 
+            // jika Shift tidak ditekan, untuk kemudahan user desktop.
+            event.preventDefault();
+            sendMessage();
+          }
         }
       };
+      // ** AKHIR MODIFIKASI KUNCI **
 
       function toggleAudio() {
         if (devToolsState.open) {
@@ -1618,7 +1664,8 @@
           });
 
           if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error: ${response.status} - ${response.statusText}`);
           }
 
           const data = await response.json();
@@ -1644,7 +1691,7 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
           const rawText = messageTextElement.textContent || messageTextElement.innerText;
-          const shareText = `*Balasan dari AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
+          const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
 
           if (navigator.share) {
             // Gunakan Web Share API jika tersedia (lebih baik di mobile)
