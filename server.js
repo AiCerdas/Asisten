@@ -31,25 +31,91 @@ function fileToGenerativePart(buffer, mimeType) {
 }
 
 // ==========================================================
-// 🏯 PAKET LENGKAP LATIHAN AI GEMINI – BAHASA & BUDAYA JAWA
+// 🏯 LATIHAN KHUSUS GEMINI – AKSARA HANACARAKA (Data Baru)
 // ==========================================================
 const javaneseTrainingData = {
   // 📜 Deskripsi Konteks
   context: `
-Kamu adalah *AbedinAI Jawa* — asisten AI yang ahli dalam Bahasa Jawa, Aksara Hanacaraka, 
-serta Budaya, Sejarah, dan Falsafah Jawa. 
-Kamu harus menjawab dengan bahasa yang sopan, halus, dan benar secara tata krama Jawa.
-
-Gunakan transliterasi Latin modern.
-Jika teks merupakan nama orang, jangan ubah pelafalannya.
-Selalu sertakan penjelasan makna dalam Bahasa Indonesia.
-Jika diminta menulis dalam aksara Jawa, berikan hasil aksara + transliterasi + arti.
+Kamu adalah *AbedinAI Jawa*, asisten AI yang hanya berfokus pada latihan membaca, menulis,
+dan menerjemahkan Aksara Hanacaraka (Aksara Jawa).
+Tugasmu:
+1️⃣ Kenali setiap huruf Aksara Jawa (ha-na-ca-ra-ka dst.)
+2️⃣ Ubah ke Latin sesuai transliterasi modern.
+3️⃣ Jika berupa kata bermakna, sertakan arti Bahasa Indonesia.
+4️⃣ Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦺꦤ꧀ → Abidin).
+5️⃣ Jelaskan secara sopan dalam Bahasa Indonesia.
 
 Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
 
-  // 🔎 Kata Kunci Pendeteksi Topik Jawa
-  keywords: [
+  // 📚 Huruf Dasar Hanacaraka (20 utama)
+  basic_letters: [
+    { aksara: "ꦲ", latin: "ha" },
+    { aksara: "ꦤ", latin: "na" },
+    { aksara: "ꦕ", latin: "ca" },
+    { aksara: "ꦫ", latin: "ra" },
+    { aksara: "ꦏ", latin: "ka" },
+    { aksara: "ꦢ", latin: "da" },
+    { aksara: "ꦠ", latin: "ta" },
+    { aksara: "ꦱ", latin: "sa" },
+    { aksara: "ꦮ", latin: "wa" },
+    { aksara: "ꦭ", latin: "la" },
+    { aksara: "ꦥ", latin: "pa" },
+    { aksara: "ꦝ", latin: "dha" },
+    { aksara: "ꦗ", latin: "ja" },
+    { aksara: "ꦪ", latin: "ya" },
+    { aksara: "ꦚ", latin: "nya" },
+    { aksara: "ꦩ", latin: "ma" },
+    { aksara: "ꦒ", latin: "ga" },
+    { aksara: "ꦧ", latin: "ba" },
+    { aksara: "ꦛ", latin: "tha" },
+    { aksara: "ꦔ", latin: "nga" }
+  ],
+
+  // 🕊️ Sandhangan (vokal dan bunyi tambahan)
+  sandhangan: [
+    { simbol: "ꦶ", bunyi: "i" },
+    { simbol: "ꦸ", bunyi: "u" },
+    { simbol: "ꦺ", bunyi: "e" },
+    { simbol: "ꦼ", bunyi: "ê" },
+    { simbol: "ꦺꦴ", bunyi: "o" },
+    { simbol: "ꦴ", bunyi: "a panjang" },
+    { simbol: "ꦁ", bunyi: "ng" },
+    { simbol: "ꦃ", bunyi: "h" },
+    { simbol: "꧀", bunyi: "pangkon (mematikan huruf)" }
+  ],
+
+  // 🧩 Contoh Latihan Transliteration
+  transliteration_examples: [
+    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang (tidak diubah jadi Abiden)" },
+    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf dalam Bahasa Jawa" },
+    { aksara: "ꦥꦸꦠꦶ", latin: "Puti", arti: "Anak perempuan (bentuk halus dari 'Putri')" },
+    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
+    { aksara: "ꦲꦶꦩꦸꦫꦤ꧀", latin: "Himuran", arti: "Hiburan / kesenangan" },
+    { aksara: "ꦏꦸꦫꦶꦩꦸꦭꦸ", latin: "Kurimuluh", arti: "Makna simbolik: pembawa ilmu" }
+  ],
+
+  // 🧮 Rumus Pembacaan Otomatis (untuk AI)
+  rules: `
+1️⃣ Setiap huruf dasar membawa vokal "a" (contoh ꦏ = ka).
+2️⃣ Jika ada sandhangan ꦶ, vokal berubah jadi "i" (ꦏꦶ = ki).
+3️⃣ Sandhangan ꦸ → "u" (ꦏꦸ = ku).
+4️⃣ Pangkon ꧀ mematikan vokal, membuat konsonan mati (ꦏ꧀ = k).
+5️⃣ Huruf pasangan mengikuti konsonan berikut (misalnya ꦏ꧀ꦫ = kra).
+6️⃣ Kombinasi sandhangan + pasangan harus dibaca dari kanan ke kiri untuk transliterasi yang benar.
+`,
+
+  // 💬 Contoh Penjelasan Budaya Hanacaraka
+  hanacaraka_story: `
+"Hanacaraka" berasal dari legenda Aji Saka yang memiliki dua abdi setia, Dora dan Sembodo.
+Keduanya saling membunuh karena perintah yang disalahpahami, sehingga melahirkan
+falsafah 'Ha-na-ca-ra-ka' — artinya 'Ada utusan yang saling berperang'.
+Aksara ini kemudian menjadi dasar penulisan Bahasa Jawa tradisional.
+`
+};
+
+// 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
+const javanese_keywords = [
     // Bahasa & Aksara
     "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan",
     "pangkon", "murda", "rekan", "swara", "pasangan", "transliterasi",
@@ -83,60 +149,25 @@ Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu 
     // Wilayah & Bahasa
     "jawa tengah", "jawa timur", "jawa barat", "diy yogyakarta",
     "suku jawa", "tanah jawa", "bahasa krama", "bahasa ngoko", "madya",
-    "prabowo subianto", // Memasukkan keyword presiden sesuai permintaan awal
+    "prabowo subianto", 
 
     // Seni Pertunjukan
     "tari jawa", "wayang orang", "ketoprak", "klenengan", "teater jawa",
     "pentas budaya", "sendratari", "srimpi", "bedhaya", "reog"
-  ],
+];
 
-  // 📚 Contoh Transliterasi Lengkap
-  transliteration_examples: [
-    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang (tidak diubah jadi Abiden)" },
-    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Huruf atau tulisan dalam bahasa Jawa" },
-    { aksara: "ꦲꦛꦢꦶꦏ", latin: "Athadika", arti: "Nama orang / istilah pribadi" },
-    { aksara: "ꦥꦸꦠꦶꦏꦸ", latin: "Putiku", arti: "Anak perempuanku" },
-    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
-    { aksara: "ꦲꦶꦤ꧀ꦠꦸꦩꦸ", latin: "Intumu", arti: "Pikiranmu" },
-    { aksara: "ꦲꦩꦸꦩ꧀", latin: "Amum", arti: "Berarti 'umum', kadang dipakai dalam sastra" },
-    { aksara: "ꦏꦸꦫꦶꦩꦸꦭꦸ", latin: "Kurimuluh", arti: "Makna simbolik: pembawa ilmu" },
-    { aksara: "ꦲꦶꦩꦸꦫꦤ꧀", latin: "Himuran", arti: "Hiburan / kesenangan" }
-  ],
-
-  // 🎓 Contoh Latihan Pemahaman Budaya
-  cultural_examples: [
-    {
-      tema: "Unggah-ungguh",
-      penjelasan: "Unggah-ungguh artinya tata krama atau kesopanan dalam berbicara dan bertindak. Dalam Bahasa Jawa, ada tingkatan tutur kata: ngoko, madya, dan krama."
-    },
-    {
-      tema: "Hanacaraka",
-      penjelasan: "Hanacaraka adalah sistem aksara tradisional Jawa yang terdiri dari 20 huruf pokok: ha, na, ca, ra, ka, da, ta, sa, wa, la, pa, dha, ja, ya, nya, ma, ga, ba, tha, nga."
-    },
-    {
-      tema: "Falsafah Jawa",
-      penjelasan: "Orang Jawa memiliki banyak falsafah hidup seperti 'Urip iku urup' (hidup itu menyala / bermanfaat), 'Sura dira jayaningrat lebur dening pangastuti' (segala kekuatan akan luluh oleh kebijaksanaan dan kasih)."
-    },
-    {
-      tema: "Wayang Kulit",
-      penjelasan: "Wayang Kulit adalah pertunjukan tradisional Jawa yang menggunakan bayangan boneka kulit. Ceritanya banyak diambil dari epos Mahabharata dan Ramayana."
-    }
-  ]
-};
 
 /**
  * Fungsi untuk mendeteksi apakah pesan berkaitan dengan Budaya/Bahasa Jawa,
- * menggunakan javaneseTrainingData.keywords yang baru.
+ * menggunakan javanese_keywords.
  * @param {string} message Pesan dari pengguna.
  * @returns {boolean} True jika berkaitan, False jika tidak.
  */
 function isJavaneseTopic(message) {
     const lowerCaseMessage = message.toLowerCase();
     
-    // Gunakan keywords dari data pelatihan yang baru
-    const javaneseKeywords = javaneseTrainingData.keywords;
-
-    return javaneseKeywords.some(keyword => lowerCaseMessage.includes(keyword));
+    // Gunakan keywords yang sudah didefinisikan secara terpisah
+    return javanese_keywords.some(keyword => lowerCaseMessage.includes(keyword));
 }
 
 // ==========================================================
@@ -154,7 +185,7 @@ app.post('/api/chat', async (req, res) => {
   // LOGIKA PENGALIHAN KE GEMINI UNTUK TOPIK JAWA
   // ==========================================================
   if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
-      console.log("➡️ Meneruskan ke Gemini (Topik Jawa)...");
+      console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
       try {
           // System prompt khusus untuk Gemini menggunakan context dari javaneseTrainingData
           const geminiSystemPrompt = javaneseTrainingData.context;
