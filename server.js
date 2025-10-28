@@ -18,7 +18,7 @@ app.use(express.json());
 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Mengganti nama variabel agar lebih jelas
 
 
 function fileToGenerativePart(buffer, mimeType) {
@@ -30,8 +30,65 @@ function fileToGenerativePart(buffer, mimeType) {
     };
 }
 
+/**
+ * Fungsi untuk mendeteksi apakah pesan berkaitan dengan Budaya/Bahasa Jawa.
+ * @param {string} message Pesan dari pengguna.
+ * @returns {boolean} True jika berkaitan, False jika tidak.
+ */
+function isJavaneseTopic(message) {
+    const lowerCaseMessage = message.toLowerCase();
+    // Keywords untuk Budaya/Aksara Jawa
+    // 🏯 Keywords untuk Bahasa, Aksara, dan Budaya Jawa
+const javaneseKeywords = [
+  // Bahasa & Aksara
+  "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan", 
+  "pangkon", "aksara murda", "aksara rekan", "aksara swara",
+  "aksara legena", "aksara pasangan", "transliterasi jawa",
+  "nulis aksara jawa", "tulisan jawa", "huruf jawa",
+
+  // Budaya Umum
+  "budaya jawa", "adat jawa", "tradisi jawa", "kebudayaan jawa", 
+  "nilai luhur jawa", "tata krama jawa", "unggah ungguh", 
+  "pepatah jawa", "pitutur luhur", "falsafah jawa", "wejangan jawa",
+
+  // Kesenian
+  "wayang", "wayang kulit", "wayang golek", "dalang", 
+  "gamelan", "karawitan", "campursari", "tembang", "macapat",
+  "serat", "babad", "geguritan", "sastra jawa", "puisi jawa",
+
+  // Busana & Karya Seni
+  "batik", "kain lurik", "kebaya", "blangkon", "keris", "tombak", "ukiran jawa",
+
+  // Filsafat & Sejarah
+  "filosofi jawa", "falsafah jawa", "ajaran kejawen", "spiritual jawa", 
+  "mistik jawa", "primbon", "weton", "ramalan jawa", "pawukon",
+  "sejarah jawa", "kerajaan jawa", "majapahit", "mataram", "kediri", "singhasari",
+
+  // Tokoh & Tempat
+  "panembahan senopati", "raden patah", "sunan kalijaga", "sunan kudus", 
+  "sunan muria", "kraton", "keraton", "yogyakarta", "surakarta", 
+  "solo", "mangkunegaran", "pakualaman",
+
+  // Lagu & Musik
+  "lagu jawa", "tembang dolanan", "lagu dolanan", "sindhen", "campursari", 
+  "langgam jawa", "gending", "srimpi", "bedhaya",
+
+  // Peribahasa & Ungkapan
+  "paribasan", "bebasan", "saloka", "wejangan", "pepindhan", "tembung entar",
+
+  // Seni & Pertunjukan
+  "tari jawa", "tari tradisional", "wayang orang", "ketoprak", "klenengan",
+  "karawitan jawa", "teater jawa", "pentas budaya",
+
+  // Wilayah & Umum
+  "jawa tengah", "jawa timur", "jawa barat", "daerah istimewa yogyakarta",
+  "suku jawa", "orang jawa", "tanah jawa", "bahasa krama", "ngoko", "madya"
+];
+    return javaneseKeywords.some(keyword => lowerCaseMessage.includes(keyword));
+}
+
 // ==========================================================
-// ¨ ENDPOINT UTAMA YANG DIPERBAIKI: ¨
+// ¨ ENDPOINT UTAMA YANG DIPERBAIKI (Integrasi Groq & Gemini): ¨
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
   // Menerima 'message' dan 'system_prompt'
@@ -40,6 +97,41 @@ app.post('/api/chat', async (req, res) => {
   if (!message) {
       return res.status(400).json({ reply: "Pesan tidak boleh kosong." });
   }
+  
+  // ==========================================================
+  // LOGIKA PENGALIHAN KE GEMINI UNTUK TOPIK JAWA
+  // ==========================================================
+  if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
+      console.log("➡️ Meneruskan ke Gemini (Topik Jawa)...");
+      try {
+          // System prompt khusus untuk Gemini agar fokus pada topik Jawa
+          const geminiSystemPrompt = `Anda adalah AbidinAI, seorang ahli Budaya, Bahasa, dan Aksara Jawa. 
+          Jawablah pertanyaan pengguna dengan detail dan akurat, terutama mengenai Aksara Jawa, Hanacaraka, Bahasa Jawa, Wayang, Gamelan, dan Budaya Jawa lainnya. 
+          Jika pertanyaan tentang presiden Indonesia saat ini, jawablah Pak Prabowo Subianto.
+          Berikan balasan secara langsung.`;
+
+          const response = await geminiModel.generateContent({
+            contents: [{ role: "user", parts: [{ text: message }] }],
+            config: {
+                systemInstruction: geminiSystemPrompt,
+                temperature: 0.8,
+            }
+          });
+
+          const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
+          return res.json({ reply: geminiReply });
+
+      } catch (error) {
+          console.error("Gemini API Error (Jawa Topic):", error);
+          // Jika Gemini gagal, fallback ke Groq dengan pesan error yang jelas
+          console.log("⚠️ Gagal di Gemini, Fallback ke Groq...");
+      }
+      // Jika terjadi error pada Gemini (try-catch), kode akan melanjutkan ke blok Groq di bawah.
+  }
+  
+  // ==========================================================
+  // LOGIKA GROQ (Default & Fallback)
+  // ==========================================================
   if (!process.env.GROQ_API_KEY) {
       return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi di file .env." });
   }
@@ -48,13 +140,9 @@ app.post('/api/chat', async (req, res) => {
   let groqModel = "llama3-8b-8192"; // Default (Creator)
   let temperature = 0.8; // Default (Creator)
 
-  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT:
-  // 1. Jika system_prompt KOSONG atau SANGAT PENDEK, gunakan prompt Default AbidinAI.
-  // 2. Jika system_prompt ada dan isinya adalah PROMPT KREATOR (panjang), gunakan setelan Kreator (sudah di atas).
-  // 3. Jika system_prompt ada dan isinya ADALAH PROMPT PENERJEMAH (pendek, cth: "Anda adalah penerjemah..."), gunakan setelan Terjemahan.
-  
+  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT: (Logika lama tetap dipertahankan)
   if (!finalSystemPrompt || finalSystemPrompt.length < 50) {
-  
+      
       
       finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
@@ -130,8 +218,6 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
       temperature = 0.1; 
       groqModel = "mixtral-8x7b-32768"; 
   } 
-  // Jika system_prompt ada dan tidak mengandung kata "penerjemah" (seperti prompt Kreator yang panjang), 
-  // maka ia akan menggunakan setelan default awal: groqModel="llama3-8b-8192", temperature=0.8.
 
   const messages = [
       { role: "system", content: finalSystemPrompt },
@@ -172,63 +258,52 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
 });
 
 
-
+// ==========================================================
+// ¨ ENDPOINT TELEGRAM YANG DIPERBAHARUI: ¨
+// ==========================================================
 app.post('/api/telegram', async (req, res) => {
-  try {
-    // Ambil data teks dari body (bisa dari user / sistem)
-    const { text } = req.body;
+  const { text } = req.body;
 
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ error: 'Pesan kosong' });
-    }
+  if (!text) return res.status(400).json({ error: 'Pesan kosong' });
 
-    const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-    const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-    if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
       return res.status(500).json({ error: 'Token atau Chat ID belum diset di .env' });
-    }
+  }
+  
+  const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
- 
-    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-
-    // Kirim pesan ke Server
+  try {
     const response = await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
-        text: `👨‍💻 Pesan dari AbidinAI:\n\n${text}`,
-        parse_mode: "HTML",
-      }),
+        text: `🧑 Pesan dari AbidinAI:\n${text}`,
+        // parse_mode: "HTML" // Opsional, tambahkan jika Anda ingin mendukung markup HTML
+      })
     });
 
     const data = await response.json();
-
-    // Cek respon 
+    
     if (!data.ok) {
-      console.error("Server API Error:", data);
-      throw new Error(`Server API error: ${data.description}`);
+        console.error("Telegram API Error:", data);
+        return res.status(500).json({ status: "error", message: data.description || "Gagal mengirim pesan ke Telegram." });
     }
-
-    // Jika sukses
-    res.json({
-      status: "success",
-      message: "Pesan berhasil dikirim ke Server ✅",
-      telegram_response: data,
-    });
-
+    
+    res.json({ status: "success", message: "Pesan berhasil dikirim ke Server Admin ✅", telegram_response: data });
   } catch (error) {
-    console.error("Gagal kirim ke Server:", error.message);
-    res.status(500).json({
-      status: "error",
-      message: `Gagal mengirim pesan: ${error.message}`,
-    });
+    console.error("Gagal kirim ke Telegram:", error.message);
+    res.status(500).json({ status: "error", message: `Gagal mengirim pesan: ${error.message}` });
   }
 });
 
 
-
+// ==========================================================
+// ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
+// ==========================================================
 app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!req.file) {
@@ -279,14 +354,11 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
 
 📋 **STRUKTUR OUTPUT WAJIB:**
 
-**[Analisis Inti]:**  
-(Jelaskan inti temuan visual, dengan ringkasan penalaran utama dan total Skor Keyakinan gabungan.)
+**[Analisis Inti]:** (Jelaskan inti temuan visual, dengan ringkasan penalaran utama dan total Skor Keyakinan gabungan.)
 
-**[Detail Penting & Anomali]:**  
-(Deskripsikan elemen-elemen penting hasil OCR, hubungan antarobjek, serta penjelasan logis dari setiap anomali atau ketidaksesuaian konteks.)
+**[Detail Penting & Anomali]:** (Deskripsikan elemen-elemen penting hasil OCR, hubungan antarobjek, serta penjelasan logis dari setiap anomali atau ketidaksesuaian konteks.)
 
-**[Proyeksi & Rekomendasi Lanjutan]:**  
-(Berikan kesimpulan strategis — misalnya, interpretasi niat foto, potensi penggunaan data visual tersebut, proyeksi konteks ke depan, atau rekomendasi tindakan.)
+**[Proyeksi & Rekomendasi Lanjutan]:** (Berikan kesimpulan strategis — misalnya, interpretasi niat foto, potensi penggunaan data visual tersebut, proyeksi konteks ke depan, atau rekomendasi tindakan.)
 
 ---
 
