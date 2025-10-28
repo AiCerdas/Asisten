@@ -39,51 +39,93 @@ function isJavaneseTopic(message) {
     const lowerCaseMessage = message.toLowerCase();
     // Keywords untuk Budaya/Aksara Jawa
     // 🏯 Keywords untuk Bahasa, Aksara, dan Budaya Jawa
-const javaneseKeywords = [
-  // Bahasa & Aksara
-  "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan", 
-  "pangkon", "aksara murda", "aksara rekan", "aksara swara",
-  "aksara legena", "aksara pasangan", "transliterasi jawa",
-  "nulis aksara jawa", "tulisan jawa", "huruf jawa",
+const javaneseTrainingData = {
+  // 📜 Deskripsi Konteks
+  context: `
+Kamu adalah *AbidinAI Jawa* — asisten AI yang ahli dalam Bahasa Jawa, Aksara Hanacaraka, 
+serta Budaya, Sejarah, dan Falsafah Jawa. 
+Kamu harus menjawab dengan bahasa yang sopan, halus, dan benar secara tata krama Jawa.
 
-  // Budaya Umum
-  "budaya jawa", "adat jawa", "tradisi jawa", "kebudayaan jawa", 
-  "nilai luhur jawa", "tata krama jawa", "unggah ungguh", 
-  "pepatah jawa", "pitutur luhur", "falsafah jawa", "wejangan jawa",
+Gunakan transliterasi Latin modern.
+Jika teks merupakan nama orang, jangan ubah pelafalannya.
+Selalu sertakan penjelasan makna dalam Bahasa Indonesia.
+Jika diminta menulis dalam aksara Jawa, berikan hasil aksara + transliterasi + arti.
+`,
 
-  // Kesenian
-  "wayang", "wayang kulit", "wayang golek", "dalang", 
-  "gamelan", "karawitan", "campursari", "tembang", "macapat",
-  "serat", "babad", "geguritan", "sastra jawa", "puisi jawa",
+  // 🔎 Kata Kunci Pendeteksi Topik Jawa
+  keywords: [
+    // Bahasa & Aksara
+    "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan",
+    "pangkon", "murda", "rekan", "swara", "pasangan", "transliterasi",
+    "aksara legena", "aksara rekan", "aksara swara", "nulis aksara",
+    "huruf jawa", "abjad jawa", "hanacaraka lengkap", "aksara ha na ca ra ka",
 
-  // Busana & Karya Seni
-  "batik", "kain lurik", "kebaya", "blangkon", "keris", "tombak", "ukiran jawa",
+    // Tata Krama & Filsafat
+    "tata krama", "unggah ungguh", "pitutur luhur", "wejangan", "pepatah jawa",
+    "falsafah jawa", "ajaran kejawen", "nilai luhur", "spiritual jawa", 
+    "mistik jawa", "primbon", "weton", "pawukon", "neptu", "ramalan jawa",
 
-  // Filsafat & Sejarah
-  "filosofi jawa", "falsafah jawa", "ajaran kejawen", "spiritual jawa", 
-  "mistik jawa", "primbon", "weton", "ramalan jawa", "pawukon",
-  "sejarah jawa", "kerajaan jawa", "majapahit", "mataram", "kediri", "singhasari",
+    // Budaya & Adat
+    "budaya jawa", "adat jawa", "tradisi jawa", "upacara adat", 
+    "mitos jawa", "kejawen", "ritual jawa", "sejarah jawa", "kerajaan jawa",
 
-  // Tokoh & Tempat
-  "panembahan senopati", "raden patah", "sunan kalijaga", "sunan kudus", 
-  "sunan muria", "kraton", "keraton", "yogyakarta", "surakarta", 
-  "solo", "mangkunegaran", "pakualaman",
+    // Kesenian & Sastra
+    "wayang", "gamelan", "karawitan", "campursari", "macapat", 
+    "tembang", "geguritan", "serat", "babad", "puisi jawa", "sastra jawa",
+    "sindhen", "dalang", "tembang dolanan", "langgam jawa",
 
-  // Lagu & Musik
-  "lagu jawa", "tembang dolanan", "lagu dolanan", "sindhen", "campursari", 
-  "langgam jawa", "gending", "srimpi", "bedhaya",
+    // Busana & Simbol
+    "batik", "lurik", "blangkon", "kebaya", "jarik", "keris", "tombak", 
+    "ukiran jawa", "busana tradisional", "blangkon solo", "blangkon jogja",
 
-  // Peribahasa & Ungkapan
-  "paribasan", "bebasan", "saloka", "wejangan", "pepindhan", "tembung entar",
+    // Sejarah & Tokoh
+    "majapahit", "singhasari", "kediri", "mataram", "panembahan senopati",
+    "raden patah", "sunan kalijaga", "sunan kudus", "sunan muria",
+    "kraton", "keraton", "mangkunegaran", "pakualaman", 
+    "yogyakarta", "surakarta", "solo",
 
-  // Seni & Pertunjukan
-  "tari jawa", "tari tradisional", "wayang orang", "ketoprak", "klenengan",
-  "karawitan jawa", "teater jawa", "pentas budaya",
+    // Wilayah & Bahasa
+    "jawa tengah", "jawa timur", "jawa barat", "diy yogyakarta",
+    "suku jawa", "tanah jawa", "bahasa krama", "bahasa ngoko", "madya",
 
-  // Wilayah & Umum
-  "jawa tengah", "jawa timur", "jawa barat", "daerah istimewa yogyakarta",
-  "suku jawa", "orang jawa", "tanah jawa", "bahasa krama", "ngoko", "madya"
-];
+    // Seni Pertunjukan
+    "tari jawa", "wayang orang", "ketoprak", "klenengan", "teater jawa",
+    "pentas budaya", "sendratari", "srimpi", "bedhaya", "reog"
+  ],
+
+  // 📚 Contoh Transliterasi Lengkap
+  transliteration_examples: [
+    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang (tidak diubah jadi Abiden dll)" },
+    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Huruf atau tulisan dalam bahasa Jawa" },
+    { aksara: "ꦲꦛꦢꦶꦏ", latin: "Athadika", arti: "Nama orang / istilah pribadi" },
+    { aksara: "ꦥꦸꦠꦶꦏꦸ", latin: "Putiku", arti: "Anak perempuanku" },
+    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
+    { aksara: "ꦲꦶꦤ꧀ꦠꦸꦩꦸ", latin: "Intumu", arti: "Pikiranmu" },
+    { aksara: "ꦲꦩꦸꦩ꧀", latin: "Amum", arti: "Berarti 'umum', kadang dipakai dalam sastra" },
+    { aksara: "ꦏꦸꦫꦶꦩꦸꦭꦸ", latin: "Kurimuluh", arti: "Makna simbolik: pembawa ilmu" },
+    { aksara: "ꦲꦶꦩꦸꦫꦤ꧀", latin: "Himuran", arti: "Hiburan / kesenangan" }
+  ],
+
+  // 🎓 Contoh Latihan Pemahaman Budaya
+  cultural_examples: [
+    {
+      tema: "Unggah-ungguh",
+      penjelasan: "Unggah-ungguh artinya tata krama atau kesopanan dalam berbicara dan bertindak. Dalam Bahasa Jawa, ada tingkatan tutur kata: ngoko, madya, dan krama."
+    },
+    {
+      tema: "Hanacaraka",
+      penjelasan: "Hanacaraka adalah sistem aksara tradisional Jawa yang terdiri dari 20 huruf pokok: ha, na, ca, ra, ka, da, ta, sa, wa, la, pa, dha, ja, ya, nya, ma, ga, ba, tha, nga."
+    },
+    {
+      tema: "Falsafah Jawa",
+      penjelasan: "Orang Jawa memiliki banyak falsafah hidup seperti 'Urip iku urup' (hidup itu menyala / bermanfaat), 'Sura dira jayaningrat lebur dening pangastuti' (segala kekuatan akan luluh oleh kebijaksanaan dan kasih)."
+    },
+    {
+      tema: "Wayang Kulit",
+      penjelasan: "Wayang Kulit adalah pertunjukan tradisional Jawa yang menggunakan bayangan boneka kulit. Ceritanya banyak diambil dari epos Mahabharata dan Ramayana."
+    }
+  ]
+};
     return javaneseKeywords.some(keyword => lowerCaseMessage.includes(keyword));
 }
 
