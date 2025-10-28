@@ -33,6 +33,20 @@ function fileToGenerativePart(buffer, mimeType) {
 // ==========================================================
 // 🏯 SISTEM TRANSLITERASI AKSARA JAWA RESMI – ABEDINAI JAWA (Data Baru)
 // ==========================================================
+
+const aksara = {
+  "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
+  "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
+  "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
+  "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
+};
+
+const sandhangan = {
+  "ꦶ": "i", "ꦸ": "u", "ꦺ": "e", "ꦼ": "ê", "ꦺꦴ": "o",
+  "ꦴ": "a panjang", "ꦁ": "ng", "ꦃ": "h", "꧀": ""
+};
+
+// Objek untuk keperluan context di endpoint /api/chat
 const javaneseTrainingData = {
   context: `
 Kamu adalah *AbedinAI Jawa*, asisten AI yang hanya berfokus pada latihan membaca, menulis,
@@ -42,95 +56,55 @@ Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦺꦤ꧀ → Abidin
 
 Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
-
-  // 📜 Huruf Dasar Hanacaraka
-  basic_letters: {
-    "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
-    "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
-    "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
-    "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
-  },
-
-  // 🕊️ Sandhangan (vokal)
-  sandhangan: {
-    "ꦶ": "i",
-    "ꦸ": "u",
-    "ꦺ": "e",
-    "ꦼ": "ê",
-    "ꦺꦴ": "o",
-    "ꦴ": "a panjang",
-    "ꦁ": "ng",
-    "ꦃ": "h",
-    "꧀": "", // pangkon, mematikan vokal
-  },
-
-  // 📚 Contoh Transliteration
-  examples: [
-    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang" },
-    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf" },
-    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
-    { aksara: "ꦩꦸꦭꦸ", latin: "Mulu", arti: "Terus-menerus" }
-  ]
 };
 
 
-// ⚙️ FUNGSI TRANSLITERASI OTOMATIS (Dipertahankan di sini, meskipun tidak dipanggil oleh /api/chat)
-function transliterateAksaraJawa(teks) {
-  const { basic_letters, sandhangan } = javaneseTrainingData;
-  let hasil = "";
-  let skipNext = false;
+// ⚙️ FUNGSI TRANSLITERASI OTOMATIS (Mengganti fungsi sebelumnya)
+function transliterate(teks) {
+  let hasil = [];
+  let chars = Array.from(teks);
 
-  for (let i = 0; i < teks.length; i++) {
-    if (skipNext) {
-      skipNext = false;
+  for (let i = 0; i < chars.length; i++) {
+    let c = chars[i];
+    let n = chars[i + 1];
+
+    if (c === "ꦺ" && n === "ꦴ") {
+      hasil.push("o");
+      i++;
       continue;
     }
 
-    const char = teks[i];
-    const next = teks[i + 1];
-
-    // Kombinasi sandhangan ꦺꦴ (o)
-    if (char === "ꦺ" && next === "ꦴ") {
-      hasil += "o";
-      skipNext = true;
-      continue;
-    }
-
-    // Jika huruf dasar
-    if (basic_letters[char]) {
-      hasil += basic_letters[char];
-      // Jika diikuti sandhangan
-      if (sandhangan[next]) {
-        // Hapus vokal 'a' bawaan
-        // Menggunakan regex untuk menghapus 'a' di akhir, tetapi ini terlalu kompleks
-        // Untuk tujuan ini, kita asumsikan huruf dasar selalu berakhiran 'a'
-        if (basic_letters[char].endsWith('a')) {
-             hasil = hasil.slice(0, -1); 
-        }
-        
-        // Tambahkan konsonan + vokal sandhangan
-        hasil += basic_letters[char].replace(/a$/, "") + sandhangan[next];
-        skipNext = true;
-      } else if (sandhangan[next] === "") { // Handle pangkon (꧀)
-          hasil = hasil.slice(0, -1); // Hapus vokal 'a' bawaan
-          // Tidak ada penambahan karakter karena pangkon hanya mematikan vokal
-          skipNext = true;
+    if (aksara[c]) {
+      let konsonan = aksara[c];
+      if (sandhangan[n] !== undefined) {
+        // Sandhangan mengganti vokal bawaan
+        let base = konsonan.replace(/a$/, "");
+        hasil.push(base + sandhangan[n]);
+        i++;
+      } else {
+        hasil.push(konsonan);
       }
       continue;
     }
 
-    // Jika sandhangan berdiri sendiri (misalnya pangkon, ng, h)
-    if (sandhangan[char] !== undefined) {
-      hasil += sandhangan[char];
+    if (sandhangan[c] !== undefined) {
+      hasil.push(sandhangan[c]);
       continue;
     }
 
-    // Jika tidak dikenali
-    hasil += char;
+    hasil.push(c);
   }
 
-  return hasil;
+  // Gabungkan dan perbaiki kapitalisasi nama
+  let gabung = hasil.join("").replace(/ha/i, "A");
+  // Perbaikan sederhana untuk kapitalisasi awal kalimat
+  if (gabung.length > 0) {
+    gabung = gabung.charAt(0).toUpperCase() + gabung.slice(1);
+  }
+  
+  return gabung;
 }
+
 
 // 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
 const javanese_keywords = [
