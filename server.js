@@ -31,88 +31,106 @@ function fileToGenerativePart(buffer, mimeType) {
 }
 
 // ==========================================================
-// 🏯 LATIHAN KHUSUS GEMINI – AKSARA HANACARAKA (Data Baru)
+// 🏯 SISTEM TRANSLITERASI AKSARA JAWA RESMI – ABEDINAI JAWA (Data Baru)
 // ==========================================================
 const javaneseTrainingData = {
-  // 📜 Deskripsi Konteks
   context: `
 Kamu adalah *AbedinAI Jawa*, asisten AI yang hanya berfokus pada latihan membaca, menulis,
-dan menerjemahkan Aksara Hanacaraka (Aksara Jawa).
-Tugasmu:
-1️⃣ Kenali setiap huruf Aksara Jawa (ha-na-ca-ra-ka dst.)
-2️⃣ Ubah ke Latin sesuai transliterasi modern.
-3️⃣ Jika berupa kata bermakna, sertakan arti Bahasa Indonesia.
-4️⃣ Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦺꦤ꧀ → Abidin).
-5️⃣ Jelaskan secara sopan dalam Bahasa Indonesia.
+dan menerjemahkan Aksara Hanacaraka (Aksara Jawa) secara resmi.
+Gunakan transliterasi Latin modern (ha-na-ca-ra-ka) dan beri arti jika kata bermakna.
+Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦺꦤ꧀ → Abidin).
 
 Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
 
-  // 📚 Huruf Dasar Hanacaraka (20 utama)
-  basic_letters: [
-    { aksara: "ꦲ", latin: "ha" },
-    { aksara: "ꦤ", latin: "na" },
-    { aksara: "ꦕ", latin: "ca" },
-    { aksara: "ꦫ", latin: "ra" },
-    { aksara: "ꦏ", latin: "ka" },
-    { aksara: "ꦢ", latin: "da" },
-    { aksara: "ꦠ", latin: "ta" },
-    { aksara: "ꦱ", latin: "sa" },
-    { aksara: "ꦮ", latin: "wa" },
-    { aksara: "ꦭ", latin: "la" },
-    { aksara: "ꦥ", latin: "pa" },
-    { aksara: "ꦝ", latin: "dha" },
-    { aksara: "ꦗ", latin: "ja" },
-    { aksara: "ꦪ", latin: "ya" },
-    { aksara: "ꦚ", latin: "nya" },
-    { aksara: "ꦩ", latin: "ma" },
-    { aksara: "ꦒ", latin: "ga" },
-    { aksara: "ꦧ", latin: "ba" },
-    { aksara: "ꦛ", latin: "tha" },
-    { aksara: "ꦔ", latin: "nga" }
-  ],
+  // 📜 Huruf Dasar Hanacaraka
+  basic_letters: {
+    "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
+    "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
+    "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
+    "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
+  },
 
-  // 🕊️ Sandhangan (vokal dan bunyi tambahan)
-  sandhangan: [
-    { simbol: "ꦶ", bunyi: "i" },
-    { simbol: "ꦸ", bunyi: "u" },
-    { simbol: "ꦺ", bunyi: "e" },
-    { simbol: "ꦼ", bunyi: "ê" },
-    { simbol: "ꦺꦴ", bunyi: "o" },
-    { simbol: "ꦴ", bunyi: "a panjang" },
-    { simbol: "ꦁ", bunyi: "ng" },
-    { simbol: "ꦃ", bunyi: "h" },
-    { simbol: "꧀", bunyi: "pangkon (mematikan huruf)" }
-  ],
+  // 🕊️ Sandhangan (vokal)
+  sandhangan: {
+    "ꦶ": "i",
+    "ꦸ": "u",
+    "ꦺ": "e",
+    "ꦼ": "ê",
+    "ꦺꦴ": "o",
+    "ꦴ": "a panjang",
+    "ꦁ": "ng",
+    "ꦃ": "h",
+    "꧀": "", // pangkon, mematikan vokal
+  },
 
-  // 🧩 Contoh Latihan Transliteration
-  transliteration_examples: [
-    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang (tidak diubah jadi Abiden)" },
-    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf dalam Bahasa Jawa" },
-    { aksara: "ꦥꦸꦠꦶ", latin: "Puti", arti: "Anak perempuan (bentuk halus dari 'Putri')" },
+  // 📚 Contoh Transliteration
+  examples: [
+    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang" },
+    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf" },
     { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
-    { aksara: "ꦲꦶꦩꦸꦫꦤ꧀", latin: "Himuran", arti: "Hiburan / kesenangan" },
-    { aksara: "ꦏꦸꦫꦶꦩꦸꦭꦸ", latin: "Kurimuluh", arti: "Makna simbolik: pembawa ilmu" }
-  ],
-
-  // 🧮 Rumus Pembacaan Otomatis (untuk AI)
-  rules: `
-1️⃣ Setiap huruf dasar membawa vokal "a" (contoh ꦏ = ka).
-2️⃣ Jika ada sandhangan ꦶ, vokal berubah jadi "i" (ꦏꦶ = ki).
-3️⃣ Sandhangan ꦸ → "u" (ꦏꦸ = ku).
-4️⃣ Pangkon ꧀ mematikan vokal, membuat konsonan mati (ꦏ꧀ = k).
-5️⃣ Huruf pasangan mengikuti konsonan berikut (misalnya ꦏ꧀ꦫ = kra).
-6️⃣ Kombinasi sandhangan + pasangan harus dibaca dari kanan ke kiri untuk transliterasi yang benar.
-`,
-
-  // 💬 Contoh Penjelasan Budaya Hanacaraka
-  hanacaraka_story: `
-"Hanacaraka" berasal dari legenda Aji Saka yang memiliki dua abdi setia, Dora dan Sembodo.
-Keduanya saling membunuh karena perintah yang disalahpahami, sehingga melahirkan
-falsafah 'Ha-na-ca-ra-ka' — artinya 'Ada utusan yang saling berperang'.
-Aksara ini kemudian menjadi dasar penulisan Bahasa Jawa tradisional.
-`
+    { aksara: "ꦩꦸꦭꦸ", latin: "Mulu", arti: "Terus-menerus" }
+  ]
 };
+
+
+// ⚙️ FUNGSI TRANSLITERASI OTOMATIS (Dipertahankan di sini, meskipun tidak dipanggil oleh /api/chat)
+function transliterateAksaraJawa(teks) {
+  const { basic_letters, sandhangan } = javaneseTrainingData;
+  let hasil = "";
+  let skipNext = false;
+
+  for (let i = 0; i < teks.length; i++) {
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+
+    const char = teks[i];
+    const next = teks[i + 1];
+
+    // Kombinasi sandhangan ꦺꦴ (o)
+    if (char === "ꦺ" && next === "ꦴ") {
+      hasil += "o";
+      skipNext = true;
+      continue;
+    }
+
+    // Jika huruf dasar
+    if (basic_letters[char]) {
+      hasil += basic_letters[char];
+      // Jika diikuti sandhangan
+      if (sandhangan[next]) {
+        // Hapus vokal 'a' bawaan
+        // Menggunakan regex untuk menghapus 'a' di akhir, tetapi ini terlalu kompleks
+        // Untuk tujuan ini, kita asumsikan huruf dasar selalu berakhiran 'a'
+        if (basic_letters[char].endsWith('a')) {
+             hasil = hasil.slice(0, -1); 
+        }
+        
+        // Tambahkan konsonan + vokal sandhangan
+        hasil += basic_letters[char].replace(/a$/, "") + sandhangan[next];
+        skipNext = true;
+      } else if (sandhangan[next] === "") { // Handle pangkon (꧀)
+          hasil = hasil.slice(0, -1); // Hapus vokal 'a' bawaan
+          // Tidak ada penambahan karakter karena pangkon hanya mematikan vokal
+          skipNext = true;
+      }
+      continue;
+    }
+
+    // Jika sandhangan berdiri sendiri (misalnya pangkon, ng, h)
+    if (sandhangan[char] !== undefined) {
+      hasil += sandhangan[char];
+      continue;
+    }
+
+    // Jika tidak dikenali
+    hasil += char;
+  }
+
+  return hasil;
+}
 
 // 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
 const javanese_keywords = [
