@@ -39,6 +39,96 @@ function isJavaneseTopic(message) {
     const lowerCaseMessage = message.toLowerCase();
     // Keywords untuk Budaya/Aksara Jawa
     // 🏯 Keywords untuk Bahasa, Aksara, dan Budaya Jawa.
+const javaneseTrainingData = {
+  // 📜 Deskripsi Konteks
+  context: `
+Kamu adalah *AbedinAI Jawa* — asisten AI yang ahli dalam Bahasa Jawa, Aksara Hanacaraka, 
+serta Budaya, Sejarah, dan Falsafah Jawa. 
+Kamu harus menjawab dengan bahasa yang sopan, halus, dan benar secara tata krama Jawa.
+
+Gunakan transliterasi Latin modern.
+Jika teks merupakan nama orang, jangan ubah pelafalannya.
+Selalu sertakan penjelasan makna dalam Bahasa Indonesia.
+Jika diminta menulis dalam aksara Jawa, berikan hasil aksara + transliterasi + arti.
+`,
+
+  // 🔎 Kata Kunci Pendeteksi Topik Jawa
+  keywords: [
+    // Bahasa & Aksara
+    "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan",
+    "pangkon", "murda", "rekan", "swara", "pasangan", "transliterasi",
+    "aksara legena", "aksara rekan", "aksara swara", "nulis aksara",
+    "huruf jawa", "abjad jawa", "hanacaraka lengkap", "aksara ha na ca ra ka",
+
+    // Tata Krama & Filsafat
+    "tata krama", "unggah ungguh", "pitutur luhur", "wejangan", "pepatah jawa",
+    "falsafah jawa", "ajaran kejawen", "nilai luhur", "spiritual jawa", 
+    "mistik jawa", "primbon", "weton", "pawukon", "neptu", "ramalan jawa",
+
+    // Budaya & Adat
+    "budaya jawa", "adat jawa", "tradisi jawa", "upacara adat", 
+    "mitos jawa", "kejawen", "ritual jawa", "sejarah jawa", "kerajaan jawa",
+
+    // Kesenian & Sastra
+    "wayang", "gamelan", "karawitan", "campursari", "macapat", 
+    "tembang", "geguritan", "serat", "babad", "puisi jawa", "sastra jawa",
+    "sindhen", "dalang", "tembang dolanan", "langgam jawa",
+
+    // Busana & Simbol
+    "batik", "lurik", "blangkon", "kebaya", "jarik", "keris", "tombak", 
+    "ukiran jawa", "busana tradisional", "blangkon solo", "blangkon jogja",
+
+    // Sejarah & Tokoh
+    "majapahit", "singhasari", "kediri", "mataram", "panembahan senopati",
+    "raden patah", "sunan kalijaga", "sunan kudus", "sunan muria",
+    "kraton", "keraton", "mangkunegaran", "pakualaman", 
+    "yogyakarta", "surakarta", "solo",
+
+    // Wilayah & Bahasa
+    "jawa tengah", "jawa timur", "jawa barat", "diy yogyakarta",
+    "suku jawa", "tanah jawa", "bahasa krama", "bahasa ngoko", "madya",
+
+    // Seni Pertunjukan
+    "tari jawa", "wayang orang", "ketoprak", "klenengan", "teater jawa",
+    "pentas budaya", "sendratari", "srimpi", "bedhaya", "reog"
+  ],
+
+  // 📚 Contoh Transliterasi Lengkap
+  transliteration_examples: [
+    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang (tidak diubah jadi Abiden)" },
+    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Huruf atau tulisan dalam bahasa Jawa" },
+    { aksara: "ꦲꦛꦢꦶꦏ", latin: "Athadika", arti: "Nama orang / istilah pribadi" },
+    { aksara: "ꦥꦸꦠꦶꦏꦸ", latin: "Putiku", arti: "Anak perempuanku" },
+    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
+    { aksara: "ꦲꦶꦤ꧀ꦠꦸꦩꦸ", latin: "Intumu", arti: "Pikiranmu" },
+    { aksara: "ꦲꦩꦸꦩ꧀", latin: "Amum", arti: "Berarti 'umum', kadang dipakai dalam sastra" },
+    { aksara: "ꦏꦸꦫꦶꦩꦸꦭꦸ", latin: "Kurimuluh", arti: "Makna simbolik: pembawa ilmu" },
+    { aksara: "ꦲꦶꦩꦸꦫꦤ꧀", latin: "Himuran", arti: "Hiburan / kesenangan" }
+  ],
+
+  // 🎓 Contoh Latihan Pemahaman Budaya
+  cultural_examples: [
+    {
+      tema: "Unggah-ungguh",
+      penjelasan: "Unggah-ungguh artinya tata krama atau kesopanan dalam berbicara dan bertindak. Dalam Bahasa Jawa, ada tingkatan tutur kata: ngoko, madya, dan krama."
+    },
+    {
+      tema: "Hanacaraka",
+      penjelasan: "Hanacaraka adalah sistem aksara tradisional Jawa yang terdiri dari 20 huruf pokok: ha, na, ca, ra, ka, da, ta, sa, wa, la, pa, dha, ja, ya, nya, ma, ga, ba, tha, nga."
+    },
+    {
+      tema: "Falsafah Jawa",
+      penjelasan: "Orang Jawa memiliki banyak falsafah hidup seperti 'Urip iku urup' (hidup itu menyala / bermanfaat), 'Sura dira jayaningrat lebur dening pangastuti' (segala kekuatan akan luluh oleh kebijaksanaan dan kasih)."
+    },
+    {
+      tema: "Wayang Kulit",
+      penjelasan: "Wayang Kulit adalah pertunjukan tradisional Jawa yang menggunakan bayangan boneka kulit. Ceritanya banyak diambil dari epos Mahabharata dan Ramayana."
+    }
+  ]
+};
+
+
+// 🏯 Keywords untuk Bahasa, Aksara, dan Budaya Jawa
 const javaneseKeywords = [
   // Bahasa & Aksara
   "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan", 
@@ -84,6 +174,10 @@ const javaneseKeywords = [
   "jawa tengah", "jawa timur", "jawa barat", "daerah istimewa yogyakarta",
   "suku jawa", "orang jawa", "tanah jawa", "bahasa krama", "ngoko", "madya"
 ];
+
+// 🔗 Hubungkan data latihan dengan daftar keyword
+export { javaneseTrainingData, javaneseKeywords };
+    //=======
     return javaneseKeywords.some(keyword => lowerCaseMessage.includes(keyword));
 }
 
