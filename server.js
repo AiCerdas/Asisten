@@ -36,12 +36,12 @@ function fileToGenerativePart(buffer, mimeType) {
 // ==========================================================
 
 // ==========================
-// 🕊️ DATA LATIHAN AKSARA JAWA (javaneseDB menggantikan javaneseTrainingData, aksara, dan sandhangan)
+// 🕊️ DATA LATIHAN AKSARA JAWA (javaneseDB menggantikan javaneseTrainingData)
 // ==========================
 const javaneseDB = {
   context: `
 Kamu adalah *AbedinAI Jawa*, asisten AI pelatih aksara Hanacaraka (Aksara Jawa).
-Kuasai transliterasi dua arah: Latin ke Jawa dan Jawa ke Latin.
+Kuasai transliterasi dua arah: Latin ↔ Jawa.
 Ikuti ejaan resmi Jawa Tengah modern.
 Jangan ubah pelafalan nama seperti Abidin, Ahmad, Nasrullah.
 Tambahkan arti kata jika bermakna umum (misalnya: Turu = Tidur).
@@ -62,7 +62,7 @@ Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu 
   },
 
   contoh: [
-    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang" },
+    { aksara: "ꦄꦧꦶꦢꦶꦤ꧀", latin: "Abidin", arti: "Nama orang" },
     { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf" },
     { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
     { aksara: "ꦩꦸꦭꦸ", latin: "Mulu", arti: "Terus-menerus" }
@@ -85,6 +85,7 @@ function aksaraKeLatin(teks) {
     const c = chars[i];
     const n = chars[i + 1];
 
+    // Kombinasi sandhangan é/o
     if (c === "ꦺ" && n === "ꦴ") {
       hasil += "o";
       skip = true;
@@ -109,9 +110,9 @@ function aksaraKeLatin(teks) {
     hasil += c;
   }
 
-  // Kapitalisasi sesuai permintaan
+  // Perbaikan kapitalisasi nama
   if (hasil.length > 0) {
-      hasil = hasil.replace(/^ha/, "A"); 
+      hasil = hasil.replace(/^ha/, "A"); // Kapitalisasi 'ha' menjadi 'A' di awal
       hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
   }
   
