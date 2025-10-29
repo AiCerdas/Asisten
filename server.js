@@ -1,4 +1,4 @@
-Const express = require('express');
+const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
@@ -52,7 +52,7 @@ const javaneseTrainingData = {
 Kamu adalah *AbedinAI Jawa*, asisten AI yang hanya berfokus pada latihan membaca, menulis,
 dan menerjemahkan Aksara Hanacaraka (Aksara Jawa) secara resmi.
 Gunakan transliterasi Latin modern (ha-na-ca-ra-ka) dan beri arti jika kata bermakna.
-Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦢꦶꦤ꧀ → Abidin).
+Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦶꦤ꧀ → Abidin).
 
 Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
@@ -80,7 +80,7 @@ function transliterate(teks) {
       let huruf = aksara[c];
 
       // Kalau huruf diikuti sandhangan
-      if (sandhangan[n]) {
+      if (sandhangan[n] !== undefined) {
         let dasar = huruf.replace(/a$/, ""); // hapus vokal bawaan
         hasil += dasar + sandhangan[n];
         i++;
@@ -91,7 +91,7 @@ function transliterate(teks) {
     }
 
     // Jika sandhangan berdiri sendiri
-    if (sandhangan[c]) {
+    if (sandhangan[c] !== undefined) {
       hasil += sandhangan[c];
       continue;
     }
@@ -102,9 +102,13 @@ function transliterate(teks) {
 
   // 🔠 Format Kapitalisasi Nama
   hasil = hasil.replace(/^ha/i, "A"); // ganti awalan 'ha' → 'A' untuk nama seperti Abidin
-  hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
+  // Perbaikan sederhana untuk kapitalisasi awal kalimat
+  if (hasil.length > 0) {
+    hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
+  }
   return hasil;
 }
+
 
 // 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
 const javanese_keywords = [
