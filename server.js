@@ -31,81 +31,166 @@ function fileToGenerativePart(buffer, mimeType) {
 }
 
 // ==========================================================
-// 🏯 SISTEM TRANSLITERASI AKSARA JAWA RESMI – ABEDINAI JAWA (FINAL)
+// 🏯 ABEDINAI JAWA 2.0 – SISTEM TRANSLITERASI RESMI HANACARAKA
+// Dikembangkan oleh Nalek (AbidinAI Project)
 // ==========================================================
 
-const aksara = {
-  "ꦄ": "a", "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
-  "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
-  "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
-  "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
-};
-
-const sandhangan = {
-  "ꦶ": "i", "ꦸ": "u", "ꦺ": "e", "ꦼ": "ê", "ꦺꦴ": "o",
-  "ꦴ": "a panjang", "ꦁ": "ng", "ꦃ": "h", "꧀": "" // pangkon
-};
-
-// Objek untuk keperluan context di endpoint /api/chat
-const javaneseTrainingData = {
+// ==========================
+// 🕊️ DATA LATIHAN AKSARA JAWA (javaneseDB menggantikan javaneseTrainingData, aksara, dan sandhangan)
+// ==========================
+const javaneseDB = {
   context: `
-Kamu adalah *AbedinAI Jawa*, asisten AI yang hanya berfokus pada latihan membaca, menulis,
-dan menerjemahkan Aksara Hanacaraka (Aksara Jawa) secara resmi.
-Gunakan transliterasi Latin modern (ha-na-ca-ra-ka) dan beri arti jika kata bermakna.
-Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦶꦤ꧀ → Abidin).
+Kamu adalah *AbedinAI Jawa*, asisten AI pelatih aksara Hanacaraka (Aksara Jawa).
+Kuasai transliterasi dua arah: Latin ke Jawa dan Jawa ke Latin.
+Ikuti ejaan resmi Jawa Tengah modern.
+Jangan ubah pelafalan nama seperti Abidin, Ahmad, Nasrullah.
+Tambahkan arti kata jika bermakna umum (misalnya: Turu = Tidur).
 
 Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
+
+  aksara: {
+    "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
+    "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
+    "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
+    "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
+  },
+
+  sandhangan: {
+    "ꦶ": "i", "ꦸ": "u", "ꦺ": "e", "ꦼ": "ê", "ꦺꦴ": "o",
+    "ꦴ": "ā", "ꦁ": "ng", "ꦃ": "h", "꧀": ""
+  },
+
+  contoh: [
+    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang" },
+    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf" },
+    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
+    { aksara: "ꦩꦸꦭꦸ", latin: "Mulu", arti: "Terus-menerus" }
+  ]
 };
 
-
-// 🔤 Transliterator Utama
-function transliterate(teks) {
+// ==========================
+// ⚙️ TRANSLITERASI ARAH 1: AKSARA → LATIN (Menggantikan fungsi transliterate lama)
+// ==========================
+function aksaraKeLatin(teks) {
+  const { aksara, sandhangan } = javaneseDB;
   let hasil = "";
-  const chars = Array.from(teks);
+  let skip = false;
+
+  const chars = Array.from(teks); // Menggunakan Array.from untuk penanganan karakter Unicode
 
   for (let i = 0; i < chars.length; i++) {
+    if (skip) { skip = false; continue; }
+
     const c = chars[i];
     const n = chars[i + 1];
 
-    // Kombinasi Sandhangan ꦺꦴ = 'o'
     if (c === "ꦺ" && n === "ꦴ") {
       hasil += "o";
-      i++;
+      skip = true;
       continue;
     }
 
-    // Huruf dasar
     if (aksara[c]) {
-      let huruf = aksara[c];
-
-      // Kalau huruf diikuti sandhangan
+      let latin = aksara[c];
       if (sandhangan[n] !== undefined) {
-        let dasar = huruf.replace(/a$/, ""); // hapus vokal bawaan
-        hasil += dasar + sandhangan[n];
-        i++;
-      } else {
-        hasil += huruf;
+        latin = latin.replace(/a$/, "") + sandhangan[n];
+        skip = true;
       }
+      hasil += latin;
       continue;
     }
 
-    // Jika sandhangan berdiri sendiri
     if (sandhangan[c] !== undefined) {
       hasil += sandhangan[c];
       continue;
     }
 
-    // Kalau bukan karakter Jawa, tetap tampilkan
     hasil += c;
   }
 
-  // 🔠 Format Kapitalisasi Nama
-  hasil = hasil.replace(/^ha/i, "A"); // ganti awalan 'ha' → 'A' untuk nama seperti Abidin
-  // Perbaikan sederhana untuk kapitalisasi awal kalimat
+  // Kapitalisasi sesuai permintaan
   if (hasil.length > 0) {
-    hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
+      hasil = hasil.replace(/^ha/, "A"); 
+      hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
   }
+  
+  return hasil;
+}
+
+// ==========================
+// ⚙️ TRANSLITERASI ARAH 2: LATIN → AKSARA
+// ==========================
+function latinKeAksara(teks) {
+  const { aksara, sandhangan } = javaneseDB;
+  let hasil = "";
+
+  // Balikkan map aksara untuk pencarian Latin -> Aksara
+  const mapLatinKeAksara = Object.fromEntries(
+    Object.entries(aksara).map(([k, v]) => [v, k])
+  );
+  
+  const mapVokal = { "i": "ꦶ", "u": "ꦸ", "e": "ꦺ", "o": "ꦺꦴ", "ê": "ꦼ" };
+  const mapLatinKeSandhangan = Object.fromEntries(
+      Object.entries(sandhangan).filter(([k, v]) => k.length < 3).map(([k, v]) => [v, k])
+  );
+
+  const kata = teks.toLowerCase().replace(/ā/g, 'a').split("");
+
+  for (let i = 0; i < kata.length; i++) {
+    const c = kata[i];
+    const n = kata[i + 1];
+
+    // Coba konsonan berpasangan (dha, tha, nga, nya)
+    let found = false;
+    for (let j = 3; j >= 2; j--) {
+        const bigram = kata.slice(i, i + j).join('');
+        if (mapLatinKeAksara[bigram]) {
+            hasil += mapLatinKeAksara[bigram];
+            i += j - 1;
+            found = true;
+            break;
+        }
+    }
+    if (found) continue;
+
+
+    // Konsonan tunggal (ha, na, ca, ra, ka, dst)
+    if (mapLatinKeAksara[c + 'a']) {
+        let hurufAksara = mapLatinKeAksara[c + 'a'];
+        let konsonan = c;
+
+        // Sandhangan/Penyigeg Wyanjana (ng, h)
+        if (c + n === 'ng') {
+            hasil += mapLatinKeSandhangan['ng'];
+            i++;
+            continue;
+        } else if (c === 'h' && (i === kata.length - 1 || kata[i-1] === 'a')) { // Hanya di akhir/vokal
+             hasil += mapLatinKeSandhangan['h'];
+             continue;
+        } 
+        
+        // Vokal
+        if (mapVokal[n]) {
+            hasil += hurufAksara + mapVokal[n];
+            i++;
+        } else if (n === 'a') {
+            // Jika konsonan diikuti 'a', tidak perlu vokal, cukup huruf dasar
+            hasil += hurufAksara;
+            i++;
+        } else if (i === kata.length - 1 || mapLatinKeAksara[n + 'a']) {
+            // Jika huruf terakhir atau diikuti konsonan, perlu pangkon
+            hasil += hurufAksara + mapLatinKeSandhangan[''];
+        } else {
+            // Konsonan dengan vokal default 'a'
+             hasil += hurufAksara;
+        }
+    } else {
+        // Biarkan karakter non-Jawa
+        hasil += c;
+    }
+  }
+
   return hasil;
 }
 
@@ -183,8 +268,8 @@ app.post('/api/chat', async (req, res) => {
   if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
       console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
       try {
-          // System prompt khusus untuk Gemini menggunakan context dari javaneseTrainingData
-          const geminiSystemPrompt = javaneseTrainingData.context;
+          // System prompt khusus untuk Gemini menggunakan context dari javaneseDB.context yang baru
+          const geminiSystemPrompt = javaneseDB.context;
 
           const response = await geminiModel.generateContent({
             contents: [{ role: "user", parts: [{ text: message }] }],
