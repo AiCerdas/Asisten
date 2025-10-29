@@ -1,4 +1,4 @@
-const express = require('express');
+Const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
@@ -31,11 +31,11 @@ function fileToGenerativePart(buffer, mimeType) {
 }
 
 // ==========================================================
-// 🏯 SISTEM TRANSLITERASI AKSARA JAWA RESMI – ABEDINAI JAWA (Data Baru)
+// 🏯 SISTEM TRANSLITERASI AKSARA JAWA RESMI – ABEDINAI JAWA (FINAL)
 // ==========================================================
 
 const aksara = {
-  "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
+  "ꦄ": "a", "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
   "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
   "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
   "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
@@ -43,7 +43,7 @@ const aksara = {
 
 const sandhangan = {
   "ꦶ": "i", "ꦸ": "u", "ꦺ": "e", "ꦼ": "ê", "ꦺꦴ": "o",
-  "ꦴ": "a panjang", "ꦁ": "ng", "ꦃ": "h", "꧀": ""
+  "ꦴ": "a panjang", "ꦁ": "ng", "ꦃ": "h", "꧀": "" // pangkon
 };
 
 // Objek untuk keperluan context di endpoint /api/chat
@@ -52,59 +52,59 @@ const javaneseTrainingData = {
 Kamu adalah *AbedinAI Jawa*, asisten AI yang hanya berfokus pada latihan membaca, menulis,
 dan menerjemahkan Aksara Hanacaraka (Aksara Jawa) secara resmi.
 Gunakan transliterasi Latin modern (ha-na-ca-ra-ka) dan beri arti jika kata bermakna.
-Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦣꦺꦤ꧀ → Abidin).
+Jika nama orang, jangan ubah pelafalan (contoh: ꦲꦧꦶꦢꦶꦤ꧀ → Abidin).
 
 Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
 };
 
 
-// ⚙️ FUNGSI TRANSLITERASI OTOMATIS (Mengganti fungsi sebelumnya)
+// 🔤 Transliterator Utama
 function transliterate(teks) {
-  let hasil = [];
-  let chars = Array.from(teks);
+  let hasil = "";
+  const chars = Array.from(teks);
 
   for (let i = 0; i < chars.length; i++) {
-    let c = chars[i];
-    let n = chars[i + 1];
+    const c = chars[i];
+    const n = chars[i + 1];
 
+    // Kombinasi Sandhangan ꦺꦴ = 'o'
     if (c === "ꦺ" && n === "ꦴ") {
-      hasil.push("o");
+      hasil += "o";
       i++;
       continue;
     }
 
+    // Huruf dasar
     if (aksara[c]) {
-      let konsonan = aksara[c];
-      if (sandhangan[n] !== undefined) {
-        // Sandhangan mengganti vokal bawaan
-        let base = konsonan.replace(/a$/, "");
-        hasil.push(base + sandhangan[n]);
+      let huruf = aksara[c];
+
+      // Kalau huruf diikuti sandhangan
+      if (sandhangan[n]) {
+        let dasar = huruf.replace(/a$/, ""); // hapus vokal bawaan
+        hasil += dasar + sandhangan[n];
         i++;
       } else {
-        hasil.push(konsonan);
+        hasil += huruf;
       }
       continue;
     }
 
-    if (sandhangan[c] !== undefined) {
-      hasil.push(sandhangan[c]);
+    // Jika sandhangan berdiri sendiri
+    if (sandhangan[c]) {
+      hasil += sandhangan[c];
       continue;
     }
 
-    hasil.push(c);
+    // Kalau bukan karakter Jawa, tetap tampilkan
+    hasil += c;
   }
 
-  // Gabungkan dan perbaiki kapitalisasi nama
-  let gabung = hasil.join("").replace(/ha/i, "A");
-  // Perbaikan sederhana untuk kapitalisasi awal kalimat
-  if (gabung.length > 0) {
-    gabung = gabung.charAt(0).toUpperCase() + gabung.slice(1);
-  }
-  
-  return gabung;
+  // 🔠 Format Kapitalisasi Nama
+  hasil = hasil.replace(/^ha/i, "A"); // ganti awalan 'ha' → 'A' untuk nama seperti Abidin
+  hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
+  return hasil;
 }
-
 
 // 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
 const javanese_keywords = [
