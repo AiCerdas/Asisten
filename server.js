@@ -46,7 +46,7 @@ Ikuti ejaan resmi Jawa Tengah modern.
 Jangan ubah pelafalan nama seperti Abidin, Ahmad, Nasrullah.
 Tambahkan arti kata jika bermakna umum (misalnya: Turu = Tidur).
 
-Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
+Sebagai AbidinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
 
   aksara: {
@@ -111,7 +111,9 @@ function aksaraKeLatin(teks) {
 
   // Kapitalisasi sesuai permintaan
   if (hasil.length > 0) {
-      hasil = hasil.replace(/^ha/, "A"); 
+      // Hanya ganti 'ha' menjadi 'a' jika di awal kata
+      hasil = hasil.replace(/^ha/, "a"); 
+      // Kapitalisasi huruf pertama
       hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
   }
   
@@ -136,62 +138,82 @@ function latinKeAksara(teks) {
   );
 
   const kata = teks.toLowerCase().replace(/ā/g, 'a').split("");
+  
+  // Untuk penanganan sandhangan vokal yang kompleks:
+  const mapSandhanganVokal = { 
+      "i": "ꦶ", 
+      "u": "ꦸ", 
+      "é": "ꦺ", 
+      "e": "ꦺ", // Untuk e-pepet/taling
+      "o": "ꦺꦴ",
+      "ê": "ꦼ" 
+  };
+  
+  // Untuk penanganan konsonan khusus
+  const mapKonsonanKhusus = {
+      "dha": "ꦝ", "tha": "ꦛ", "nga": "ꦔ", "nya": "ꦚ" 
+  };
+  
+  // Urutan pencarian: Konsonan Khusus (dha, tha, nga, nya) -> Sandhangan Wyanjana (ng, r, h) -> Vokal/Aksara Legena
 
   for (let i = 0; i < kata.length; i++) {
     const c = kata[i];
-    const n = kata[i + 1];
-
-    // Coba konsonan berpasangan (dha, tha, nga, nya)
-    let found = false;
-    for (let j = 3; j >= 2; j--) {
-        const bigram = kata.slice(i, i + j).join('');
-        if (mapLatinKeAksara[bigram]) {
-            hasil += mapLatinKeAksara[bigram];
-            i += j - 1;
-            found = true;
-            break;
-        }
+    
+    // Cek Konsonan Khusus (3 huruf)
+    const nextThree = kata.slice(i, i + 3).join('');
+    if (mapKonsonanKhusus[nextThree]) {
+        hasil += mapKonsonanKhusus[nextThree];
+        i += 2; // Lewati 3 karakter (dha, tha, nga)
+        continue;
     }
-    if (found) continue;
-
-
-    // Konsonan tunggal (ha, na, ca, ra, ka, dst)
+    
+    // Cek Konsonan Khusus (2 huruf, mis. 'nya')
+    const nextTwo = kata.slice(i, i + 2).join('');
+    if (mapKonsonanKhusus[nextTwo]) {
+        hasil += mapKonsonanKhusus[nextTwo];
+        i += 1; // Lewati 2 karakter (nya)
+        continue;
+    }
+    
+    // Cek Sandhangan Panyigeg Wyanjana (ng, h, r) di akhir suku kata
+    // Hanya ngecek 'ng' dan 'h', karena 'r' (layar) agak kompleks
+    if (c === 'n' && kata[i+1] === 'g') {
+        hasil = hasil.slice(0, -1) + mapLatinKeSandhangan['ng']; // Ganti pangkon/vokal sebelumnya dengan cecak
+        i += 1;
+        continue;
+    } else if (c === 'h' && (i === kata.length - 1 || mapLatinKeAksara[kata[i+1] + 'a'])) { // 'h' di akhir kata atau diikuti konsonan
+        hasil = hasil.slice(0, -1) + mapLatinKeSandhangan['h']; // Ganti pangkon/vokal sebelumnya dengan wignyan
+        continue;
+    }
+    
+    // Cek Aksara Legena (ha, na, ca, dst.)
+    const aksaraLatin = c + (kata[i+1] !== undefined ? kata[i+1] : 'a'); // Asumsi vokal 'a' jika tidak ada sandhangan
     if (mapLatinKeAksara[c + 'a']) {
-        let hurufAksara = mapLatinKeAksara[c + 'a'];
-        let konsonan = c;
-
-        // Sandhangan/Penyigeg Wyanjana (ng, h)
-        if (c + n === 'ng') {
-            hasil += mapLatinKeSandhangan['ng'];
-            i++;
-            continue;
-        } else if (c === 'h' && (i === kata.length - 1 || kata[i-1] === 'a')) { // Hanya di akhir/vokal
-             hasil += mapLatinKeSandhangan['h'];
-             continue;
-        } 
+        let aksaraDasar = mapLatinKeAksara[c + 'a'];
+        hasil += aksaraDasar;
         
-        // Vokal
-        if (mapVokal[n]) {
-            hasil += hurufAksara + mapVokal[n];
+        // Cek Vokal/Sandhangan
+        const nextChar = kata[i+1];
+        if (mapSandhanganVokal[nextChar]) {
+            hasil += mapSandhanganVokal[nextChar];
             i++;
-        } else if (n === 'a') {
-            // Jika konsonan diikuti 'a', tidak perlu vokal, cukup huruf dasar
-            hasil += hurufAksara;
-            i++;
-        } else if (i === kata.length - 1 || mapLatinKeAksara[n + 'a']) {
-            // Jika huruf terakhir atau diikuti konsonan, perlu pangkon
-            hasil += hurufAksara + mapLatinKeSandhangan[''];
-        } else {
-            // Konsonan dengan vokal default 'a'
-             hasil += hurufAksara;
+        } else if (nextChar === 'a') {
+            i++; // Lewati 'a' karena sudah ada di Aksara Dasar
+        } else if (i === kata.length - 1 || mapLatinKeAksara[nextChar + 'a']) {
+            // Jika huruf terakhir atau diikuti konsonan, tambahkan pangkon
+            hasil += mapLatinKeSandhangan[''];
         }
+    } else if (mapSandhanganVokal[c]) {
+        // Vokal berdiri sendiri (A/E/I/O/U) -- Penanganan yang disederhanakan
+        hasil += mapLatinKeAksara['ha']; // Aksara 'ha' untuk vokal di awal kata
+        hasil += mapSandhanganVokal[c];
     } else {
-        // Biarkan karakter non-Jawa
+        // Karakter non-Jawa (spasi, tanda baca, angka)
         hasil += c;
     }
   }
 
-  return hasil;
+  return hasil.replace(/\n\s*$/, "");
 }
 
 
