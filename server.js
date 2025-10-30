@@ -6,14 +6,9 @@ const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-// Tambahkan Groq untuk kelengkapan, meskipun untuk gambar kita pakai Google
-const Groq = require("groq-sdk"); // Pastikan library groq-sdk sudah terinstal (npm install groq-sdk)
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Inisialisasi Groq jika diperlukan di masa depan
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -421,91 +416,6 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
     console.error("Kesalahan Jaringan/Server:", error);
     res.status(500).json({ reply: `Terjadi kesalahan pada server: ${error.message}` });
   }
-});
-
-
-// ==========================================================
-// 🎨 ENDPOINT BARU: IMAGE GENERATION (10 GAMBAR) 🎨
-// ==========================================================
-app.post('/api/image-generation', async (req, res) => {
-    const { prompt, negative_prompt, style } = req.body;
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-    if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: "GEMINI_API_KEY belum dikonfigurasi di file .env." });
-    }
-    
-    if (!prompt) {
-        return res.status(400).json({ error: 'Prompt untuk pembuatan gambar tidak boleh kosong.' });
-    }
-
-    // Model Google Image Generation (Imagen) mendukung maksimal 4 gambar per panggilan.
-    const TOTAL_IMAGES_WANTED = 10;
-    const MAX_IMAGES_PER_CALL = 4;
-    const CALLS_NEEDED = Math.ceil(TOTAL_IMAGES_WANTED / MAX_IMAGES_PER_CALL);
-    
-    // Untuk 10 gambar:
-    // Panggilan 1: 4 gambar
-    // Panggilan 2: 4 gambar
-    // Panggilan 3: 2 gambar (10 - 4 - 4)
-    
-    const imagesToGeneratePerCall = [];
-    let remaining = TOTAL_IMAGES_WANTED;
-
-    for (let i = 0; i < CALLS_NEEDED; i++) {
-        const count = Math.min(remaining, MAX_IMAGES_PER_CALL);
-        if (count > 0) {
-            imagesToGeneratePerCall.push(count);
-            remaining -= count;
-        }
-    }
-
-    const allImageUrls = [];
-    const imageGenerationModel = genAI.getGenerativeModel({ model: 'imagen-3.0-generate-002' });
-    
-    // Gabungkan prompt dan style untuk hasil yang lebih baik
-    const finalPrompt = style ? `${prompt}, style: ${style}` : prompt;
-    
-    try {
-        console.log(`Mulai menghasilkan ${TOTAL_IMAGES_WANTED} gambar dalam ${imagesToGeneratePerCall.length} panggilan...`);
-        
-        for (const count of imagesToGeneratePerCall) {
-            console.log(`> Panggilan API untuk menghasilkan ${count} gambar...`);
-
-            const response = await imageGenerationModel.generateImages({
-                model: 'imagen-3.0-generate-002',
-                prompt: finalPrompt,
-                config: {
-                    numberOfImages: count,
-                    outputMimeType: 'image/jpeg',
-                    // Optional: atur resolusi
-                    aspectRatio: '1:1', // Contoh: 1:1, 4:3, 16:9
-                },
-            });
-
-            if (response.generatedImages && response.generatedImages.length > 0) {
-                const urls = response.generatedImages.map(img => img.image.imageUri);
-                allImageUrls.push(...urls);
-            }
-        }
-        
-        console.log(`✅ Total ${allImageUrls.length} gambar berhasil dihasilkan.`);
-        
-        if (allImageUrls.length === 0) {
-            return res.status(500).json({ error: 'Gagal menghasilkan gambar. Respon API kosong.' });
-        }
-        
-        // Kirim array URL gambar ke frontend
-        res.json({ 
-            status: "success",
-            prompt: finalPrompt,
-            images: allImageUrls 
-        });
-
-    } catch (error) {
-        console.error("Kesalahan Image Generation:", error.message);
-        res.status(500).json({ error: `Gagal menghasilkan gambar: ${error.message}` });
-    }
 });
 
 
