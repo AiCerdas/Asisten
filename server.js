@@ -6,9 +6,14 @@ const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Tambahkan Groq untuk kelengkapan, meskipun untuk gambar kita pakai Google
+const Groq = require("groq-sdk"); // Pastikan library groq-sdk sudah terinstal (npm install groq-sdk)
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Inisialisasi Groq jika diperlukan di masa depan
+const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -33,10 +38,223 @@ function fileToGenerativePart(buffer, mimeType) {
 // ==========================================================
 // 🏯 ABEDINAI JAWA 2.0 – SISTEM TRANSLITERASI RESMI HANACARAKA
 // Dikembangkan oleh Nalek (AbidinAI Project)
-// ... (Kode javaneseDB, aksaraKeLatin, latinKeAksara, isJavaneseTopic, dan endpoint /api/chat tetap sama)
 // ==========================================================
 
-// ... (Blok kode sebelum endpoint /api/ocr tetap sama)
+// ==========================
+// 🕊️ DATA LATIHAN AKSARA JAWA (javaneseDB menggantikan javaneseTrainingData, aksara, dan sandhangan)
+// ==========================
+const javaneseDB = {
+  context: `
+Kamu adalah *AbedinAI Jawa*, asisten AI pelatih aksara Hanacaraka (Aksara Jawa).
+Kuasai transliterasi dua arah: Latin ke Jawa dan Jawa ke Latin.
+Ikuti ejaan resmi Jawa Tengah modern.
+Jangan ubah pelafalan nama seperti Abidin, Ahmad, Nasrullah.
+Tambahkan arti kata jika bermakna umum (misalnya: Turu = Tidur).
+
+Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
+`,
+
+  aksara: {
+    "ꦲ": "ha", "ꦤ": "na", "ꦕ": "ca", "ꦫ": "ra", "ꦏ": "ka",
+    "ꦢ": "da", "ꦠ": "ta", "ꦱ": "sa", "ꦮ": "wa", "ꦭ": "la",
+    "ꦥ": "pa", "ꦝ": "dha", "ꦗ": "ja", "ꦪ": "ya", "ꦚ": "nya",
+    "ꦩ": "ma", "ꦒ": "ga", "ꦧ": "ba", "ꦛ": "tha", "ꦔ": "nga"
+  },
+
+  sandhangan: {
+    "ꦶ": "i", "ꦸ": "u", "ꦺ": "e", "ꦼ": "ê", "ꦺꦴ": "o",
+    "ꦴ": "ā", "ꦁ": "ng", "ꦃ": "h", "꧀": ""
+  },
+
+  contoh: [
+    { aksara: "ꦲꦧꦶꦣꦺꦤ꧀", latin: "Abidin", arti: "Nama orang" },
+    { aksara: "ꦲꦏ꧀ꦱꦫ", latin: "Aksara", arti: "Tulisan atau huruf" },
+    { aksara: "ꦠꦸꦫꦸ", latin: "Turu", arti: "Tidur" },
+    { aksara: "ꦩꦸꦭꦸ", latin: "Mulu", arti: "Terus-menerus" }
+  ]
+};
+
+// ==========================
+// ⚙️ TRANSLITERASI ARAH 1: AKSARA → LATIN (Menggantikan fungsi transliterate lama)
+// ==========================
+function aksaraKeLatin(teks) {
+  const { aksara, sandhangan } = javaneseDB;
+  let hasil = "";
+  let skip = false;
+
+  const chars = Array.from(teks); // Menggunakan Array.from untuk penanganan karakter Unicode
+
+  for (let i = 0; i < chars.length; i++) {
+    if (skip) { skip = false; continue; }
+
+    const c = chars[i];
+    const n = chars[i + 1];
+
+    if (c === "ꦺ" && n === "ꦴ") {
+      hasil += "o";
+      skip = true;
+      continue;
+    }
+
+    if (aksara[c]) {
+      let latin = aksara[c];
+      if (sandhangan[n] !== undefined) {
+        latin = latin.replace(/a$/, "") + sandhangan[n];
+        skip = true;
+      }
+      hasil += latin;
+      continue;
+    }
+
+    if (sandhangan[c] !== undefined) {
+      hasil += sandhangan[c];
+      continue;
+    }
+
+    hasil += c;
+  }
+
+  // Kapitalisasi sesuai permintaan
+  if (hasil.length > 0) {
+      hasil = hasil.replace(/^ha/, "A"); 
+      hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
+  }
+  
+  return hasil;
+}
+
+// ==========================
+// ⚙️ TRANSLITERASI ARAH 2: LATIN → AKSARA
+// ==========================
+function latinKeAksara(teks) {
+  const { aksara, sandhangan } = javaneseDB;
+  let hasil = "";
+
+  // Balikkan map aksara untuk pencarian Latin -> Aksara
+  const mapLatinKeAksara = Object.fromEntries(
+    Object.entries(aksara).map(([k, v]) => [v, k])
+  );
+  
+  const mapVokal = { "i": "ꦶ", "u": "ꦸ", "e": "ꦺ", "o": "ꦺꦴ", "ê": "ꦼ" };
+  const mapLatinKeSandhangan = Object.fromEntries(
+      Object.entries(sandhangan).filter(([k, v]) => k.length < 3).map(([k, v]) => [v, k])
+  );
+
+  const kata = teks.toLowerCase().replace(/ā/g, 'a').split("");
+
+  for (let i = 0; i < kata.length; i++) {
+    const c = kata[i];
+    const n = kata[i + 1];
+
+    // Coba konsonan berpasangan (dha, tha, nga, nya)
+    let found = false;
+    for (let j = 3; j >= 2; j--) {
+        const bigram = kata.slice(i, i + j).join('');
+        if (mapLatinKeAksara[bigram]) {
+            hasil += mapLatinKeAksara[bigram];
+            i += j - 1;
+            found = true;
+            break;
+        }
+    }
+    if (found) continue;
+
+
+    // Konsonan tunggal (ha, na, ca, ra, ka, dst)
+    if (mapLatinKeAksara[c + 'a']) {
+        let hurufAksara = mapLatinKeAksara[c + 'a'];
+        let konsonan = c;
+
+        // Sandhangan/Penyigeg Wyanjana (ng, h)
+        if (c + n === 'ng') {
+            hasil += mapLatinKeSandhangan['ng'];
+            i++;
+            continue;
+        } else if (c === 'h' && (i === kata.length - 1 || kata[i-1] === 'a')) { // Hanya di akhir/vokal
+             hasil += mapLatinKeSandhangan['h'];
+             continue;
+        } 
+        
+        // Vokal
+        if (mapVokal[n]) {
+            hasil += hurufAksara + mapVokal[n];
+            i++;
+        } else if (n === 'a') {
+            // Jika konsonan diikuti 'a', tidak perlu vokal, cukup huruf dasar
+            hasil += hurufAksara;
+            i++;
+        } else if (i === kata.length - 1 || mapLatinKeAksara[n + 'a']) {
+            // Jika huruf terakhir atau diikuti konsonan, perlu pangkon
+            hasil += hurufAksara + mapLatinKeSandhangan[''];
+        } else {
+            // Konsonan dengan vokal default 'a'
+             hasil += hurufAksara;
+        }
+    } else {
+        // Biarkan karakter non-Jawa
+        hasil += c;
+    }
+  }
+
+  return hasil;
+}
+
+
+// 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
+const javanese_keywords = [
+    // Bahasa & Aksara
+    "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan",
+    "pangkon", "murda", "rekan", "swara", "pasangan", "transliterasi",
+    "aksara legena", "aksara rekan", "aksara swara", "nulis aksara",
+    "huruf jawa", "abjad jawa", "hanacaraka lengkap", "aksara ha na ca ra ka",
+
+    // Tata Krama & Filsafat
+    "tata krama", "unggah ungguh", "pitutur luhur", "wejangan", "pepatah jawa",
+    "falsafah jawa", "ajaran kejawen", "nilai luhur", "spiritual jawa", 
+    "mistik jawa", "primbon", "weton", "pawukon", "neptu", "ramalan jawa",
+
+    // Budaya & Adat
+    "budaya jawa", "adat jawa", "tradisi jawa", "upacara adat", 
+    "mitos jawa", "kejawen", "ritual jawa", "sejarah jawa", "kerajaan jawa",
+
+    // Kesenian & Sastra
+    "wayang", "gamelan", "karawitan", "campursari", "macapat", 
+    "tembang", "geguritan", "serat", "babad", "puisi jawa", "sastra jawa",
+    "sindhen", "dalang", "tembang dolanan", "langgam jawa",
+
+    // Busana & Simbol
+    "batik", "lurik", "blangkon", "kebaya", "jarik", "keris", "tombak", 
+    "ukiran jawa", "busana tradisional", "blangkon solo", "blangkon jogja",
+
+    // Sejarah & Tokoh
+    "majapahit", "singhasari", "kediri", "mataram", "panembahan senopati",
+    "raden patah", "sunan kalijaga", "sunan kudus", "sunan muria",
+    "kraton", "keraton", "mangkunegaran", "pakualaman", 
+    "yogyakarta", "surakarta", "solo",
+
+    // Wilayah & Bahasa
+    "jawa tengah", "jawa timur", "jawa barat", "diy yogyakarta",
+    "suku jawa", "tanah jawa", "bahasa krama", "bahasa ngoko", "madya",
+    "prabowo subianto", 
+
+    // Seni Pertunjukan
+    "tari jawa", "wayang orang", "ketoprak", "klenengan", "teater jawa",
+    "pentas budaya", "sendratari", "srimpi", "bedhaya", "reog"
+];
+
+
+/**
+ * Fungsi untuk mendeteksi apakah pesan berkaitan dengan Budaya/Bahasa Jawa,
+ * menggunakan javanese_keywords.
+ * @param {string} message Pesan dari pengguna.
+ * @returns {boolean} True jika berkaitan, False jika tidak.
+ */
+function isJavaneseTopic(message) {
+    const lowerCaseMessage = message.toLowerCase();
+    
+    // Gunakan keywords yang sudah didefinisikan secara terpisah
+    return javanese_keywords.some(keyword => lowerCaseMessage.includes(keyword));
+}
 
 // ==========================================================
 // ¨ ENDPOINT UTAMA YANG DIPERBAIKI (Integrasi Groq & Gemini): ¨
@@ -207,6 +425,91 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
 
 
 // ==========================================================
+// 🎨 ENDPOINT BARU: IMAGE GENERATION (10 GAMBAR) 🎨
+// ==========================================================
+app.post('/api/image-generation', async (req, res) => {
+    const { prompt, negative_prompt, style } = req.body;
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: "GEMINI_API_KEY belum dikonfigurasi di file .env." });
+    }
+    
+    if (!prompt) {
+        return res.status(400).json({ error: 'Prompt untuk pembuatan gambar tidak boleh kosong.' });
+    }
+
+    // Model Google Image Generation (Imagen) mendukung maksimal 4 gambar per panggilan.
+    const TOTAL_IMAGES_WANTED = 10;
+    const MAX_IMAGES_PER_CALL = 4;
+    const CALLS_NEEDED = Math.ceil(TOTAL_IMAGES_WANTED / MAX_IMAGES_PER_CALL);
+    
+    // Untuk 10 gambar:
+    // Panggilan 1: 4 gambar
+    // Panggilan 2: 4 gambar
+    // Panggilan 3: 2 gambar (10 - 4 - 4)
+    
+    const imagesToGeneratePerCall = [];
+    let remaining = TOTAL_IMAGES_WANTED;
+
+    for (let i = 0; i < CALLS_NEEDED; i++) {
+        const count = Math.min(remaining, MAX_IMAGES_PER_CALL);
+        if (count > 0) {
+            imagesToGeneratePerCall.push(count);
+            remaining -= count;
+        }
+    }
+
+    const allImageUrls = [];
+    const imageGenerationModel = genAI.getGenerativeModel({ model: 'imagen-3.0-generate-002' });
+    
+    // Gabungkan prompt dan style untuk hasil yang lebih baik
+    const finalPrompt = style ? `${prompt}, style: ${style}` : prompt;
+    
+    try {
+        console.log(`Mulai menghasilkan ${TOTAL_IMAGES_WANTED} gambar dalam ${imagesToGeneratePerCall.length} panggilan...`);
+        
+        for (const count of imagesToGeneratePerCall) {
+            console.log(`> Panggilan API untuk menghasilkan ${count} gambar...`);
+
+            const response = await imageGenerationModel.generateImages({
+                model: 'imagen-3.0-generate-002',
+                prompt: finalPrompt,
+                config: {
+                    numberOfImages: count,
+                    outputMimeType: 'image/jpeg',
+                    // Optional: atur resolusi
+                    aspectRatio: '1:1', // Contoh: 1:1, 4:3, 16:9
+                },
+            });
+
+            if (response.generatedImages && response.generatedImages.length > 0) {
+                const urls = response.generatedImages.map(img => img.image.imageUri);
+                allImageUrls.push(...urls);
+            }
+        }
+        
+        console.log(`✅ Total ${allImageUrls.length} gambar berhasil dihasilkan.`);
+        
+        if (allImageUrls.length === 0) {
+            return res.status(500).json({ error: 'Gagal menghasilkan gambar. Respon API kosong.' });
+        }
+        
+        // Kirim array URL gambar ke frontend
+        res.json({ 
+            status: "success",
+            prompt: finalPrompt,
+            images: allImageUrls 
+        });
+
+    } catch (error) {
+        console.error("Kesalahan Image Generation:", error.message);
+        res.status(500).json({ error: `Gagal menghasilkan gambar: ${error.message}` });
+    }
+});
+
+
+// ==========================================================
 // ¨ ENDPOINT TELEGRAM YANG DIPERBAHARUI: ¨
 // ==========================================================
 app.post('/api/telegram', async (req, res) => {
@@ -252,13 +555,10 @@ app.post('/api/telegram', async (req, res) => {
 // ==========================================================
 // ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
 // ==========================================================
-// 💡 MODIFIKASI DIMULAI DI SINI (Dari upload.single menjadi upload.array)
-// Nama field di form-data/frontend harus 'images'
-app.post('/api/ocr', upload.array('images', 10), async (req, res) => {
+app.post('/api/ocr', upload.single('image'), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  // Periksa apakah ada file yang diunggah
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: 'File gambar tidak ditemukan. Harap unggah setidaknya satu gambar.' });
+  if (!req.file) {
+    return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
   
   const abidinaiPrompt = `
@@ -351,22 +651,23 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     `;
 
   
-  // 💡 MODIFIKASI DIMULAI DI SINI (Pembuatan array parts)
-  
-  // 1. Inisialisasi array parts dengan Prompt Teks
-  const parts = [
-      { text: abidinaiPrompt }
-  ];
-
-  // 2. Iterasi melalui setiap file yang diunggah dan konversi ke GenerativePart
-  req.files.forEach(file => {
-      parts.push(fileToGenerativePart(file.buffer, file.mimetype));
-  });
+  const imageBase64 = req.file.buffer.toString('base64');
+  const imageMimeType = req.file.mimetype;
 
   const payload = {
     contents: [
       {
-        parts: parts // Menggunakan array parts yang berisi Prompt + Gambar-gambar
+        parts: [
+          {
+            text: abidinaiPrompt
+          },
+          {
+            inline_data: {
+              mime_type: imageMimeType,
+              data: imageBase64,
+            },
+          },
+        ]
       }
     ]
   };
@@ -387,10 +688,6 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
   }
 });
-
-// ... (Kode endpoint /api/research dan /api/unlimited-chat tetap sama)
-
-// ... (Blok kode app.use dan app.listen tetap sama)
 
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
