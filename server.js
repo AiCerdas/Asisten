@@ -465,7 +465,7 @@ app.post('/api/telegram', async (req, res) => {
 // ==========================================================
 // ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
 // ==========================================================
-app.post('/api/ocr', upload.single('image'), async (req, res) => {
+app.post('/api/ocr', upload.array('images', 5), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!req.file) {
     return res.status(400).json({ error: 'File gambar tidak ditemukan' });
@@ -561,44 +561,59 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     `;
 
   
-  const imageBase64 = req.file.buffer.toString('base64');
-  const imageMimeType = req.file.mimetype;
-
-  const payload = {
-    contents: [
-      {
-        parts: [
-          {
-            text: abidinaiPrompt
-          },
-          {
-            inline_data: {
-              mime_type: imageMimeType,
-              data: imageBase64,
-            },
-          },
-        ]
-      }
-    ]
-  };
-
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "Tidak ada gambar diunggah." });
+    }
+
+    // Konversi semua gambar ke Base64
+    const images = files.map(file => {
+      const base64 = file.buffer?.toString('base64') || fs.readFileSync(file.path).toString('base64');
+      if (file.path) fs.unlinkSync(file.path);
+      return {
+        inline_data: {
+          mime_type: file.mimetype,
+          data: base64
+        }
+      };
     });
 
+    const abidinaiPrompt = "Analisis semua gambar ini dengan detail dan jelaskan hasilnya dalam bahasa Indonesia.";
+
+    const payload = {
+      contents: [
+        {
+          parts: [
+            { text: abidinaiPrompt },
+            ...images
+          ]
+        }
+      ]
+    };
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+
     const data = await response.json();
-    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
-    
+    const geminiReply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Maaf, saya tidak dapat memahami isi gambar-gambar ini.";
+
     res.json({ reply: geminiReply });
+
   } catch (error) {
-    console.error("Kesalahan Analisis Gambar:", error);
+    console.error("Kesalahan Analisis Multi-Gambar:", error);
     res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
   }
 });
-
+ 
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
