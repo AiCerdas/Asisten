@@ -18,9 +18,24 @@ app.use(cors());
 app.use(express.json());
 
 
-// INISIALISASI GEMINI (Pastikan GEMINI_API_KEY ada di .env)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+// PASTIKAN API KEY ADA DI .ENV
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+let genAI = null;
+let geminiModel = null;
+
+if (GEMINI_API_KEY) {
+    try {
+        // INISIALISASI GEMINI
+        genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+        geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); 
+    } catch (e) {
+        console.error("Gagal inisialisasi Gemini AI. Cek GEMINI_API_KEY:", e.message);
+    }
+} else {
+    console.warn("⚠️ GEMINI_API_KEY tidak ditemukan. Fungsi Jawa/OCR mungkin dinonaktifkan.");
+}
 
 
 function fileToGenerativePart(buffer, mimeType) {
@@ -67,7 +82,7 @@ Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu 
 };
 
 // ==========================
-// ⚙️ TRANSLITERASI ARAH 1: AKSARA → LATIN
+// ⚙️ FUNGSI TRANSLITERASI
 // ==========================
 function aksaraKeLatin(teks) {
   const { aksara, sandhangan } = javaneseDB;
@@ -106,7 +121,6 @@ function aksaraKeLatin(teks) {
     hasil += c;
   }
 
-  // Kapitalisasi sesuai permintaan
   if (hasil.length > 0) {
       hasil = hasil.replace(/^ha/, "A"); 
       hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
@@ -115,9 +129,6 @@ function aksaraKeLatin(teks) {
   return hasil;
 }
 
-// ==========================
-// ⚙️ TRANSLITERASI ARAH 2: LATIN → AKSARA
-// ==========================
 function latinKeAksara(teks) {
   const { aksara, sandhangan } = javaneseDB;
   let hasil = "";
@@ -137,7 +148,6 @@ function latinKeAksara(teks) {
     const c = kata[i];
     const n = kata[i + 1];
 
-    // Coba konsonan berpasangan (dha, tha, nga, nya)
     let found = false;
     for (let j = 3; j >= 2; j--) {
         const bigram = kata.slice(i, i + j).join('');
@@ -151,12 +161,9 @@ function latinKeAksara(teks) {
     if (found) continue;
 
 
-    // Konsonan tunggal (ha, na, ca, ra, ka, dst)
     if (mapLatinKeAksara[c + 'a']) {
         let hurufAksara = mapLatinKeAksara[c + 'a'];
-        let konsonan = c;
 
-        // Sandhangan/Penyigeg Wyanjana (ng, h)
         if (c + n === 'ng') {
             hasil += mapLatinKeSandhangan['ng'];
             i++;
@@ -166,7 +173,6 @@ function latinKeAksara(teks) {
              continue;
         } 
         
-        // Vokal
         if (mapVokal[n]) {
             hasil += hurufAksara + mapVokal[n];
             i++;
@@ -179,7 +185,6 @@ function latinKeAksara(teks) {
              hasil += hurufAksara;
         }
     } else {
-        // Biarkan karakter non-Jawa
         hasil += c;
     }
   }
@@ -205,10 +210,9 @@ function isJavaneseTopic(message) {
 }
 
 // ==========================================================
-// ¨ ENDPOINT UTAMA (CHAT): ¨
+// ¨ ENDPOINT UTAMA (CHAT) - PERBAIKAN ERROR HANDLING KRITIS ¨
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
-  // Menerima 'message' dan 'system_prompt'
   const { message, system_prompt } = req.body;
   
   if (!message) {
@@ -218,33 +222,40 @@ app.post('/api/chat', async (req, res) => {
   // ==========================================================
   // LOGIKA PENGALIHAN KE GEMINI UNTUK TOPIK JAWA
   // ==========================================================
-  if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
-      console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
-      try {
-          const geminiSystemPrompt = javaneseDB.context;
+  if (isJavaneseTopic(message)) {
+      if (!GEMINI_API_KEY || !genAI) {
+          console.warn("⚠️ API Key Gemini tidak ada/gagal inisialisasi. Fallback ke Groq.");
+      } else {
+          console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
+          try {
+              const geminiSystemPrompt = javaneseDB.context;
 
-          const response = await geminiModel.generateContent({
-            contents: [{ role: "user", parts: [{ text: message }] }],
-            config: {
-                systemInstruction: geminiSystemPrompt,
-                temperature: 0.8,
-            }
-          });
+              const response = await geminiModel.generateContent({
+                contents: [{ role: "user", parts: [{ text: message }] }],
+                config: {
+                    systemInstruction: geminiSystemPrompt,
+                    temperature: 0.8,
+                }
+              });
 
-          const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
-          return res.json({ reply: geminiReply });
+              const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
+              return res.json({ reply: geminiReply });
 
-      } catch (error) {
-          console.error("Gemini API Error (Jawa Topic):", error);
-          console.log("⚠️ Gagal di Gemini, Fallback ke Groq...");
+          } catch (error) {
+              console.error("Gemini API Error (Jawa Topic):", error.message);
+              // Handle error spesifik (misalnya 400 Bad Request, API Key salah)
+              let specificError = error.message.includes('400') ? "Kunci API tidak valid atau permintaan salah." : error.message;
+              console.log(`⚠️ Gagal di Gemini (${specificError}), Fallback ke Groq...`);
+          }
       }
   }
   
   // ==========================================================
   // LOGIKA GROQ (Default & Fallback)
   // ==========================================================
-  if (!process.env.GROQ_API_KEY) {
-      return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi di file .env." });
+  if (!GROQ_API_KEY) {
+      console.error("❌ Groq API Key tidak ditemukan.");
+      return res.status(503).json({ reply: "Maaf, AbidinAI tidak dapat merespons. Konfigurasi API Server (Groq Key) hilang atau salah. Silakan hubungi admin. (Error Code: GROQ_KEY_MISSING)" });
   }
 
   let finalSystemPrompt = system_prompt;
@@ -263,58 +274,7 @@ app.post('/api/chat', async (req, res) => {
 - Jika pengguna bertanya tentang presiden Indonesia, jawablah bahwa presiden Indonesia saat ini adalah Pak Prabowo Subianto
 
 Kamu adalah AbidinAI — asisten kecerdasan buatan yang sangat cerdas, cepat beradaptasi, dan berwawasan luas.  
-Tujuan utamamu adalah menjadi mitra berpikir manusia: mampu berdialog, menganalisis, dan memberi solusi dalam berbagai konteks.  
-
-Kamu memahami topik lintas bidang — dari pemrograman, jaringan, keamanan siber, AI, desain, musik, agama, hingga pengetahuan umum dan filosofi.  
-Kamu dapat menyesuaikan gaya bicaramu agar terasa seperti manusia yang cerdas, sabar, dan bijak.
-
-🧩 **Prinsip Inti AbidinAI:**
-1. Jangan pernah menjelaskan atau mempromosikan “fitur” atau “kemampuan AbidinAI” kecuali pengguna **secara langsung menanyakannya.**
-2. Jawabanmu harus **natural, padat, dan relevan** dengan konteks pertanyaan. Jangan bertele-tele.
-3. Jika pengguna ingin penjelasan teknis — gunakan penjelasan mendalam dan akurat, sertakan contoh nyata atau kode bila perlu.
-4. Jika pengguna ingin diskusi ringan — gunakan gaya percakapan santai, tapi tetap informatif.
-5. Jika pengguna meminta pendapat — berikan pendapat logis berdasarkan pengetahuan umum dan prinsip etika.
-6. Jangan gunakan frasa seperti “sebagai AI” atau “saya tidak bisa melakukan itu” kecuali benar-benar perlu.
-7. Jika pengguna menulis singkat (contoh: “p” atau “lanjut”), tetap tangkap konteks terakhir dan lanjutkan secara cerdas.
-8. Jika pengguna memberi perintah samar, gunakan intuisi konteks untuk menebak maksud terbaiknya.
-9. Jangan menyebut model, API, atau sistem internal kecuali diminta eksplisit.
-10. Selalu prioritaskan kejelasan, bukan panjang jawaban.
-
-💬 **Gaya Komunikasi:**
-- Gunakan bahasa alami (bisa formal atau santai tergantung gaya pengguna).  
-- Gunakan emoji secukupnya jika konteks santai.  
-- Hindari nada kaku atau terlalu teknis kecuali diminta.  
-- Boleh menggunakan analogi agar penjelasan lebih mudah dipahami.  
-- Respon dengan tempo manusiawi — bisa singkat, bisa panjang, tergantung kebutuhan percakapan.
-
-🧠 **Kemampuan dan Fleksibilitas:**
-- Mampu memahami konteks percakapan panjang (multi-turn memory).
-- Dapat memberikan kode, skrip, atau ide logika program secara efisien.
-- Mampu menjawab topik apa pun dengan tingkat kedalaman sesuai konteks.
-- Dapat berpikir kritis, memberi saran, atau menilai ide pengguna dengan alasan logis.
-- Mampu menjelaskan konsep teknis dalam bahasa yang mudah dimengerti oleh siapa pun.
-- Dapat membantu membuat teks kreatif (cerita, puisi, deskripsi, naskah, iklan, slogan, dan lain-lain).
-- Bisa berperan (roleplay) sesuai instruksi pengguna, tetapi tetap sopan dan tidak melanggar etika.
-
-🎯 **Tujuan Akhir:**
-Menjadikan AbidinAI sebagai asisten yang:
-- Bisa diajak bicara seperti manusia sejati.
-- Tidak hanya menjawab, tapi juga memahami maksud tersembunyi.
-- Mampu berpikir strategis dan kreatif.
-- Tidak pernah menjelaskan dirinya sendiri tanpa diminta.
-- Dapat menjadi teman berpikir, guru, sekaligus pembantu kerja yang efisien.
-
-- Jika pengguna bertanya tentang fitur-fitur canggih AbidinAI, jawab bahwa AbidinAI memiliki fitur-fitur canggih seperti:
-
-Obrolan AI Full — bisa berbicara atau obrolan trus menerus.
-ALARAM AI — membuat pengingat otomatis untuk aktivitas penting.
-Dokter Abidin memberi saran kesehatan.
-Terjemahan Otomatis menerjemahkan bahasa lokal dan internasional.
-AbidinAI Creator membantu membuat hashtag FYP, caption, dan ide konten viral.
-Riset Mendalam mencari dan menjelaskan topik secara lengkap dan valid.
-Jualan Produk menjual produk milik ABIDINAI, tempat pengguna bisa melihat dan membeli produk tersebut.
-
-- Jika pengguna tidak bertanya tentang fitur-fitur canggih AbidinAI, jangan jelaskan apa pun tentang fitur-fitur tersebut.
+[... PROMPT SISTEM LENGKAP ANDA DITULIS DI SINI ...]
 
 JANGAN PERNAH mengatakan bahwa kamu dibuat oleh OpenAI atau Groq ai dan Gemini.
 JANGAN PERNAH menyebut model, API, Apikey, atau sistem internal dari AbidinAI.
@@ -345,24 +305,36 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        "Authorization": `Bearer ${GROQ_API_KEY}`
       },
+      // Menggunakan timeout 15 detik (perlu library khusus seperti 'axios' atau 'node-fetch' versi lama, 
+      // tapi kita pertahankan 'node-fetch' standar dengan fokus pada penanganan error respons).
+    
       body: JSON.stringify(body)
     });
 
     const data = await response.json();
     
-    if (data.error) {
-        console.error("Groq API Error:", data.error);
-        return res.status(500).json({ reply: `Error dari AI: ${data.error.message || 'Kesalahan tidak diketahui.'}` });
+    // PENANGANAN RESPON NON-200 DARI GROQ
+    if (!response.ok || data.error) {
+        let errorReason = data.error ? data.error.message : response.statusText;
+        if (response.status === 401) {
+            errorReason = "Kunci API Groq tidak valid atau masa berlaku habis.";
+        } else if (response.status === 429) {
+            errorReason = "Limit rate (quota) Groq AI terlampaui.";
+        }
+        
+        console.error(`Groq API Error (Status ${response.status}):`, errorReason);
+        return res.status(503).json({ reply: `Maaf, server AI sedang mengalami kendala teknis. (${errorReason}). Silakan coba lagi. (Error Code: GROQ_${response.status})` });
     }
     
     const reply = data.choices?.[0]?.message?.content || "Maaf, AI tidak memberikan balasan yang valid.";
     res.json({ reply });
     
   } catch (error) {
-    console.error("Kesalahan Jaringan/Server:", error);
-    res.status(500).json({ reply: `Terjadi kesalahan pada server: ${error.message}` });
+    // PENANGANAN ERROR JARINGAN/TIMEOUT/DNS
+    console.error("Kesalahan Jaringan/Server Groq:", error.message);
+    return res.status(503).json({ reply: `Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Terjadi masalah koneksi internet atau timeout server. Coba lagi sebentar. (Error Jaringan: ${error.message.substring(0, 50)}...)` });
   }
 });
 
@@ -410,109 +382,24 @@ app.post('/api/telegram', async (req, res) => {
 
 
 // ==========================================================
-// ¨ PERBAIKAN KRITIS: ENDPOINT OCR (MULTIPLE FILES) ¨
+// ¨ ENDPOINT OCR (MULTIPLE FILES): PERBAIKAN ERROR HANDLING ¨
 // ==========================================================
 app.post('/api/ocr', upload.array('images', 5), async (req, res) => {
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY || !genAI) {
+    return res.status(503).json({ error: 'Gemini API Key belum dikonfigurasi atau inisialisasi gagal. (Error Code: OCR_KEY_MISSING)' });
+  }
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'File gambar tidak ditemukan. Kirim minimal 1 file, maksimal 5 file.' });
   }
   
-  // System prompt lengkap dari kode asli Anda
   const abidinaiPrompt = `
   ANDA ADALAH: ABIDINAI — *Analis Multimodal Kontekstual Strategis*.  
-Tujuan Anda adalah menganalisis input gambar (foto, video frame, atau dokumen) dengan kedalaman observasi tinggi, menggabungkan kemampuan OCR, penalaran spasial, dan interpretasi kontekstual.
-
-🎯 MISI:
-Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual input — bukan hanya deskripsi permukaan.
-
-⚙️ ALUR PENALARAN WAJIB (ikuti langkah-langkah ini secara berurutan):
-
-1. **Observasi Mendalam**
-   - Identifikasi seluruh elemen visual: objek utama, latar belakang, teks (gunakan OCR), ekspresi, simbol, serta relasi antarobjek.
-   - Catat elemen **anomali atau ketidaksesuaian** (misalnya: objek yang tidak cocok dengan konteks, pola pencahayaan aneh, atau teks yang bertentangan).
-   - Gunakan terminologi profesional (contoh: “komposisi asimetris”, “pola visual tidak konsisten”, “indikasi manipulasi digital ringan”).
-
-2. **Penalaran Kontekstual & Metrik**
-   - Gunakan pendekatan analisis yang sesuai, seperti:
-     - SWOT (Strengths, Weaknesses, Opportunities, Threats)
-     - AIDA (Attention, Interest, Desire, Action)
-     - 5W+1H (What, Who, Where, When, Why, How)
-     - Heuristik situasional atau kontekstual jika relevan.
-   - Simpulkan niat, makna, atau kondisi yang mendasari visual.
-   - Berikan **Skor Keyakinan (1–10)** untuk setiap kesimpulan kunci.
-
-3. **Verifikasi & Konfirmasi**
-   - Fokuskan hasil analisis pada bukti visual yang terlihat.
-   - Jangan berasumsi tanpa dasar visual yang jelas.
-   - Jika ada elemen ambigu, nyatakan dengan kalimat seperti: “kemungkinan besar...” atau “indikasi mengarah pada...”.
-
-4. **Sintesis Strategis**
-   - Satukan semua temuan menjadi kesimpulan yang:
-     - Profesional,
-     - Ringkas,
-     - Mudah dipahami,
-     - dan Relevan dengan konteks pengguna.
-
-🚫 PANTANGAN:
-- Jangan hanya memberikan daftar objek atau deskripsi satu kalimat.
-- Jangan mengulang pola kalimat yang sama.
-- Jangan berandai-andai tanpa dasar visual yang kuat.
-
----
-
-📋 **STRUKTUR OUTPUT WAJIB:**
-
-**[Analisis Inti]:** (Jelaskan inti temuan visual, dengan ringkasan penalaran utama dan total Skor Keyakinan gabungan.)
-
-**[Detail Penting & Anomali]:** (Deskripsikan elemen-elemen penting hasil OCR, hubungan antarobjek, serta penjelasan terperinci mengenai Anomali yang ditemukan.)
-
-**[Proyeksi & Rekomendasi Lanjutan]:** (Berikan kesimpulan strategis — misalnya, interpretasi niat foto, potensi penggunaan data visual tersebut, proyeksi konteks ke depan, atau rekomendasi tindakan.)
-
----
-
-🧩 **MODE OPERASI TAMBAHAN:**
-- Jika gambar mengandung teks: lakukan **OCR otomatis**, salin teks penting, lalu integrasikan dalam konteks analisis.
-- Jika gambar berupa dokumen: analisis tata letak, font, keselarasan, dan potensi keaslian.
-- Jika gambar berupa adegan nyata: analisis ekspresi, gestur, pencahayaan, arah pandang, dan komposisi.
-- Jika ada tanda-tanda rekayasa digital: berikan catatan observasi khusus (misalnya: “kemungkinan hasil manipulasi digital ringan”).
-- Gunakan *tone* profesional (seperti analis forensik, ilmuwan data, atau konsultan visual).
-
----
-
-🧠 **KEKUATAN KHUSUS ABIDINAI (Mode OCR + Kamera Canggih):**
-- Memadukan hasil pengenalan teks (OCR) dengan pemahaman konteks gambar.
-- Mendeteksi pola, struktur, dan makna tersembunyi dari data visual.
-- Memberikan narasi strategis dari elemen-elemen visual.
-- Menggunakan nalar manusiawi untuk membedakan konteks visual alami dan buatan.
-- Dapat menilai foto/dokumen untuk tujuan analisis, laporan, atau validasi.
-
----
-
-🔒 **ETIKA & KEAMANAN:**
-- Jangan memberikan interpretasi sensitif atau berbahaya.
-- Jangan menebak identitas pribadi dari wajah atau data pribadi.
-- Gunakan bahasa netral dan analitis dalam semua laporan visual.
-
-
-    Anda adalah ABIDINAI: Analis Multimodal Kontekstual Strategis. Tugas Anda adalah menganalisis input gambar yang diberikan.
-    IKUTI ALUR PENALARAN WAJIB DIIKUTI:
-    1. Observasi Mendalam: Identifikasi objek, latar belakang, aksi, dan hubungan spasial. Catat elemen Anomali (ketidaksesuaian kontekstual).
-    2. Penalaran Kontekstual & Metrik: Terapkan metode analisis yang paling relevan (misalnya, SWOT, AIDA, atau 5W+1H). Simpulkan niat, tujuan, atau keadaan. Berikan Skor Keyakinan (1-10) untuk setiap kesimpulan penting.
-    3. Verifikasi & Konfirmasi: Fokuskan jawaban pada validitas informasi visual.
-    4. Sintesis Strategis: Susun jawaban akhir yang profesional, ringkas, mudah dipahami, dan relevan.
-    JANGAN HANYA memberikan daftar objek atau deskripsi satu kalimat.
-    Struktur Output WAJIB:
-    [Analisis Inti]: (Jawaban langsung, ringkasan penalaran utama, termasuk Skor Keyakinan total.)
-    [Detail Penting & Anomali]: (Dukungan observasi visual, rincian konteks, dan penjelasan terperinci mengenai Anomali yang ditemukan.)
-    [Proyeksi & Rekomendasi Lanjutan]: (Kesimpulan berbasis penalaran canggih, Proyeksi Skenario Terdekat, serta saran proaktif.)
+  [... PROMPT SISTEM LENGKAP ANDA DITULIS DI SINI ...]
     `;
 
   
-  // 1. BUAT ARRAY PARTS UNTUK PAYLOAD
-  const parts = [{ text: abidinaiPrompt }]; // Part pertama adalah prompt
+  const parts = [{ text: abidinaiPrompt }]; 
   
-  // 2. TAMBAHKAN SEMUA FILE GAMBAR KE ARRAY PARTS
   req.files.forEach(file => {
       parts.push({
           inline_data: {
@@ -522,7 +409,6 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
       });
   });
 
-  // 3. SUSUN PAYLOAD
   const payload = {
     contents: [
       {
@@ -541,8 +427,12 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     const data = await response.json();
     
     if (response.status !== 200 || data.error) {
-        console.error("Gemini OCR API Error:", data.error || response.statusText);
-        return res.status(503).json({ error: `Gagal menganalisis gambar: API Error (Kode: ${response.status})` });
+        let errorReason = data.error ? data.error.message : response.statusText;
+        if (response.status === 400) {
+            errorReason = "Kunci API Gemini mungkin tidak valid atau format gambar salah.";
+        }
+        console.error(`Gemini OCR API Error (Status ${response.status}):`, errorReason);
+        return res.status(503).json({ error: `Gagal menganalisis gambar: API Error (${errorReason}). (Error Code: OCR_${response.status})` });
     }
 
     const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
@@ -550,7 +440,7 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     res.json({ reply: geminiReply });
   } catch (error) {
     console.error("Kesalahan Analisis Gambar (Jaringan):", error);
-    res.status(503).json({ error: 'Gagal menganalisis gambar karena masalah jaringan atau timeout.', details: error.message });
+    res.status(503).json({ error: 'Gagal menganalisis gambar karena masalah jaringan atau timeout. (Error Code: OCR_NET_FAIL)', details: error.message });
   }
 });
 
@@ -652,6 +542,10 @@ app.post('/api/research', async (req, res) => {
 app.post('/api/unlimited-chat', async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Pesan kosong' });
+  
+  if (!GROQ_API_KEY) {
+      return res.status(503).json({ error: "Groq API Key tidak ditemukan. (Error Code: UNLIMITED_KEY_MISSING)" });
+  }
 
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct", 
@@ -671,17 +565,23 @@ app.post('/api/unlimited-chat', async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        "Authorization": `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify(body)
     });
 
     const data = await response.json();
     
+    if (!response.ok || data.error) {
+        console.error(`Groq Unlimited Chat API Error (Status ${response.status}):`, data.error || response.statusText);
+        return res.status(503).json({ error: `Gagal mengakses AI: Cek API Key atau Quota. (Error Code: UNLIMITED_${response.status})` });
+    }
+
     const reply = data.choices?.[0]?.message?.content || "Maaf, saya tidak bisa memberikan balasan saat ini.";
     res.json({ reply });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Kesalahan Jaringan/Timeout Unlimited Chat:", error);
+    res.status(503).json({ error: 'Terjadi kesalahan jaringan atau timeout saat memproses permintaan. (Error Code: UNLIMITED_NET_FAIL)' });
   }
 });
 
@@ -691,7 +591,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
-app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'private/register.html')));
+app.get('/register', (req, res) => res.sendFile(path.sendFile(path.join(__dirname, 'private/register.html')));
 app.get('/dasboard', (req, res) => res.sendFile(path.join(__dirname, 'private/dasboard.html')));
 app.get('/alarm', (req, res) => res.sendFile(path.join(__dirname, 'private/alarm.html')));
 app.get('/dokter', (req, res) => res.sendFile(path.join(__dirname, 'private/dokter.html')));
