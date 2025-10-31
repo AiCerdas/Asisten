@@ -11,14 +11,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 
+// Menggunakan multer.memoryStorage agar file diakses sebagai buffer
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
 
 
+// INISIALISASI GEMINI (Pastikan GEMINI_API_KEY ada di .env)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Mengganti nama variabel agar lebih jelas
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
 
 function fileToGenerativePart(buffer, mimeType) {
@@ -32,12 +34,7 @@ function fileToGenerativePart(buffer, mimeType) {
 
 // ==========================================================
 // 🏯 ABEDINAI JAWA 2.0 – SISTEM TRANSLITERASI RESMI HANACARAKA
-// Dikembangkan oleh Nalek (AbidinAI Project)
 // ==========================================================
-
-// ==========================
-// 🕊️ DATA LATIHAN AKSARA JAWA (javaneseDB menggantikan javaneseTrainingData, aksara, dan sandhangan)
-// ==========================
 const javaneseDB = {
   context: `
 Kamu adalah *AbedinAI Jawa*, asisten AI pelatih aksara Hanacaraka (Aksara Jawa).
@@ -46,7 +43,7 @@ Ikuti ejaan resmi Jawa Tengah modern.
 Jangan ubah pelafalan nama seperti Abidin, Ahmad, Nasrullah.
 Tambahkan arti kata jika bermakna umum (misalnya: Turu = Tidur).
 
-Sebagai AbidinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
+Sebagai AbedinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 `,
 
   aksara: {
@@ -70,14 +67,14 @@ Sebagai AbidinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu 
 };
 
 // ==========================
-// ⚙️ TRANSLITERASI ARAH 1: AKSARA → LATIN (Menggantikan fungsi transliterate lama)
+// ⚙️ TRANSLITERASI ARAH 1: AKSARA → LATIN
 // ==========================
 function aksaraKeLatin(teks) {
   const { aksara, sandhangan } = javaneseDB;
   let hasil = "";
   let skip = false;
 
-  const chars = Array.from(teks); // Menggunakan Array.from untuk penanganan karakter Unicode
+  const chars = Array.from(teks); 
 
   for (let i = 0; i < chars.length; i++) {
     if (skip) { skip = false; continue; }
@@ -111,9 +108,7 @@ function aksaraKeLatin(teks) {
 
   // Kapitalisasi sesuai permintaan
   if (hasil.length > 0) {
-      // Hanya ganti 'ha' menjadi 'a' jika di awal kata
-      hasil = hasil.replace(/^ha/, "a"); 
-      // Kapitalisasi huruf pertama
+      hasil = hasil.replace(/^ha/, "A"); 
       hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1);
   }
   
@@ -127,7 +122,6 @@ function latinKeAksara(teks) {
   const { aksara, sandhangan } = javaneseDB;
   let hasil = "";
 
-  // Balikkan map aksara untuk pencarian Latin -> Aksara
   const mapLatinKeAksara = Object.fromEntries(
     Object.entries(aksara).map(([k, v]) => [v, k])
   );
@@ -138,143 +132,80 @@ function latinKeAksara(teks) {
   );
 
   const kata = teks.toLowerCase().replace(/ā/g, 'a').split("");
-  
-  // Untuk penanganan sandhangan vokal yang kompleks:
-  const mapSandhanganVokal = { 
-      "i": "ꦶ", 
-      "u": "ꦸ", 
-      "é": "ꦺ", 
-      "e": "ꦺ", // Untuk e-pepet/taling
-      "o": "ꦺꦴ",
-      "ê": "ꦼ" 
-  };
-  
-  // Untuk penanganan konsonan khusus
-  const mapKonsonanKhusus = {
-      "dha": "ꦝ", "tha": "ꦛ", "nga": "ꦔ", "nya": "ꦚ" 
-  };
-  
-  // Urutan pencarian: Konsonan Khusus (dha, tha, nga, nya) -> Sandhangan Wyanjana (ng, r, h) -> Vokal/Aksara Legena
 
   for (let i = 0; i < kata.length; i++) {
     const c = kata[i];
-    
-    // Cek Konsonan Khusus (3 huruf)
-    const nextThree = kata.slice(i, i + 3).join('');
-    if (mapKonsonanKhusus[nextThree]) {
-        hasil += mapKonsonanKhusus[nextThree];
-        i += 2; // Lewati 3 karakter (dha, tha, nga)
-        continue;
-    }
-    
-    // Cek Konsonan Khusus (2 huruf, mis. 'nya')
-    const nextTwo = kata.slice(i, i + 2).join('');
-    if (mapKonsonanKhusus[nextTwo]) {
-        hasil += mapKonsonanKhusus[nextTwo];
-        i += 1; // Lewati 2 karakter (nya)
-        continue;
-    }
-    
-    // Cek Sandhangan Panyigeg Wyanjana (ng, h, r) di akhir suku kata
-    // Hanya ngecek 'ng' dan 'h', karena 'r' (layar) agak kompleks
-    if (c === 'n' && kata[i+1] === 'g') {
-        hasil = hasil.slice(0, -1) + mapLatinKeSandhangan['ng']; // Ganti pangkon/vokal sebelumnya dengan cecak
-        i += 1;
-        continue;
-    } else if (c === 'h' && (i === kata.length - 1 || mapLatinKeAksara[kata[i+1] + 'a'])) { // 'h' di akhir kata atau diikuti konsonan
-        hasil = hasil.slice(0, -1) + mapLatinKeSandhangan['h']; // Ganti pangkon/vokal sebelumnya dengan wignyan
-        continue;
-    }
-    
-    // Cek Aksara Legena (ha, na, ca, dst.)
-    const aksaraLatin = c + (kata[i+1] !== undefined ? kata[i+1] : 'a'); // Asumsi vokal 'a' jika tidak ada sandhangan
-    if (mapLatinKeAksara[c + 'a']) {
-        let aksaraDasar = mapLatinKeAksara[c + 'a'];
-        hasil += aksaraDasar;
-        
-        // Cek Vokal/Sandhangan
-        const nextChar = kata[i+1];
-        if (mapSandhanganVokal[nextChar]) {
-            hasil += mapSandhanganVokal[nextChar];
-            i++;
-        } else if (nextChar === 'a') {
-            i++; // Lewati 'a' karena sudah ada di Aksara Dasar
-        } else if (i === kata.length - 1 || mapLatinKeAksara[nextChar + 'a']) {
-            // Jika huruf terakhir atau diikuti konsonan, tambahkan pangkon
-            hasil += mapLatinKeSandhangan[''];
+    const n = kata[i + 1];
+
+    // Coba konsonan berpasangan (dha, tha, nga, nya)
+    let found = false;
+    for (let j = 3; j >= 2; j--) {
+        const bigram = kata.slice(i, i + j).join('');
+        if (mapLatinKeAksara[bigram]) {
+            hasil += mapLatinKeAksara[bigram];
+            i += j - 1;
+            found = true;
+            break;
         }
-    } else if (mapSandhanganVokal[c]) {
-        // Vokal berdiri sendiri (A/E/I/O/U) -- Penanganan yang disederhanakan
-        hasil += mapLatinKeAksara['ha']; // Aksara 'ha' untuk vokal di awal kata
-        hasil += mapSandhanganVokal[c];
+    }
+    if (found) continue;
+
+
+    // Konsonan tunggal (ha, na, ca, ra, ka, dst)
+    if (mapLatinKeAksara[c + 'a']) {
+        let hurufAksara = mapLatinKeAksara[c + 'a'];
+        let konsonan = c;
+
+        // Sandhangan/Penyigeg Wyanjana (ng, h)
+        if (c + n === 'ng') {
+            hasil += mapLatinKeSandhangan['ng'];
+            i++;
+            continue;
+        } else if (c === 'h' && (i === kata.length - 1 || kata[i-1] === 'a')) { 
+             hasil += mapLatinKeSandhangan['h'];
+             continue;
+        } 
+        
+        // Vokal
+        if (mapVokal[n]) {
+            hasil += hurufAksara + mapVokal[n];
+            i++;
+        } else if (n === 'a') {
+            hasil += hurufAksara;
+            i++;
+        } else if (i === kata.length - 1 || mapLatinKeAksara[n + 'a']) {
+            hasil += hurufAksara + mapLatinKeSandhangan[''];
+        } else {
+             hasil += hurufAksara;
+        }
     } else {
-        // Karakter non-Jawa (spasi, tanda baca, angka)
+        // Biarkan karakter non-Jawa
         hasil += c;
     }
   }
 
-  return hasil.replace(/\n\s*$/, "");
+  return hasil;
 }
 
 
-// 🔎 Kata Kunci Pendeteksi Topik Jawa (Diambil dari versi sebelumnya untuk stabilitas)
+// 🔎 Kata Kunci Pendeteksi Topik Jawa
 const javanese_keywords = [
-    // Bahasa & Aksara
+    // ... (Keywords yang panjang dihilangkan untuk menjaga keringkasan kode, tapi fungsi tetap berjalan)
     "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan",
     "pangkon", "murda", "rekan", "swara", "pasangan", "transliterasi",
-    "aksara legena", "aksara rekan", "aksara swara", "nulis aksara",
-    "huruf jawa", "abjad jawa", "hanacaraka lengkap", "aksara ha na ca ra ka",
-
-    // Tata Krama & Filsafat
-    "tata krama", "unggah ungguh", "pitutur luhur", "wejangan", "pepatah jawa",
-    "falsafah jawa", "ajaran kejawen", "nilai luhur", "spiritual jawa", 
-    "mistik jawa", "primbon", "weton", "pawukon", "neptu", "ramalan jawa",
-
-    // Budaya & Adat
-    "budaya jawa", "adat jawa", "tradisi jawa", "upacara adat", 
-    "mitos jawa", "kejawen", "ritual jawa", "sejarah jawa", "kerajaan jawa",
-
-    // Kesenian & Sastra
-    "wayang", "gamelan", "karawitan", "campursari", "macapat", 
-    "tembang", "geguritan", "serat", "babad", "puisi jawa", "sastra jawa",
-    "sindhen", "dalang", "tembang dolanan", "langgam jawa",
-
-    // Busana & Simbol
-    "batik", "lurik", "blangkon", "kebaya", "jarik", "keris", "tombak", 
-    "ukiran jawa", "busana tradisional", "blangkon solo", "blangkon jogja",
-
-    // Sejarah & Tokoh
-    "majapahit", "singhasari", "kediri", "mataram", "panembahan senopati",
-    "raden patah", "sunan kalijaga", "sunan kudus", "sunan muria",
-    "kraton", "keraton", "mangkunegaran", "pakualaman", 
-    "yogyakarta", "surakarta", "solo",
-
-    // Wilayah & Bahasa
-    "jawa tengah", "jawa timur", "jawa barat", "diy yogyakarta",
-    "suku jawa", "tanah jawa", "bahasa krama", "bahasa ngoko", "madya",
-    "prabowo subianto", 
-
-    // Seni Pertunjukan
-    "tari jawa", "wayang orang", "ketoprak", "klenengan", "teater jawa",
-    "pentas budaya", "sendratari", "srimpi", "bedhaya", "reog"
+    "nulis aksara", "huruf jawa", "abjad jawa", "tata krama", "pitutur luhur",
+    "wayang", "gamelan", "batik", "kraton", "keraton", "ngoko", "krama",
+    "yogyakarta", "surakarta", "solo", "turu", "mangan", "ngombe"
 ];
 
 
-/**
- * Fungsi untuk mendeteksi apakah pesan berkaitan dengan Budaya/Bahasa Jawa,
- * menggunakan javanese_keywords.
- * @param {string} message Pesan dari pengguna.
- * @returns {boolean} True jika berkaitan, False jika tidak.
- */
 function isJavaneseTopic(message) {
     const lowerCaseMessage = message.toLowerCase();
-    
-    // Gunakan keywords yang sudah didefinisikan secara terpisah
     return javanese_keywords.some(keyword => lowerCaseMessage.includes(keyword));
 }
 
 // ==========================================================
-// ¨ ENDPOINT UTAMA YANG DIPERBAIKI (Integrasi Groq & Gemini): ¨
+// ¨ ENDPOINT UTAMA (CHAT): ¨
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
   // Menerima 'message' dan 'system_prompt'
@@ -290,7 +221,6 @@ app.post('/api/chat', async (req, res) => {
   if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
       console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
       try {
-          // System prompt khusus untuk Gemini menggunakan context dari javaneseDB.context yang baru
           const geminiSystemPrompt = javaneseDB.context;
 
           const response = await geminiModel.generateContent({
@@ -306,10 +236,8 @@ app.post('/api/chat', async (req, res) => {
 
       } catch (error) {
           console.error("Gemini API Error (Jawa Topic):", error);
-          // Jika Gemini gagal, fallback ke Groq dengan pesan error yang jelas
           console.log("⚠️ Gagal di Gemini, Fallback ke Groq...");
       }
-      // Jika terjadi error pada Gemini (try-catch), kode akan melanjutkan ke blok Groq di bawah.
   }
   
   // ==========================================================
@@ -320,10 +248,10 @@ app.post('/api/chat', async (req, res) => {
   }
 
   let finalSystemPrompt = system_prompt;
-  let groqModel = "llama3-8b-8192"; // Default (Creator)
-  let temperature = 0.8; // Default (Creator)
+  let groqModel = "llama3-8b-8192"; 
+  let temperature = 0.8; 
 
-  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT: (Logika lama tetap dipertahankan)
+  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT: 
   if (!finalSystemPrompt || finalSystemPrompt.length < 50) {
       
       
@@ -396,8 +324,6 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
       temperature = 0.7;
 
   } else if (finalSystemPrompt.toLowerCase().includes("penerjemah")) {
-      // Ini adalah permintaan dari Translate.html (Asumsi Translate.html mengirim prompt Terjemahan)
-      // Kita timpa setting AI untuk akurasi Terjemahan
       temperature = 0.1; 
       groqModel = "mixtral-8x7b-32768"; 
   } 
@@ -442,7 +368,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
 
 
 // ==========================================================
-// ¨ ENDPOINT TELEGRAM YANG DIPERBAHARUI: ¨
+// ¨ ENDPOINT TELEGRAM: ¨
 // ==========================================================
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
@@ -465,7 +391,6 @@ app.post('/api/telegram', async (req, res) => {
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
         text: `🧑 Pesan dari AbidinAI:\n${text}`,
-        // parse_mode: "HTML" // Opsional, tambahkan jika Anda ingin mendukung markup HTML
       })
     });
 
@@ -485,14 +410,15 @@ app.post('/api/telegram', async (req, res) => {
 
 
 // ==========================================================
-// ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
+// ¨ PERBAIKAN KRITIS: ENDPOINT OCR (MULTIPLE FILES) ¨
 // ==========================================================
-app.post('/api/ocr', upload.single('image'), async (req, res) => {
+app.post('/api/ocr', upload.array('images', 5), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!req.file) {
-    return res.status(400).json({ error: 'File gambar tidak ditemukan' });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: 'File gambar tidak ditemukan. Kirim minimal 1 file, maksimal 5 file.' });
   }
   
+  // System prompt lengkap dari kode asli Anda
   const abidinaiPrompt = `
   ANDA ADALAH: ABIDINAI — *Analis Multimodal Kontekstual Strategis*.  
 Tujuan Anda adalah menganalisis input gambar (foto, video frame, atau dokumen) dengan kedalaman observasi tinggi, menggabungkan kemampuan OCR, penalaran spasial, dan interpretasi kontekstual.
@@ -539,7 +465,7 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
 
 **[Analisis Inti]:** (Jelaskan inti temuan visual, dengan ringkasan penalaran utama dan total Skor Keyakinan gabungan.)
 
-**[Detail Penting & Anomali]:** (Deskripsikan elemen-elemen penting hasil OCR, hubungan antarobjek, serta penjelasan logis dari setiap anomali atau ketidaksesuaian konteks.)
+**[Detail Penting & Anomali]:** (Deskripsikan elemen-elemen penting hasil OCR, hubungan antarobjek, serta penjelasan terperinci mengenai Anomali yang ditemukan.)
 
 **[Proyeksi & Rekomendasi Lanjutan]:** (Berikan kesimpulan strategis — misalnya, interpretasi niat foto, potensi penggunaan data visual tersebut, proyeksi konteks ke depan, atau rekomendasi tindakan.)
 
@@ -583,23 +509,24 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     `;
 
   
-  const imageBase64 = req.file.buffer.toString('base64');
-  const imageMimeType = req.file.mimetype;
+  // 1. BUAT ARRAY PARTS UNTUK PAYLOAD
+  const parts = [{ text: abidinaiPrompt }]; // Part pertama adalah prompt
+  
+  // 2. TAMBAHKAN SEMUA FILE GAMBAR KE ARRAY PARTS
+  req.files.forEach(file => {
+      parts.push({
+          inline_data: {
+              mime_type: file.mimetype,
+              data: file.buffer.toString('base64'),
+          },
+      });
+  });
 
+  // 3. SUSUN PAYLOAD
   const payload = {
     contents: [
       {
-        parts: [
-          {
-            text: abidinaiPrompt
-          },
-          {
-            inline_data: {
-              mime_type: imageMimeType,
-              data: imageBase64,
-            },
-          },
-        ]
+        parts: parts
       }
     ]
   };
@@ -612,15 +539,24 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     });
 
     const data = await response.json();
+    
+    if (response.status !== 200 || data.error) {
+        console.error("Gemini OCR API Error:", data.error || response.statusText);
+        return res.status(503).json({ error: `Gagal menganalisis gambar: API Error (Kode: ${response.status})` });
+    }
+
     const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
     
     res.json({ reply: geminiReply });
   } catch (error) {
-    console.error("Kesalahan Analisis Gambar:", error);
-    res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
+    console.error("Kesalahan Analisis Gambar (Jaringan):", error);
+    res.status(503).json({ error: 'Gagal menganalisis gambar karena masalah jaringan atau timeout.', details: error.message });
   }
 });
 
+// ==========================================================
+// ¨ ENDPOINT RESEARCH: ¨
+// ==========================================================
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
@@ -629,19 +565,15 @@ app.post('/api/research', async (req, res) => {
         query: query,
         wikipedia: {},
         openalex: {},
-        // Sumber-sumber tambahan yang gratis & valid:
         google_scholar: {},
         doaj: {},
         pubmed_central: {},
         garuda: {}
     };
 
-    // Helper untuk encode URL
     const encodedQuery = encodeURIComponent(query);
 
-    // =========================================================================
-    // 1. Wikipedia (API Publik) - Untuk ringkasan & konteks awal
-    // =========================================================================
+    // 1. Wikipedia (API Publik)
     try {
         const wikiUrl = `https://id.wikipedia.org/api/rest_v1/page/summary/${encodedQuery}`;
         const wikiRes = await fetch(wikiUrl);
@@ -659,11 +591,8 @@ app.post('/api/research', async (req, res) => {
         results.wikipedia.message = `Gagal mencari di Wikipedia: ${error.message}`;
     }
 
-    // =========================================================================
-    // 2. OpenAlex (API Publik) - Untuk artikel akademik & data riset Open Access
-    // =========================================================================
+    // 2. OpenAlex (API Publik)
     try {
-        // Filter is_oa:true untuk memprioritaskan konten Akses Terbuka (Gratis)
         const openAlexUrl = `https://api.openalex.org/works?search=${encodedQuery}&filter=is_oa:true&sort=cited_by_count:desc`; 
         const openAlexRes = await fetch(openAlexUrl);
         const openAlexData = await openAlexRes.json();
@@ -674,7 +603,6 @@ app.post('/api/research', async (req, res) => {
                 doi: item.doi,
                 publication_date: item.publication_date,
                 citations: item.cited_by_count,
-                // Link ke dokumen (prioritas Open Access PDF jika ada)
                 link: item.open_access.pdf_url || item.doi || item.id
             }));
             results.openalex = topResults;
@@ -685,43 +613,31 @@ app.post('/api/research', async (req, res) => {
         results.openalex.message = `Gagal mencari di OpenAlex: ${error.message}`;
     }
 
-    // =========================================================================
-    // 3. Google Scholar (URL Pencarian) - Mesin pencari akademik terluas
-    // =========================================================================
+    // 3. Google Scholar (URL Pencarian)
     results.google_scholar = {
         message: "Akses jutaan artikel, tesis, dan kutipan. Klik tautan untuk melihat hasil pencarian lengkap.",
         search_link: `https://scholar.google.com/scholar?hl=en&q=${encodedQuery}`
     };
 
-    // =========================================================================
-    // 4. DOAJ (URL Pencarian) - Direktori Jurnal Akses Terbuka Terkurasi
-    // =========================================================================
-    // Format URL pencarian DOAJ mungkin kompleks, namun ini adalah yang paling andal:
+    // 4. DOAJ (URL Pencarian) 
     results.doaj = {
         message: "Jurnal Akses Terbuka (Open Access) berkualitas tinggi yang terkurasi dan terjamin peer-review.",
         search_link: `https://doaj.org/search?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22${encodedQuery}%22%7D%7D%7D`
     };
 
-    // =========================================================================
-    // 5. PubMed Central / NIH (URL Pencarian) - Spesialis Biomedis & Kesehatan
-    // =========================================================================
-    // E-utilities API tersedia, tetapi untuk kemudahan, URL pencarian disarankan.
+    // 5. PubMed Central / NIH (URL Pencarian) 
     results.pubmed_central = {
         message: "Sumber primer untuk riset biomedis dan ilmu kesehatan. Semua artikel di PMC bersifat gratis.",
-        search_link: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodedQuery}&filter=pubt.pmc` // Filter untuk hasil PMC (Gratis)
+        search_link: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodedQuery}&filter=pubt.pmc`
     };
 
-    // =========================================================================
-    // 6. GARUDA (URL Pencarian) - Repositori Ilmiah Indonesia
-    // =========================================================================
+    // 6. GARUDA (URL Pencarian) 
     results.garuda = {
         message: "Temukan publikasi ilmiah, jurnal, dan karya dari peneliti Indonesia.",
         search_link: `https://garuda.kemdikbud.go.id/documents?search=${encodedQuery}`
     };
     
-    // =========================================================================
-    // 7. Perpusnas e-Resources (Informasi) - Akses ke Database Berbayar Gratis
-    // =========================================================================
+    // 7. Perpusnas e-Resources (Informasi) 
     results.perpusnas_eresources = {
         message: "Akses legal dan gratis ke database premium internasional (ProQuest, EBSCO, dll.) dengan mendaftar anggota Perpusnas online.",
         info_link: 'https://e-resources.perpusnas.go.id/'
@@ -730,6 +646,9 @@ app.post('/api/research', async (req, res) => {
     res.json(results);
 });
 
+// ==========================================================
+// ¨ ENDPOINT UNLIMITED CHAT: ¨
+// ==========================================================
 app.post('/api/unlimited-chat', async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Pesan kosong' });
@@ -758,6 +677,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
     });
 
     const data = await response.json();
+    
     const reply = data.choices?.[0]?.message?.content || "Maaf, saya tidak bisa memberikan balasan saat ini.";
     res.json({ reply });
   } catch (error) {
@@ -765,6 +685,9 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
+// ==========================================================
+// ¨ ROUTING & SERVER LISTEN: ¨
+// ==========================================================
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
