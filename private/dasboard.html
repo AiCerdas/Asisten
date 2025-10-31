@@ -1346,13 +1346,15 @@
       };
       // ** AKHIR MODIFIKASI **
 
-      // ** MODIFIKASI KUNCI DI SINI **
+      // ** PERBAIKAN: FUNGSI handleKeyPress UNTUK MENGHINDARI PENGIRIMAN SAAT TEKAN ENTER DI HP **
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
         
+        const textarea = document.getElementById("messageInput");
+
         // 1. Cek apakah tombol yang ditekan adalah 'Enter'
         if (event.key === 'Enter') {
           // 2. Cek apakah 'Shift' juga ditekan (untuk memungkinkan line break pada desktop)
@@ -1361,25 +1363,15 @@
             return true;
           }
           
-          // 3. Jika hanya 'Enter' (termasuk tombol kirim default di keyboard HP)
+          // 3. Jika hanya 'Enter'
           
-          // CEK JIKA ANDROID (HP)
+          // PADA ANDROID (HP): Enter harus selalu menjadi line break (perilaku umum chat app HP)
           if (isAndroid) {
-            // Pada HP, kita ingin 'Enter' hanya menjadi line break, BUKAN mengirim.
-            // Biarkan perilaku default textarea, yang mana adalah line break, 
-            // karena tombol kirim di HP biasanya memicu Enter tanpa Shift.
-            // Namun, karena ini adalah event onkeypress, kita tidak perlu memanggil sendMessage()
-            // dan cukup mencegah pengiriman default dari form jika ada. 
-            // Karena ini textarea tanpa form, kita hanya perlu memastikan tidak ada sendMessage.
-            // Untuk memastikan ini *selalu* menjadi line break di HP:
-            
-            // Dapatkan nilai textarea saat ini
-            const textarea = document.getElementById("messageInput");
+            // Masukkan karakter baris baru (\n) secara manual
             const cursorPosition = textarea.selectionStart;
             const textBefore = textarea.value.substring(0, cursorPosition);
             const textAfter = textarea.value.substring(cursorPosition, textarea.value.length);
             
-            // Masukkan karakter baris baru (\n) secara manual
             textarea.value = textBefore + '\n' + textAfter;
             
             // Posisikan kursor setelah baris baru
@@ -1389,19 +1381,20 @@
             textarea.style.height = 'auto';
             textarea.style.height = (textarea.scrollHeight) + 'px';
 
-            // Cegah tindakan default tombol Enter (biasanya mengirim form jika ada)
+            // Cegah tindakan default tombol Enter
             event.preventDefault();
             event.stopPropagation();
             return false;
           } else {
-            // Pada Desktop (bukan Android), kita masih ingin 'Enter' mengirim pesan 
-            // jika Shift tidak ditekan, untuk kemudahan user desktop.
+            // PADA DESKTOP (bukan Android): Enter mengirim pesan
             event.preventDefault();
             sendMessage();
+            return false;
           }
         }
+        return true; // Biarkan tombol lain beroperasi secara normal
       };
-      // ** AKHIR MODIFIKASI KUNCI **
+      // ** AKHIR PERBAIKAN **
 
       function toggleAudio() {
         if (devToolsState.open) {
@@ -1876,12 +1869,22 @@
       // ** AKHIR FUNGSI BARU **
 
 
+      // ** PERBAIKAN: openOCRModal agar menu plus tertutup **
       window.openOCRModal = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        togglePlusMenu();
+        
+        // Tutup menu plus (penting jika dipanggil dari plus-menu)
+        if (isPlusMenuOpen) {
+            togglePlusMenu(); 
+        } else {
+            // Jika dipanggil dari sidebar atau ocr-btn, pastikan menu plus tertutup
+            document.getElementById('plusMenu').style.display = 'none';
+            isPlusMenuOpen = false;
+        }
+
         const modal = document.getElementById('ocrModal');
         modal.style.display = 'flex';
 
@@ -1898,6 +1901,7 @@
         ocrExtractedText = '';
         // AKHIR MODIFIKASI
       };
+      // ** AKHIR PERBAIKAN **
 
       window.startVoiceRecognition = function() {
         if (devToolsState.open) {
