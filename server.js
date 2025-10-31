@@ -362,7 +362,7 @@ Dokter Abidin memberi saran kesehatan.
 Terjemahan Otomatis menerjemahkan bahasa lokal dan internasional.
 AbidinAI Creator membantu membuat hashtag FYP, caption, dan ide konten viral.
 Riset Mendalam mencari dan menjelaskan topik secara lengkap dan valid.
-Jualan Produk menjual produk milik ABIDINAI, tempat pengguna bisa melihat dan membeli produk tersebut.
+Jualan Produk menjual produk milik ABIDINAI, tempat pengguna bisa melihat dan membeli dan membeli produk tersebut.
 
 - Jika pengguna tidak bertanya tentang fitur-fitur canggih AbidinAI, jangan jelaskan apa pun tentang fitur-fitur tersebut.
 
@@ -463,14 +463,19 @@ app.post('/api/telegram', async (req, res) => {
 
 
 // ==========================================================
-// ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
+// ¨ ENDPOINT OCR (MULTIGAMBAR) YANG DIPERBAHARUI: ¨
+// * Menggunakan upload.array('images', 5) untuk menangani hingga 5 gambar.
+// * Logika disesuaikan untuk mengirimkan semua gambar ke Gemini API.
 // ==========================================================
 app.post('/api/ocr', upload.array('images', 5), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!req.file) {
-    return res.status(400).json({ error: 'File gambar tidak ditemukan' });
+  
+  // Memeriksa apakah ada file yang diunggah
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: 'File gambar tidak ditemukan. Mohon unggah minimal satu gambar.' });
   }
   
+  // System Prompt (Teks yang dikirim bersama gambar)
   const abidinaiPrompt = `
   ANDA ADALAH: ABIDINAI — *Analis Multimodal Kontekstual Strategis*.  
 Tujuan Anda adalah menganalisis input gambar (foto, video frame, atau dokumen) dengan kedalaman observasi tinggi, menggabungkan kemampuan OCR, penalaran spasial, dan interpretasi kontekstual.
@@ -558,62 +563,45 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     [Analisis Inti]: (Jawaban langsung, ringkasan penalaran utama, termasuk Skor Keyakinan total.)
     [Detail Penting & Anomali]: (Dukungan observasi visual, rincian konteks, dan penjelasan terperinci mengenai Anomali yang ditemukan.)
     [Proyeksi & Rekomendasi Lanjutan]: (Kesimpulan berbasis penalaran canggih, Proyeksi Skenario Terdekat, serta saran proaktif.)
+
+    Perhatikan bahwa Anda menerima ${req.files.length} gambar untuk dianalisis. Analisis hubungan antara gambar-gambar tersebut.
     `;
 
+  // Membuat array parts untuk dikirim ke Gemini
+  const contentParts = [
+    { text: abidinaiPrompt } // Teks prompt pertama
+  ];
   
-  try {
-    const files = req.files;
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: "Tidak ada gambar diunggah." });
-    }
+  // Menambahkan setiap gambar sebagai GenerativePart
+  req.files.forEach(file => {
+      contentParts.push(fileToGenerativePart(file.buffer, file.mimetype));
+  });
 
-    // Konversi semua gambar ke Base64
-    const images = files.map(file => {
-      const base64 = file.buffer?.toString('base64') || fs.readFileSync(file.path).toString('base64');
-      if (file.path) fs.unlinkSync(file.path);
-      return {
-        inline_data: {
-          mime_type: file.mimetype,
-          data: base64
-        }
-      };
+  const payload = {
+    contents: [
+      {
+        parts: contentParts
+      }
+    ]
+  };
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
 
-    const abidinaiPrompt = "Analisis semua gambar ini dengan detail dan jelaskan hasilnya dalam bahasa Indonesia.";
-
-    const payload = {
-      contents: [
-        {
-          parts: [
-            { text: abidinaiPrompt },
-            ...images
-          ]
-        }
-      ]
-    };
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }
-    );
-
     const data = await response.json();
-    const geminiReply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Maaf, saya tidak dapat memahami isi gambar-gambar ini.";
-
+    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
+    
     res.json({ reply: geminiReply });
-
   } catch (error) {
-    console.error("Kesalahan Analisis Multi-Gambar:", error);
+    console.error("Kesalahan Analisis Gambar:", error);
     res.status(500).json({ error: 'Gagal menganalisis gambar', details: error.message });
   }
 });
- 
+
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
