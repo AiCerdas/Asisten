@@ -530,6 +530,7 @@
       margin-bottom: 20px;
       cursor: pointer;
       transition: all 0.3s;
+      position: relative; /* MODIFIED: Tambahkan relatif untuk file input */
     }
 
     .upload-area:hover {
@@ -753,66 +754,43 @@
     }
 
     .action-btn.regenerate {
+      color: #10b981;
+    }
+    
+    /* Perubahan untuk warna tombol regenerate agar tidak sama dengan share */
+    .action-btn.regenerate {
       color: #f59e0b; /* Warna kuning-orange untuk Regenerate */
     }
 
     /* Gaya untuk pratinjau gambar */
-    /* MODIFIKASI: Container yang bisa menampung banyak gambar */
     #image-preview-container {
       display: flex;
-      flex-wrap: wrap; /* Izinkan gambar pindah baris */
-      gap: 8px; /* Jarak antar pratinjau gambar */
+      align-items: center;
+      gap: 12px;
       padding: 8px;
       border: 1px solid #e5e5e6;
       border-radius: 8px;
       background-color: #f9fafb;
       margin-bottom: 8px;
       flex-basis: 100%; /* Membuat kontainer ini mengambil lebar penuh */
-      overflow-x: auto; /* Scroll jika terlalu banyak gambar */
-      max-height: 100px; /* Batasi tinggi container */
-      align-items: center;
-    }
-    
-    /* MODIFIKASI: Gaya untuk setiap pratinjau gambar individual */
-    .image-preview-item {
-        position: relative;
-        width: 50px;
-        height: 50px;
-        flex-shrink: 0;
     }
 
     .image-preview {
-      width: 100%;
-      height: 100%;
+      width: 50px;
+      height: 50px;
       border-radius: 6px;
       object-fit: cover;
     }
-    
-    /* MODIFIKASI: Gaya untuk tombol hapus di atas gambar */
+
     .remove-image-btn {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #ef4444;
-      border: 2px solid white;
-      color: white;
-      border-radius: 50%;
+      background: none;
+      border: none;
+      color: #718096;
       cursor: pointer;
-      font-size: 12px;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 16px;
       line-height: 1;
       padding: 0;
-      z-index: 5;
     }
-    
-    .remove-image-btn:hover {
-        background: #dc2626;
-    }
-    /* AKHIR MODIFIKASI PRATINJAU GAMBAR */
 
     /* Gaya untuk modal Riset Mendalam */
     .modal-body-research {
@@ -823,6 +801,11 @@
   <script>
     // ** MODIFIKASI: Cek token login saat halaman dimuat **
     if (!localStorage.getItem("abidinai_token")) {
+      // Jika token TIDAK ada, arahkan kembali ke halaman login.html
+      // Asumsi dasboard.html ada di private/ dan login.html di private/
+      // Kita perlu naik satu tingkat (../) untuk kembali ke index atau langsung ke login.html
+      // Karena login.html dan dasboard.html diasumsikan ada di folder yang sama (private/), 
+      // kita harus kembali ke halaman awal (`index.html`) yang akan me-redirect ke login.html
       window.location.href = "../index.html"; 
     }
   </script>
@@ -842,25 +825,28 @@
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title">
-          <i class="fas fa-file-image"></i> Unggah Gambar Pintar
+          <i class="fas fa-file-image"></i> Unggah Gambar Pintar (Maks. 3)
         </div>
         <button class="close-btn" id="closeModal">&times;</button>
       </div>
 
-      <div class="upload-area" id="uploadArea">
+      <div class="upload-area" id="uploadArea" style="margin-bottom: 10px;">
         <div class="upload-icon">
           <i class="fas fa-cloud-upload-alt"></i>
         </div>
         <div class="upload-text">
-          <strong>Klik untuk mengunggah gambar</strong><br>
-          
+          <strong>Klik atau tarik gambar</strong><br>
         </div>
         <div style="font-size: 12px; color: #718096;">
-          Format yang didukung: JPG, PNG (maks. 5MB per file)
+          Format yang didukung: JPG, PNG (maks. 5MB/gambar)
         </div>
-        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;">
       </div>
-      <button id="processBtn" class="process-btn">
+
+      <div id="modalPreviewContainer" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        </div>
+      
+      <button id="processBtn" class="process-btn" style="display: none;">
         <i class="fas fa-paper-plane"></i> Kirim Pesan
       </button>
 
@@ -878,7 +864,7 @@
         </div>
         <div id="resultText" style="white-space: pre-line;"></div>
       </div>
-    </div>
+      </div>
   </div>
 
   <div class="modal" id="deepResearchModal">
@@ -1026,10 +1012,9 @@
             </div>
           <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
           <div class="input-buttons">
-            <button class="ocr-btn" id="uploadImageBtn">
-              <i class="fas fa-image"></i>
+            <button class="ocr-btn" onclick="openOCRModal()">
+              <i class="fas fa-file-image"></i>
             </button>
-            <input type="file" id="multiFileInput" class="file-input" accept="image/*" multiple>
             <div class="input-buttons">
               <button class="plus-btn" onclick="togglePlusMenu()">
                 <i class="fas fa-plus"></i>
@@ -1068,22 +1053,30 @@
       let isMusicPlaying = false;
       let lastTypingElement = null;
       let db = null;
-      // MODIFIKASI: Ganti variabel tunggal menjadi array untuk menyimpan file yang diunggah
-      let uploadedFiles = []; 
-      const MAX_FILES = 5; // Batasan 5 file
-      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      
+      // MODIFIED: Variable untuk dukungan Multi-Image OCR
+      let ocrExtractedTexts = []; // Array untuk teks hasil OCR dari setiap gambar
+      let ocrImageFiles = [];     // Array untuk objek File gambar yang diunggah
+      let ocrObjectURLs = [];     // Array untuk URL objek gambar
+      // END MODIFIED
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // --- MODIFIKASI: Cek token dan DevTools lainnya (Tidak diubah) ---
+      // --- MODIFIKASI: Izinkan Pilih Teks Hanya di Android ---
       const isAndroid = /android/i.test(navigator.userAgent);
+
+      // Jika BUKAN Android (PC/Laptop), maka terapkan blokir
       if (!isAndroid) {
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('selectstart', e => e.preventDefault());
         document.addEventListener('dragstart', e => e.preventDefault());
       }
-      // ... (Fungsi DevTools & Database tidak diubah) ...
+      // Jika Android, event listener di atas tidak akan ditambahkan,
+      // sehingga text selection (pilih teks) dan context menu (tahan lama) akan berfungsi.
+      // --- AKHIR MODIFIKASI ---
+
+
       document.addEventListener('keydown', function(e) {
         if (
           e.key === 'F12' ||
@@ -1252,16 +1245,20 @@
           const messages = await loadMessagesFromDB();
           const chatbox = document.getElementById("chatbox");
           
-          if (messages.length > 0) {
+          if (messages.length === 0) {
+            // Biarkan chatbox kosong, tidak perlu menambahkan pesan apa pun.
+          } else {
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
-              addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false); 
+              addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false); // false untuk tidak menyimpan ulang
             });
           }
           
           chatbox.scrollTop = chatbox.scrollHeight;
         } catch (error) {
           console.error('Error initializing database:', error);
+          const chatbox = document.getElementById("chatbox");
+          // Biarkan chatbox kosong bahkan jika ada error
         }
 
         const textarea = document.getElementById('messageInput');
@@ -1271,22 +1268,10 @@
         });
 
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
-        // MODIFIKASI: Menghapus menu item OCR lama jika ingin menggunakan upload langsung
-        // document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
-        
-        // MODIFIKASI: Ganti tombol OCR dengan input file picker
-        const uploadImageBtn = document.getElementById('uploadImageBtn');
-        const multiFileInput = document.getElementById('multiFileInput');
-        
-        // Event listener untuk tombol upload (sekarang ikon gambar)
-        uploadImageBtn.addEventListener('click', () => multiFileInput.click());
-        
-        // Event listener saat file dipilih
-        multiFileInput.addEventListener('change', handleMultiFileUpload);
-        
+        document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
         initOCRModal();
         initAudioSpectrumModal();
-        initDeepResearchModal(); 
+        initDeepResearchModal(); // Inisialisasi modal riset
 
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
@@ -1315,45 +1300,73 @@
         return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
       
+      // ** MODIFIKASI: FUNGSI LOGOUT BARU **
       window.logout = function() {
+          // Hapus token dari localStorage
           localStorage.removeItem("abidinai_token");
+          // Hapus riwayat percakapan dari database lokal (opsional, tapi disarankan)
           clearConversationFromDB();
+          // Arahkan kembali ke halaman utama (index.html), yang akan me-redirect ke login
           window.location.href = "../index.html"; 
       };
+      // ** AKHIR MODIFIKASI **
 
+      // ** MODIFIKASI KUNCI DI SINI **
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
         
+        // 1. Cek apakah tombol yang ditekan adalah 'Enter'
         if (event.key === 'Enter') {
+          // 2. Cek apakah 'Shift' juga ditekan (untuk memungkinkan line break pada desktop)
           if (event.shiftKey) {
+            // Biarkan default action (line break)
             return true;
           }
           
+          // 3. Jika hanya 'Enter' (termasuk tombol kirim default di keyboard HP)
+          
+          // CEK JIKA ANDROID (HP)
           if (isAndroid) {
+            // Pada HP, kita ingin 'Enter' hanya menjadi line break, BUKAN mengirim.
+            // Biarkan perilaku default textarea, yang mana adalah line break, 
+            // karena tombol kirim di HP biasanya memicu Enter tanpa Shift.
+            // Namun, karena ini adalah event onkeypress, kita tidak perlu memanggil sendMessage()
+            // dan cukup mencegah pengiriman default dari form jika ada. 
+            // Karena ini textarea tanpa form, kita hanya perlu memastikan tidak ada sendMessage.
+            // Untuk memastikan ini *selalu* menjadi line break di HP:
+            
+            // Dapatkan nilai textarea saat ini
             const textarea = document.getElementById("messageInput");
             const cursorPosition = textarea.selectionStart;
             const textBefore = textarea.value.substring(0, cursorPosition);
             const textAfter = textarea.value.substring(cursorPosition, textarea.value.length);
             
+            // Masukkan karakter baris baru (\n) secara manual
             textarea.value = textBefore + '\n' + textAfter;
             
+            // Posisikan kursor setelah baris baru
             textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
             
+            // Sesuaikan tinggi textarea
             textarea.style.height = 'auto';
             textarea.style.height = (textarea.scrollHeight) + 'px';
 
+            // Cegah tindakan default tombol Enter (biasanya mengirim form jika ada)
             event.preventDefault();
             event.stopPropagation();
             return false;
           } else {
+            // Pada Desktop (bukan Android), kita masih ingin 'Enter' mengirim pesan 
+            // jika Shift tidak ditekan, untuk kemudahan user desktop.
             event.preventDefault();
             sendMessage();
           }
         }
       };
+      // ** AKHIR MODIFIKASI KUNCI **
 
       function toggleAudio() {
         if (devToolsState.open) {
@@ -1374,126 +1387,53 @@
         }
       };
 
-      // ** FUNGSI MULTI-UPLOAD GAMBAR BARU **
-
-      function handleMultiFileUpload() {
-        const fileInput = document.getElementById('multiFileInput');
-        const files = Array.from(fileInput.files);
+      // MODIFIED: Fungsi untuk menghapus pratinjau gambar Multi-Upload
+      window.removeImagePreview = function() {
         const imagePreviewContainer = document.getElementById('image-preview-container');
         
-        let newFilesCount = 0;
-        
-        // Iterasi file baru
-        for (const file of files) {
-          if (uploadedFiles.length >= MAX_FILES) {
-            alert(`Anda hanya dapat mengunggah maksimal ${MAX_FILES} gambar.`);
-            break; 
-          }
-          
-          if (!file.type.match('image.*')) {
-            alert('Hanya file gambar (JPG, PNG) yang didukung!');
-            continue;
-          }
+        imagePreviewContainer.style.display = 'none';
+        imagePreviewContainer.innerHTML = ''; // Hapus semua gambar pratinjau
 
-          if (file.size > MAX_FILE_SIZE) {
-            alert(`Ukuran file maksimal 5MB per file! File "${file.name}" tidak diunggah.`);
-            continue;
-          }
-          
-          uploadedFiles.push(file);
-          newFilesCount++;
-        }
-        
-        // Setelah memproses, reset input file agar event 'change' dapat terpicu lagi
-        fileInput.value = '';
+        // Revoke Object URLs dan bersihkan array
+        ocrObjectURLs.forEach(url => URL.revokeObjectURL(url));
+        ocrObjectURLs = [];
+        ocrImageFiles = [];
+        ocrExtractedTexts = [];
+      }
+      // END MODIFIED
 
-        if (newFilesCount > 0) {
-            renderImagePreviews();
-        }
-      }
-      
-      function renderImagePreviews() {
-          const imagePreviewContainer = document.getElementById('image-preview-container');
-          imagePreviewContainer.innerHTML = '';
-          
-          if (uploadedFiles.length === 0) {
-              imagePreviewContainer.style.display = 'none';
-              return;
-          }
-          
-          imagePreviewContainer.style.display = 'flex';
-          
-          uploadedFiles.forEach((file, index) => {
-              const itemDiv = document.createElement('div');
-              itemDiv.className = 'image-preview-item';
-              itemDiv.dataset.index = index;
-              
-              const img = document.createElement('img');
-              img.className = 'image-preview';
-              // Gunakan URL.createObjectURL untuk menampilkan gambar
-              img.src = URL.createObjectURL(file);
-              img.alt = `Pratinjau Gambar ${index + 1}`;
-              
-              const removeBtn = document.createElement('button');
-              removeBtn.className = 'remove-image-btn';
-              removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-              removeBtn.onclick = () => removeImagePreview(index);
-              
-              itemDiv.appendChild(img);
-              itemDiv.appendChild(removeBtn);
-              imagePreviewContainer.appendChild(itemDiv);
-          });
-          
-          // Pastikan semua objek URL lama dibersihkan saat render ulang
-          // (Tidak perlu membersihkan yang sekarang karena akan di-revoke di removeImagePreview
-          // atau setelah sendMessage)
-      }
-      
-      window.removeImagePreview = function(index) {
-          // Bersihkan URL objek untuk memori
-          if (uploadedFiles[index]) {
-              URL.revokeObjectURL(uploadedFiles[index]);
-          }
-          
-          // Hapus file dari array
-          uploadedFiles.splice(index, 1);
-          
-          // Render ulang pratinjau
-          renderImagePreviews();
-      }
-      
-      // Fungsi ini dipanggil setelah pesan terkirim
-      function removeAllImagePreviews() {
-          uploadedFiles.forEach(file => {
-              URL.revokeObjectURL(file);
-          });
-          uploadedFiles = [];
-          document.getElementById('image-preview-container').style.display = 'none';
-          document.getElementById('image-preview-container').innerHTML = '';
-      }
-      // ** AKHIR FUNGSI MULTI-UPLOAD GAMBAR BARU **
-
-      // OCR Functions (Dipertahankan untuk menu item "Unggah Gambar Pintar")
+      // MODIFIED: OCR Functions (Updated to use Gemini API via backend) for Multi-Upload
       function initOCRModal() {
         const modal = document.getElementById('ocrModal');
         const closeBtn = document.getElementById('closeModal');
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        // const previewImage = document.getElementById('previewImage'); // Dihapus di HTML
+        const modalPreviewContainer = document.getElementById('modalPreviewContainer'); // NEW
         const processBtn = document.getElementById('processBtn');
         const copyResultBtn = document.getElementById('copyResult');
         const resultText = document.getElementById('resultText');
         const progressContainer = document.getElementById('progressContainer');
         const progressText = document.getElementById('progressText');
         const ocrResult = document.getElementById('ocrResult');
-        let selectedFile = null;
+        // let selectedFile = null; // OLD: Hapus ini
 
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        closeBtn.addEventListener('click', () => {
+          modal.style.display = 'none';
+          resetOCRModal(); // NEW
+        });
         modal.addEventListener('click', (e) => {
-          if (e.target === modal) modal.style.display = 'none';
+          if (e.target === modal) {
+            modal.style.display = 'none';
+            resetOCRModal(); // NEW
+          }
         });
 
-        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('click', (e) => {
+            // Cek jika klik bukan pada input file itu sendiri
+            if (e.target.id !== 'fileInput') {
+              fileInput.click();
+            }
+        });
 
         uploadArea.addEventListener('dragover', (e) => {
           e.preventDefault();
@@ -1512,14 +1452,13 @@
           uploadArea.style.backgroundColor = 'transparent';
 
           if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            handleFileUpload(fileInput.files[0]);
+            handleFileUpload(e.dataTransfer.files);
           }
         });
 
         fileInput.addEventListener('change', () => {
           if (fileInput.files.length) {
-            handleFileUpload(fileInput.files[0]);
+            handleFileUpload(fileInput.files);
           }
         });
         
@@ -1534,53 +1473,155 @@
           });
         });
         
-        // MODIFIKASI: Fungsi ini dipertahankan untuk modal OCR lama (yang sekarang diubah untuk multi-gambar)
-        function handleFileUpload(file) {
-          if (!file.type.match('image.*')) {
-            alert('Hanya file gambar (JPG, PNG) yang didukung!');
-            return;
-          }
-
-          if (file.size > MAX_FILE_SIZE) {
-            alert('Ukuran file maksimal 5MB!');
-            return;
-          }
-          
-          // Di modal OCR, kita hanya menangani satu file
-          selectedFile = file; 
-          
-          // Tampilkan tombol proses karena file sudah dipilih
-          processBtn.style.display = 'block';
-          ocrResult.style.display = 'none';
-          
-          // Perlu membuat pratinjau gambar di modal OCR karena elemennya dihapus dari HTML
-          let previewElement = modal.querySelector('.preview-image-in-modal');
-          if (!previewElement) {
-              previewElement = document.createElement('img');
-              previewElement.className = 'preview-image-in-modal preview-image';
-              previewElement.alt = 'Pratinjau gambar';
-              modal.querySelector('.modal-content').insertBefore(previewElement, processBtn);
-          }
-          
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            previewElement.src = e.target.result;
-            previewElement.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
+        // NEW: Fungsi untuk mereset semua status OCR
+        function resetOCRModal() {
+            ocrExtractedTexts = [];
+            ocrImageFiles = [];
+            ocrObjectURLs.forEach(url => URL.revokeObjectURL(url));
+            ocrObjectURLs = [];
+            modalPreviewContainer.innerHTML = '';
+            
+            document.getElementById('image-preview-container').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+            
+            processBtn.style.display = 'none';
+            ocrResult.style.display = 'none';
+            progressContainer.style.display = 'none';
         }
 
+        function handleFileUpload(files) {
+          const filesArray = Array.from(files);
+          
+          filesArray.forEach(file => {
+             if (ocrImageFiles.length >= 3) {
+                 alert('Maksimal 3 gambar yang dapat diunggah.');
+                 return;
+             }
+
+             if (!file.type.match('image.*')) {
+               alert('Hanya file gambar (JPG, PNG) yang didukung!');
+               return;
+             }
+
+             if (file.size > 5 * 1024 * 1024) {
+               alert(`Ukuran file ${file.name} maksimal 5MB!`);
+               return;
+             }
+             
+             ocrImageFiles.push(file);
+             
+             const reader = new FileReader();
+             reader.onload = (e) => {
+                const objectURL = URL.createObjectURL(file);
+                ocrObjectURLs.push(objectURL);
+                
+                const previewDiv = document.createElement('div');
+                previewDiv.style.position = 'relative';
+                
+                const previewImage = document.createElement('img');
+                previewImage.src = e.target.result;
+                previewImage.style.width = '80px';
+                previewImage.style.height = '80px';
+                previewImage.style.objectFit = 'cover';
+                previewImage.style.borderRadius = '6px';
+                previewImage.alt = file.name;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '0';
+                removeBtn.style.right = '0';
+                removeBtn.style.background = 'rgba(239, 68, 68, 0.8)';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '0 6px 0 6px';
+                removeBtn.style.width = '20px';
+                removeBtn.style.height = '20px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.onclick = () => removeModalImage(file.name);
+                
+                previewDiv.appendChild(previewImage);
+                previewDiv.appendChild(removeBtn);
+                modalPreviewContainer.appendChild(previewDiv);
+                modalPreviewContainer.style.display = 'flex';
+                
+                processBtn.style.display = 'block';
+                ocrResult.style.display = 'none';
+             };
+             reader.readAsDataURL(file);
+          });
+          
+          if (ocrImageFiles.length > 0) {
+              processBtn.style.display = 'block';
+          }
+        }
+        
+        window.removeModalImage = function(fileName) {
+            const index = ocrImageFiles.findIndex(f => f.name === fileName);
+            if (index > -1) {
+                // Hapus dari array
+                ocrImageFiles.splice(index, 1);
+                URL.revokeObjectURL(ocrObjectURLs[index]);
+                ocrObjectURLs.splice(index, 1);
+                
+                // Hapus dari DOM
+                modalPreviewContainer.innerHTML = '';
+                ocrObjectURLs.forEach((url, i) => {
+                    const file = ocrImageFiles[i];
+                    const previewDiv = document.createElement('div');
+                    previewDiv.style.position = 'relative';
+                    
+                    const previewImage = document.createElement('img');
+                    previewImage.src = url;
+                    previewImage.style.width = '80px';
+                    previewImage.style.height = '80px';
+                    previewImage.style.objectFit = 'cover';
+                    previewImage.style.borderRadius = '6px';
+                    previewImage.alt = file.name;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '0';
+                    removeBtn.style.right = '0';
+                    removeBtn.style.background = 'rgba(239, 68, 68, 0.8)';
+                    removeBtn.style.color = 'white';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.borderRadius = '0 6px 0 6px';
+                    removeBtn.style.width = '20px';
+                    removeBtn.style.height = '20px';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.onclick = () => removeModalImage(file.name);
+                    
+                    previewDiv.appendChild(previewImage);
+                    previewDiv.appendChild(removeBtn);
+                    modalPreviewContainer.appendChild(previewDiv);
+                });
+                
+                if (ocrImageFiles.length === 0) {
+                    processBtn.style.display = 'none';
+                    modalPreviewContainer.style.display = 'none';
+                }
+            }
+        }
+
+        // Fungsi baru untuk memproses OCR dengan Gemini API via backend
         async function processOCRWithGemini() {
-          if (!selectedFile) return;
+          if (ocrImageFiles.length === 0) return;
 
           processBtn.style.display = 'none';
           progressContainer.style.display = 'flex';
-          progressText.textContent = `Mengirim gambar...`;
+          progressText.textContent = `Mengirim ${ocrImageFiles.length} gambar...`;
 
           const formData = new FormData();
-          formData.append('image', selectedFile);
+          
+          // UPLOAD MULTIPLE FILES
+          ocrImageFiles.forEach((file, index) => {
+            formData.append(`image${index+1}`, file); // Kirim sebagai image1, image2, dst.
+          });
 
           try {
+            // Panggil API OCR. Asumsi backend Anda bisa menerima multiple files
             const response = await fetch("/api/ocr", {
               method: "POST",
               body: formData
@@ -1592,8 +1633,11 @@
             }
 
             const data = await response.json();
-            const aiReply = data.reply;
+            
+            // Asumsi API mengembalikan array atau string gabungan dari hasil OCR
+            const aiReply = data.reply; 
 
+            // Tampilkan hasil analisis dari Gemini
             if (!aiReply || aiReply.trim() === "") {
                 resultText.textContent = "Tidak dapat menganalisis gambar ini.";
             } else {
@@ -1603,22 +1647,34 @@
             ocrResult.style.display = 'block';
             progressContainer.style.display = 'none';
             
-            // Masukkan file ke uploadedFiles dan tampilkan pratinjau multi-gambar
-            removeAllImagePreviews(); // Hapus file yang mungkin ada sebelumnya
-            uploadedFiles.push(selectedFile);
-            renderImagePreviews();
+            // Simpan teks hasil OCR ke global array (hanya 1 reply gabungan)
+            ocrExtractedTexts = [aiReply]; // Simpan sebagai 1 item, asumsi reply dari backend sudah gabungan/ringkasan
+            
+            // Tambahkan pratinjau gambar ke dalam kotak pesan input
+            const inputPreviewContainer = document.getElementById('image-preview-container');
+            inputPreviewContainer.innerHTML = ''; // Hapus preview lama (jika ada)
 
-            // Atur teks pesan menjadi hasil OCR
-            document.getElementById('messageInput').value = aiReply; 
+            // Tampilkan pratinjau semua gambar di kotak input
+            ocrObjectURLs.forEach((url, index) => {
+                const img = document.createElement('img');
+                img.className = 'image-preview';
+                img.src = url;
+                img.alt = `Pratinjau Gambar ${index+1}`;
+                inputPreviewContainer.appendChild(img);
+            });
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-image-btn';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.onclick = removeImagePreview; // Panggil fungsi hapus preview
+            inputPreviewContainer.appendChild(removeBtn);
+            
+            inputPreviewContainer.style.display = 'flex';
 
             modal.style.display = 'none';
+            // TIDAK resetOCRModal di sini, agar ocrImageFiles/ocrObjectURLs tetap ada 
+            // sampai sendMessage dipanggil. Cukup reset modal preview.
             
-            // Bersihkan modal setelah selesai
-            selectedFile = null;
-            if (modal.querySelector('.preview-image-in-modal')) {
-                modal.querySelector('.preview-image-in-modal').remove();
-            }
-
           } catch (err) {
             console.error('Gemini OCR Error:', err);
             progressText.textContent = `Error: ${err.message}`;
@@ -1629,16 +1685,14 @@
           }
         }
       }
-      
-      // ... (Fungsi togglePlusMenu, openAudioSpectrumModal, initAudioSpectrumModal, 
-      //      openDeepResearchModal, initDeepResearchModal, sendMessageWithCommand, 
-      //      shareMessageText, openOCRModal (diubah sedikit), startVoiceRecognition, 
-      //      addMessage, copyMessageText, regenerateMessage, displayMaintenanceMessage, 
-      //      displayAIResponse, readWithPauses) - Dipertahankan kecuali yang spesifik OCR/Image
+      // END MODIFIED: initOCRModal
 
+      // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
       
+      // Global variable untuk melacak status menu
       let isPlusMenuOpen = false;
 
+      // Fungsi untuk menampilkan/menyembunyikan menu plus
       window.togglePlusMenu = function() {
         const plusMenu = document.getElementById('plusMenu');
         if (isPlusMenuOpen) {
@@ -1649,6 +1703,7 @@
         isPlusMenuOpen = !isPlusMenuOpen;
       }
 
+      // Tambahkan event listener untuk menutup menu saat klik di luar
       document.addEventListener('click', function(event) {
         const plusMenu = document.getElementById('plusMenu');
         const plusBtn = document.querySelector('.plus-btn');
@@ -1678,11 +1733,13 @@
         });
       }
 
+      // Fungsi untuk membuka modal Riset Mendalam
       window.openDeepResearchModal = function() {
         const modal = document.getElementById('deepResearchModal');
         const input = document.getElementById('researchQueryInput');
         const sendBtn = document.getElementById('startResearchBtn');
         
+        // Ambil teks dari input utama sebagai query default
         const messageInput = document.getElementById('messageInput');
         input.value = messageInput.value.trim();
 
@@ -1698,6 +1755,7 @@
             }
         };
         
+        // Tambahkan event listener untuk tombol "Enter" di dalam modal
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -1716,13 +1774,16 @@
         });
       }
       
+      // Fungsi untuk mengirim pesan dengan perintah
       async function sendMessageWithCommand(command) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
         const messageInput = document.getElementById("messageInput");
 
+        // Tambahkan pesan pengguna ke chatbox
         addMessage('Anda', command, 'user-message');
 
+        // Tampilkan indikator mengetik
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
         typingDiv.innerHTML = `
@@ -1741,6 +1802,7 @@
         messageInput.value = '';
 
         try {
+          // Panggil endpoint chat di server dengan perintah riset
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1768,7 +1830,9 @@
           sendButton.disabled = false;
         }
       }
+      // ** AKHIR KODE TAMBAHAN **
       
+      // ** FUNGSI BARU UNTUK BERBAGI PESAN **
       window.shareMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
@@ -1776,17 +1840,20 @@
           const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
 
           if (navigator.share) {
+            // Gunakan Web Share API jika tersedia (lebih baik di mobile)
             navigator.share({
               title: 'Balasan AbidinAI',
               text: shareText
             }).catch(error => {
               if (error.name !== 'AbortError') {
                 console.error('Error sharing:', error);
+                // Fallback ke WhatsApp jika Web Share gagal atau dibatalkan
                 const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
                 window.open(whatsappUrl, '_blank');
               }
             });
           } else {
+            // Fallback ke WhatsApp di desktop/browser lama
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
           }
@@ -1801,6 +1868,8 @@
           }
         }
       };
+      // ** AKHIR FUNGSI BARU **
+
 
       window.openOCRModal = function() {
         if (devToolsState.open) {
@@ -1811,14 +1880,19 @@
         const modal = document.getElementById('ocrModal');
         modal.style.display = 'flex';
 
-        // document.getElementById('previewImage').style.display = 'none'; // Dihapus di HTML
-        const previewElement = modal.querySelector('.preview-image-in-modal');
-        if (previewElement) previewElement.remove();
-        
+        // Bersihkan state modal dan global
+        const modalPreviewContainer = document.getElementById('modalPreviewContainer');
+        modalPreviewContainer.innerHTML = '';
+        modalPreviewContainer.style.display = 'none';
+
         document.getElementById('processBtn').style.display = 'none';
         document.getElementById('progressContainer').style.display = 'none';
         document.getElementById('ocrResult').style.display = 'none';
         document.getElementById('fileInput').value = '';
+        ocrExtractedTexts = [];
+        ocrImageFiles = [];
+        ocrObjectURLs.forEach(url => URL.revokeObjectURL(url));
+        ocrObjectURLs = [];
       };
 
       window.startVoiceRecognition = function() {
@@ -1887,6 +1961,7 @@
         
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         
+        // MODIFIKASI: Tambahkan tombol "Bagikan" di sini
         messageDiv.innerHTML = `
           <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
             ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
@@ -1912,6 +1987,7 @@
             ` : ''}
           </div>
         `;
+        // AKHIR MODIFIKASI
 
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
@@ -1926,6 +2002,7 @@
       window.copyMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
+          // MODIFIKASI: Pastikan untuk mengambil konten mentah dari semua tag di dalam message-text
           const textToCopy = messageTextElement.innerText; 
           
           navigator.clipboard.writeText(textToCopy).then(() => {
@@ -1947,6 +2024,7 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (!messageTextElement) return;
 
+        // Cari pesan pengguna sebelumnya yang terkait
         const messageDiv = messageTextElement.closest('.message');
         const prevMessageDiv = messageDiv.previousElementSibling;
         if (!prevMessageDiv || !prevMessageDiv.classList.contains('user-message')) {
@@ -1962,20 +2040,23 @@
           regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
           regenerateButton.disabled = true;
           
+          // Nonaktifkan tombol lain saat memproses
           const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
           const shareButton = document.querySelector(`button[onclick="shareMessageText('${messageId}')"]`);
           if (copyButton) copyButton.disabled = true;
           if (shareButton) shareButton.disabled = true;
 
 
+          // Hapus konten pesan AI yang lama dan ganti dengan indikator mengetik
           messageTextElement.innerHTML = `<div class="typing-indicator">
               <div class="loading"></div>
               AbidinAI sedang mengetik ulang...
           </div>`;
           messageDiv.classList.remove('ai-message');
-          messageDiv.classList.add('user-message'); 
+          messageDiv.classList.add('user-message'); // ubah kelas sementara agar loading indicator tampil berbeda
           
           try {
+            // Panggil API chat dengan pesan pengguna yang relevan
             const response = await fetch("/api/chat", {
               method: "POST",
               headers: {
@@ -1991,10 +2072,12 @@
             const data = await response.json();
             const aiReply = data.reply;
 
+            // Hapus indikator mengetik
             messageTextElement.innerHTML = ''; 
             messageDiv.classList.remove('user-message');
             messageDiv.classList.add('ai-message');
             
+            // Tampilkan respons baru
             if (!aiReply || aiReply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
@@ -2031,6 +2114,7 @@
         }
       };
 
+      // MODIFIED: sendMessage untuk dukungan Multi-Upload
       window.sendMessage = async function() {
         if (devToolsState.open) {
           showWarning();
@@ -2038,21 +2122,30 @@
         }
 
         const input = document.getElementById("messageInput");
-        const userText = input.value.trim(); 
+        const userText = input.value.trim(); // Ambil teks yang diketik pengguna
+        
+        // Buat teks lengkap untuk dikirim ke API, termasuk analisis gambar
+        let fullMessageText = userText;
+        
+        // NEW: Menggabungkan semua teks hasil OCR
+        if (ocrExtractedTexts.length > 0) {
+            const ocrHeader = `[Analisis dari ${ocrImageFiles.length} Gambar]:\n`;
+            // ocrExtractedTexts diisi dengan satu string gabungan dari backend, jadi cukup ambil item 0
+            const ocrContent = ocrExtractedTexts[0];
+            fullMessageText = `${ocrHeader}${ocrContent}\n\n${userText}`;
+        }
+
+        // Tampilkan hanya teks yang diketik pengguna (atau teks default jika kosong)
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
-        // Periksa apakah ada teks atau gambar yang diunggah
-        if (!userText && uploadedFiles.length === 0) return; 
-
-        // 1. Tampilkan pesan pengguna
-        let displayMessage = userText || "[Beberapa gambar terunggah]";
-        if (uploadedFiles.length === 1 && !userText) {
-             displayMessage = "[Satu gambar terunggah]";
-        } else if (uploadedFiles.length > 0) {
-             displayMessage = `[${uploadedFiles.length} gambar terunggah] ${userText}`;
+        let displayMessage = userText;
+        if (!displayMessage && ocrImageFiles.length > 0) { // Cek array files
+            displayMessage = `[${ocrImageFiles.length} Gambar terunggah]`;
         }
-        
+
+        if (!displayMessage) return; // Jangan kirim jika tidak ada teks atau gambar
+
         const userDiv = addMessage('Anda', displayMessage, 'user-message');
 
         const typingDiv = document.createElement("div");
@@ -2072,22 +2165,17 @@
         sendButton.disabled = true;
         input.value = '';
         input.style.height = 'auto';
-        
-        // 2. Siapkan FormData untuk mengirim teks dan multi-gambar
-        const formData = new FormData();
-        formData.append('message', userText); // Teks pesan
-        uploadedFiles.forEach((file, index) => {
-            formData.append(`image${index + 1}`, file); // Gambar 1, Gambar 2, dst.
-        });
-        
-        removeAllImagePreviews(); // Hapus pratinjau dan array file setelah disiapkan untuk kirim
+        removeImagePreview(); // Hapus pratinjau gambar setelah pesan dikirim
 
         try {
-          // Panggil API endpoint untuk chat yang mendukung FormData (multi-gambar)
+          // Ganti fetch ini dengan API endpoint yang benar untuk Gemini atau model lain
+          // Gunakan fullMessageText sebagai body permintaan
           const response = await fetch("/api/chat", {
             method: "POST",
-            // Penting: Jangan atur 'Content-Type': 'application/json' saat mengirim FormData
-            body: formData 
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: fullMessageText })
           });
 
           if (!response.ok) {
@@ -2111,6 +2199,7 @@
           sendButton.disabled = false;
         }
       };
+      // END MODIFIED: sendMessage
 
       function displayMaintenanceMessage() {
         const chatbox = document.getElementById("chatbox");
@@ -2147,6 +2236,7 @@
         let messageTextContainer;
         if (targetElement) {
             messageTextContainer = targetElement;
+            // Jika meregenerasi, kita harus memastikan semua tombol aksi ada
         } else {
             const container = document.createElement("div");
             container.className = "message ai-message";
@@ -2180,7 +2270,7 @@
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
         let textToRead = "";
         
-        messageTextContainer.innerHTML = ''; 
+        messageTextContainer.innerHTML = ''; // Clear previous content if regenerating
 
         for (let i = 0; i < parts.length; i++) {
           if (i % 2 === 0) {
