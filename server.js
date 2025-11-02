@@ -252,35 +252,6 @@ function isJavaneseTopic(message) {
 }
 
 // ==========================================================
-// 💡 ENDPOINT BARU: MENANGANI KLIK DARI FRONTEND
-// ==========================================================
-app.post('/api/klik-test', (req, res) => {
-    // 1. Logika menerima data dari frontend
-    const { waktuKlik, dataTambahan } = req.body;
-    
-    // 2. Tampilkan di konsol server (sebagai bukti terhubung)
-    console.log("=========================================");
-    console.log("🔔 Sinyal KLIK DITERIMA dari Frontend!");
-    console.log(`Waktu: ${waktuKlik}`);
-    console.log(`Data: ${dataTambahan}`);
-    console.log("=========================================");
-
-    // 3. Kirim respons kembali ke frontend
-    // Respon ini bisa berisi data baru dari database, atau hanya pesan sukses.
-    res.json({ 
-        status: 'sukses', 
-        pesan: `Permintaan klik berhasil diproses oleh server.`,
-        serverTime: new Date().toLocaleString('id-ID'),
-        dataDiterima: req.body
-    });
-});
-// ==========================================================
-// 💡 ENDPOINT TAMBAHAN: RUTE UNTUK UJI COBA KLIK
-// ==========================================================
-app.get('/test-klik', (req, res) => res.sendFile(path.join(__dirname, 'test-klik.html')));
-
-
-// ==========================================================
 // ¨ ENDPOINT UTAMA YANG DIPERBAIKI (Integrasi Groq & Gemini): ¨
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
@@ -342,7 +313,7 @@ app.post('/api/chat', async (req, res) => {
 - Jika pengguna bertanya tentang presiden Indonesia, jawablah bahwa presiden Indonesia saat ini adalah Pak Prabowo Subianto
 
 Kamu adalah AbidinAI — asisten kecerdasan buatan yang sangat cerdas, cepat beradaptasi, dan berwawasan luas.  
-Tujuan utamamu adalah menjadi mitra berpikir manusia: mampu berdialog, menganalisis, dan memberi solusi dalam various konteks.  
+Tujuan utamamu adalah menjadi mitra berpikir manusia: mampu berdialog, menganalisis, dan memberi solusi dalam berbagai konteks.  
 
 Kamu memahami topik lintas bidang — dari pemrograman, jaringan, keamanan siber, AI, desain, musik, agama, hingga pengetahuan umum dan filosofi.  
 Kamu dapat menyesuaikan gaya bicaramu agar terasa seperti manusia yang cerdas, sabar, dan bijak.
