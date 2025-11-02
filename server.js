@@ -11,6 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 
+// Ubah dari single() ke array() untuk mendukung hingga 5 file
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
@@ -21,6 +22,12 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Mengganti nama variabel agar lebih jelas
 
 
+/**
+ * Fungsi helper untuk mengkonversi buffer file menjadi Generative Part
+ * @param {Buffer} buffer - Buffer data file.
+ * @param {string} mimeType - Tipe MIME file.
+ * @returns {object} - Objek inlineData untuk Gemini API.
+ */
 function fileToGenerativePart(buffer, mimeType) {
     return {
         inlineData: {
@@ -463,14 +470,17 @@ app.post('/api/telegram', async (req, res) => {
 
 
 // ==========================================================
-// ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
+// ¨ ENDPOINT MULTIMODAL/OCR (BERUBAH UNTUK MULTI-GAMBAR): ¨
 // ==========================================================
-app.post('/api/ocr', upload.single('image'), async (req, res) => {
+app.post('/api/ocr', upload.array('images', 5), async (req, res) => { // Mengubah single() menjadi array('images', 5)
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!req.file) {
+  
+  // Periksa jika ada file yang diunggah
+  if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'File gambar tidak ditemukan' });
   }
-  
+
+  // System Prompt untuk Analisis Multimodal
   const abidinaiPrompt = `
   ANDA ADALAH: ABIDINAI — *Analis Multimodal Kontekstual Strategis*.  
 Tujuan Anda adalah menganalisis input gambar (foto, video frame, atau dokumen) dengan kedalaman observasi tinggi, menggabungkan kemampuan OCR, penalaran spasial, dan interpretasi kontekstual.
@@ -560,24 +570,28 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     [Proyeksi & Rekomendasi Lanjutan]: (Kesimpulan berbasis penalaran canggih, Proyeksi Skenario Terdekat, serta saran proaktif.)
     `;
 
+
+  // 1. Persiapan Parts untuk Gemini
+  const parts = [];
   
-  const imageBase64 = req.file.buffer.toString('base64');
-  const imageMimeType = req.file.mimetype;
+  // Tambahkan System Prompt sebagai bagian pertama
+  parts.push({ text: abidinaiPrompt });
+
+  // Tambahkan semua gambar yang diunggah
+  req.files.forEach(file => {
+      parts.push(fileToGenerativePart(file.buffer, file.mimetype));
+  });
+
+  // Jika ada teks tambahan dari body req (misalnya, prompt tambahan dari user)
+  const { user_prompt } = req.body;
+  if (user_prompt) {
+      parts.push({ text: `Instruksi Tambahan dari Pengguna: ${user_prompt}` });
+  }
 
   const payload = {
     contents: [
       {
-        parts: [
-          {
-            text: abidinaiPrompt
-          },
-          {
-            inline_data: {
-              mime_type: imageMimeType,
-              data: imageBase64,
-            },
-          },
-        ]
+        parts: parts
       }
     ]
   };
@@ -590,7 +604,13 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     });
 
     const data = await response.json();
-    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
+    
+    // Pastikan respons dari Gemini tidak diblokir
+    if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+        return res.status(403).json({ error: 'Respons diblokir karena alasan keamanan.' });
+    }
+    
+    const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar/gambar-gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
     
     res.json({ reply: geminiReply });
   } catch (error) {
@@ -599,6 +619,9 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
   }
 });
 
+// ==========================================================
+// ¨ ENDPOINT LAINNYA (TIDAK BERUBAH): ¨
+// ==========================================================
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
