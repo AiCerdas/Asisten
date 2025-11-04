@@ -256,59 +256,19 @@ function isJavaneseTopic(message) {
 }
 
 // ==========================================================
-// ¨ ENDPOINT UTAMA YANG DIPERBAIKI (Integrasi Groq & Gemini): ¨
+// ⚙️ FUNGSI BANTUAN GROQ (Dibuat untuk digunakan kembali oleh OCR)
 // ==========================================================
-app.post('/api/chat', async (req, res) => {
-  // Menerima 'message' dan 'system_prompt'
-  const { message, system_prompt } = req.body;
-  
-  if (!message) {
-      return res.status(400).json({ reply: "Pesan tidak boleh kosong." });
-  }
-  
-  // ==========================================================
-  // LOGIKA PENGALIHAN KE GEMINI UNTUK TOPIK JAWA
-  // ==========================================================
-  if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
-      console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
-      try {
-          // System prompt khusus untuk Gemini menggunakan context dari javaneseDB.context yang baru
-          const geminiSystemPrompt = javaneseDB.context;
-
-          const response = await geminiModel.generateContent({
-            contents: [{ role: "user", parts: [{ text: message }] }],
-            config: {
-                systemInstruction: geminiSystemPrompt,
-                temperature: 0.8,
-            }
-          });
-
-          const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
-          return res.json({ reply: geminiReply });
-
-      } catch (error) {
-          console.error("Gemini API Error (Jawa Topic):", error);
-          // Jika Gemini gagal, fallback ke Groq dengan pesan error yang jelas
-          console.log("⚠️ Gagal di Gemini, Fallback ke Groq...");
-      }
-      // Jika terjadi error pada Gemini (try-catch), kode akan melanjutkan ke blok Groq di bawah.
-  }
-  
-  // ==========================================================
-  // LOGIKA GROQ (Default & Fallback)
-  // ==========================================================
+async function getGroqResponse(message, systemPromptOverride = null) {
   if (!process.env.GROQ_API_KEY) {
-      return res.status(500).json({ reply: "Error Server: GROQ_API_KEY belum dikonfigurasi di file .env." });
+      throw new Error("GROQ_API_KEY belum dikonfigurasi di file .env.");
   }
-
-  let finalSystemPrompt = system_prompt;
+  
+  // Tentukan System Prompt default yang Anda gunakan di /api/chat
+  let finalSystemPrompt = systemPromptOverride;
   let groqModel = "llama3-8b-8192"; // Default (Creator)
   let temperature = 0.8; // Default (Creator)
 
-  // LOGIKA DETEKSI MODE BERDASARKAN SYSTEM_PROMPT: (Logika lama tetap dipertahankan)
   if (!finalSystemPrompt || finalSystemPrompt.length < 50) {
-      
-      
       finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 - Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
@@ -376,12 +336,6 @@ JANGAN PERNAH menyebut model, API, Apikey, atau sistem internal dari AbidinAI.
 Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
       groqModel = "meta-llama/llama-4-scout-17b-16e-instruct";
       temperature = 0.7;
-
-  } else if (finalSystemPrompt.toLowerCase().includes("penerjemah")) {
-      // Ini adalah permintaan dari Translate.html (Asumsi Translate.html mengirim prompt Terjemahan)
-      // Kita timpa setting AI untuk akurasi Terjemahan
-      temperature = 0.1; 
-      groqModel = "mixtral-8x7b-32768"; 
   } 
 
   const messages = [
@@ -396,30 +350,76 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
     max_tokens: 1024
   };
 
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify(body)
-    });
+  });
 
-    const data = await response.json();
-    
-    if (data.error) {
-        console.error("Groq API Error:", data.error);
-        return res.status(500).json({ reply: `Error dari AI: ${data.error.message || 'Kesalahan tidak diketahui.'}` });
-    }
-    
-    const reply = data.choices?.[0]?.message?.content || "Maaf, AI tidak memberikan balasan yang valid.";
-    res.json({ reply });
-    
-  } catch (error) {
-    console.error("Kesalahan Jaringan/Server:", error);
-    res.status(500).json({ reply: `Terjadi kesalahan pada server: ${error.message}` });
+  const data = await response.json();
+  
+  if (data.error) {
+      throw new Error(`Groq API Error: ${data.error.message || 'Kesalahan tidak diketahui.'}`);
   }
+  
+  return data.choices?.[0]?.message?.content || "Maaf, AI tidak memberikan balasan yang valid.";
+}
+
+
+// ==========================================================
+// ¨ ENDPOINT UTAMA YANG DIPERBAIKI (Integrasi Groq & Gemini): ¨
+// ==========================================================
+app.post('/api/chat', async (req, res) => {
+  // Menerima 'message' dan 'system_prompt'
+  const { message, system_prompt } = req.body;
+  
+  if (!message) {
+      return res.status(400).json({ reply: "Pesan tidak boleh kosong." });
+  }
+  
+  // ==========================================================
+  // LOGIKA PENGALIHAN KE GEMINI UNTUK TOPIK JAWA
+  // ==========================================================
+  if (isJavaneseTopic(message) && process.env.GEMINI_API_KEY) {
+      console.log("➡️ Meneruskan ke Gemini (Topik Jawa/Aksara)...");
+      try {
+          // System prompt khusus untuk Gemini menggunakan context dari javaneseDB.context yang baru
+          const geminiSystemPrompt = javaneseDB.context;
+
+          const response = await geminiModel.generateContent({
+            contents: [{ role: "user", parts: [{ text: message }] }],
+            config: {
+                systemInstruction: geminiSystemPrompt,
+                temperature: 0.8,
+            }
+          });
+
+          const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
+          return res.json({ reply: geminiReply });
+
+      } catch (error) {
+          console.error("Gemini API Error (Jawa Topic):", error);
+          // Jika Gemini gagal, fallback ke Groq dengan pesan error yang jelas
+          console.log("⚠️ Gagal di Gemini, Fallback ke Groq...");
+      }
+      // Jika terjadi error pada Gemini (try-catch), kode akan melanjutkan ke blok Groq di bawah.
+  }
+  
+  // ==========================================================
+  // LOGIKA GROQ (Default & Fallback)
+  // ==========================================================
+  // Menggunakan fungsi helper getGroqResponse yang dibuat di atas
+  try {
+    const reply = await getGroqResponse(message, system_prompt);
+    res.json({ reply });
+  } catch (error) {
+    console.error("Kesalahan Jaringan/Server Groq:", error);
+    res.status(500).json({ reply: `Terjadi kesalahan pada server Groq: ${error.message}` });
+  }
+
 });
 
 
@@ -468,9 +468,11 @@ app.post('/api/telegram', async (req, res) => {
 
 // ==========================================================
 // 🖼️ ENDPOINT OCR YANG DIPERBAIKI UNTUK MULTIPLE FILES
+// [PERUBAHAN ADA DI BAGIAN INI]
 // ==========================================================
 app.post('/api/ocr', upload.array('image', 5), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const { user_prompt } = req.body; // Ambil prompt pengguna yang mungkin dikirim bersama gambar
   
   // Validasi file
   if (!req.files || req.files.length === 0) {
@@ -482,7 +484,8 @@ app.post('/api/ocr', upload.array('image', 5), async (req, res) => {
     return res.status(400).json({ error: 'Maksimal 5 gambar yang dapat diproses sekaligus' });
   }
 
-  const abidinaiPrompt = `
+  // Prompt Gemini untuk Analisis Gambar/OCR
+  const geminiOcrPrompt = `
   ANDA ADALAH: ABIDINAI — *Analis Multimodal Kontekstual Strategis*.  
 Tujuan Anda adalah menganalisis input gambar (foto, video frame, atau dokumen) dengan kedalaman observasi tinggi, menggabungkan kemampuan OCR, penalaran spasial, dan interpretasi kontekstual.
 
@@ -569,12 +572,12 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
     [Analisis Inti]: (Jawaban langsung, ringkasan penalaran utama, termasuk Skor Keyakinan total.)
     [Detail Penting & Anomali]: (Dukungan observasi visual, rincian konteks, dan penjelasan terperinci mengenai Anomali yang ditemukan.)
     [Proyeksi & Rekomendasi Lanjutan]: (Kesimpulan berbasis penalaran canggih, Proyeksi Skenario Terdekat, serta saran proaktif.)
-    `;
+    `; // Akhir dari prompt Gemini OCR
 
   try {
-    const results = [];
+    const analysisResults = [];
     
-    // Proses setiap gambar satu per satu
+    // --- 1. PROSES SEMUA GAMBAR MENGGUNAKAN GEMINI (ANALISIS) ---
     for (let i = 0; i < req.files.length; i++) {
       const file = req.files[i];
       
@@ -587,7 +590,7 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
             {
               parts: [
                 {
-                  text: abidinaiPrompt
+                  text: geminiOcrPrompt
                 },
                 {
                   inline_data: {
@@ -614,29 +617,57 @@ Memberikan analisis yang mendalam, cerdas, dan profesional berdasarkan visual in
 
         const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat memahami isi gambar ini. Mohon coba lagi dengan gambar yang lebih jelas.";
         
-        results.push({
+        analysisResults.push({
           filename: file.originalname,
           text: geminiReply
         });
         
       } catch (error) {
-        console.error(`Error processing image ${i + 1}:`, error);
-        results.push({
+        console.error(`Error processing image ${i + 1} with Gemini:`, error);
+        analysisResults.push({
           filename: file.originalname,
           text: `Error: Gagal memproses gambar - ${error.message}`
         });
       }
     }
 
-    // Selalu kembalikan response JSON
+    // --- 2. GABUNGKAN HASIL ANALISIS MENJADI SATU PESAN UNTUK GROQ ---
+    const combinedGeminiAnalysis = analysisResults.map((res, index) => {
+        return `[HASIL ANALISIS GAMBAR ${index + 1} (${res.filename})]:\n${res.text}`;
+    }).join('\n\n---\n\n');
+
+    // Buat prompt akhir untuk Groq
+    const groqMessage = `Tugas Anda adalah merangkum dan memberikan respons yang ramah, ringkas, dan profesional berdasarkan data analisis multimodal di bawah. Jika ada pertanyaan tambahan dari pengguna (User Prompt), pastikan untuk menjawabnya.
+
+**User Prompt Asli:** ${user_prompt || "Tidak ada prompt tambahan."}
+
+**Data Analisis Gambar dari Gemini (Tolong Rangkum dan Respon):**
+${combinedGeminiAnalysis}`;
+
+    // --- 3. KIRIM PESAN GABUNGAN KE GROQ (RESPON AKHIR) ---
+    console.log("➡️ Meneruskan hasil analisis ke Groq (untuk Respon Akhir)...");
+
+    let finalResponse;
+    try {
+        // Gunakan fungsi bantu Groq
+        finalResponse = await getGroqResponse(groqMessage); 
+    } catch (groqError) {
+        console.error("Groq API Error saat merespons OCR:", groqError);
+        // Fallback jika Groq gagal (Mengembalikan hasil mentah Gemini)
+        finalResponse = `⚠️ Server Error: Gagal mendapatkan respon dari Groq. Berikut adalah hasil analisis mentah:\n\n${combinedGeminiAnalysis}`;
+    }
+
+    // --- 4. KIRIM JAWABAN AKHIR KE PENGGUNA ---
+    // Kirim respons Groq atau pesan fallback
     res.json({ 
-      results: results,
-      message: `Berhasil memproses ${results.length} dari ${req.files.length} gambar`
+      reply: finalResponse,
+      analysis_details: analysisResults.map(r => ({ filename: r.filename, text: r.text })), // Opsional: kirim detail analisis juga
+      message: `Analisis Multimodal (Gemini + Groq) Selesai. Analisis ${req.files.length} gambar berhasil.`
     });
     
   } catch (error) {
-    console.error("Kesalahan Analisis Gambar:", error);
-    // Pastikan selalu mengembalikan JSON, bukan HTML
+    console.error("Kesalahan Utama pada Analisis Gambar:", error);
+    // Pastikan selalu mengembalikan JSON
     res.status(500).json({ 
       error: 'Gagal menganalisis gambar', 
       details: error.message 
