@@ -7,8 +7,18 @@ const multer = require('multer');
 const FormData = require('form-data');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
+// ==========================================================
+// 1. IMPORT SUPABASE
+// ==========================================================
+const { createClient } = require('@supabase/supabase-js');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ==========================================================
+// 2. KONEKSI SUPABASE
+// ==========================================================
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 // Konfigurasi multer untuk multiple files (maksimal 5)
 const upload = multer({ 
@@ -269,7 +279,7 @@ async function getGroqResponse(message, systemPromptOverride = null) {
   let temperature = 0.8; // Default (Creator)
 
   if (!finalSystemPrompt || finalSystemPrompt.length < 50) {
-      finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh AbidinAI.
+      finalSystemPrompt = `Kamu adalah AbidinAI, asisten cerdas yang dikembangkan oleh Abidin.
 - Jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu dibuat dan dikembangkan oleh Abidin.
 - Jika pengguna bertanya tentang AbidinAI, jawablah bahwa kamu adalah AI buatan AbidinAI.
 - Jika pengguna bertanya tentang pengembangan AbidinAI, jawablah bahwa AbidinAI masih dalam proses pengembangan.
@@ -374,12 +384,42 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
   // Menerima 'message' dan 'system_prompt'
-  const { message, system_prompt } = req.body;
+  const { message, system_prompt, userId = "default-user" } = req.body;
   
   if (!message) {
       return res.status(400).json({ reply: "Pesan tidak boleh kosong." });
   }
+
+  // ==========================================================
+  // 3. SIMPAN PESAN USER KE MEMORY SUPABASE
+  // ==========================================================
+  try {
+    await supabase.from("memory").insert([
+      { userid: userId, role: "user", message: message }
+    ]);
+    console.log("✅ Pesan user disimpan ke memory");
+  } catch (error) {
+    console.error("❌ Gagal menyimpan pesan user:", error);
+  }
   
+  // ==========================================================
+  // 4. AMBIL RIWAYAT PERCAKAPAN USER
+  // ==========================================================
+  let history = [];
+  try {
+    const { data, error } = await supabase
+      .from("memory")
+      .select("*")
+      .eq("userid", userId)
+      .order("created_at", { ascending: true });
+    
+    if (error) throw error;
+    history = data || [];
+    console.log(`📚 Mengambil ${history.length} pesan dari memory`);
+  } catch (error) {
+    console.error("❌ Gagal mengambil history:", error);
+  }
+
   // ==========================================================
   // LOGIKA PENGALIHAN KE GEMINI UNTUK TOPIK JAWA
   // ==========================================================
@@ -389,15 +429,34 @@ app.post('/api/chat', async (req, res) => {
           // System prompt khusus untuk Gemini menggunakan context dari javaneseDB.context yang baru
           const geminiSystemPrompt = javaneseDB.context;
 
+          // Tambahkan history percakapan ke konteks Gemini
+          const previousMessages = history.map(h => `${h.role}: ${h.message}`).join("\n");
+          const messageWithHistory = previousMessages ? 
+              `Riwayat percakapan:\n${previousMessages}\n\nPesan baru: ${message}` : 
+              message;
+
           const response = await geminiModel.generateContent({
-            contents: [{ role: "user", parts: [{ text: message }] }],
+            contents: [{ role: "user", parts: [{ text: messageWithHistory }] }],
             config: {
                 systemInstruction: geminiSystemPrompt,
                 temperature: 0.8,
             }
           });
 
-          const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
+          const geminiReply = response.text() || "Maaf, Gemini tidak memberikan balasan yang valid.";
+          
+          // ==========================================================
+          // 6. SIMPAN BALASAN AI KE MEMORY SUPABASE
+          // ==========================================================
+          try {
+            await supabase.from("memory").insert([
+              { userid: userId, role: "ai", message: geminiReply }
+            ]);
+            console.log("✅ Balasan Gemini disimpan ke memory");
+          } catch (error) {
+            console.error("❌ Gagal menyimpan balasan Gemini:", error);
+          }
+          
           return res.json({ reply: geminiReply });
 
       } catch (error) {
@@ -411,9 +470,27 @@ app.post('/api/chat', async (req, res) => {
   // ==========================================================
   // LOGIKA GROQ (Default & Fallback)
   // ==========================================================
-  // Menggunakan fungsi helper getGroqResponse yang dibuat di atas
   try {
-    const reply = await getGroqResponse(message, system_prompt);
+    // Tambahkan history percakapan ke konteks Groq
+    const previousMessages = history.map(h => `${h.role}: ${h.message}`).join("\n");
+    const messageWithHistory = previousMessages ? 
+        `Riwayat percakapan:\n${previousMessages}\n\nPesan baru: ${message}` : 
+        message;
+
+    const reply = await getGroqResponse(messageWithHistory, system_prompt);
+    
+    // ==========================================================
+    // 6. SIMPAN BALASAN AI KE MEMORY SUPABASE
+    // ==========================================================
+    try {
+      await supabase.from("memory").insert([
+        { userid: userId, role: "ai", message: reply }
+      ]);
+      console.log("✅ Balasan Groq disimpan ke memory");
+    } catch (error) {
+      console.error("❌ Gagal menyimpan balasan Groq:", error);
+    }
+    
     res.json({ reply });
   } catch (error) {
     console.error("Kesalahan Jaringan/Server Groq:", error);
