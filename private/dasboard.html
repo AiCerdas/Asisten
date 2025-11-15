@@ -1053,6 +1053,7 @@
 
       <div class="input-container">
         <div class="input-box">
+          <!-- TAMBAHKAN PREVIEW UNTUK 5 GAMBAR DI SINI -->
           <div id="multiple-images-preview" style="display: none;"></div>
           
           <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
@@ -2166,43 +2167,6 @@
         }
       };
 
-      // ** AWAL PERUBAHAN FUNGSI TTS **
-      
-      function bicara(teks) {
-          if (!('speechSynthesis' in window)) {
-              alert("Browser Anda tidak mendukung Text-to-Speech.");
-              return;
-          }
-
-          try {
-              window.speechSynthesis.cancel();
-              
-              // Hapus semua markdown atau simbol yang tidak perlu
-              const teksBersih = teks.replace(/[*_`#\-+]/g, '').replace(/<[^>]*>/g, '').trim();
-
-              const suara = new SpeechSynthesisUtterance(teksBersih);
-              suara.lang = "id-ID"; // Set bahasa Indonesia
-              suara.pitch = 1.0;
-              suara.rate = 1.0;
-              
-              // Cek jika ada suara Indonesia yang tersedia
-              const voices = window.speechSynthesis.getVoices();
-              const indoVoice = voices.find(voice => voice.lang === 'id-ID');
-              if (indoVoice) {
-                  suara.voice = indoVoice;
-              } else {
-                  // Jika tidak ada, gunakan default (biasanya suara Google TTS bawaan Android akan terdeteksi)
-                  // atau biarkan browser yang memilih
-              }
-              
-              window.speechSynthesis.speak(suara);
-          } catch (e) {
-              console.error("TTS Error:", e);
-              // Tampilkan alert jika terjadi error saat mencoba bicara
-              alert("Aktifkan suara google di pengaturan HP Anda.");
-          }
-      }
-
       function displayMaintenanceMessage() {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
@@ -2212,18 +2176,16 @@
           listeningElement = null;
         }
 
-        const maintenanceText = formatBoldText('<i class="fas fa-tools"></i> Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧');
         const maintenanceDiv = addMessage(
           'AbidinAI',
-          maintenanceText,
+          formatBoldText('<i class="fas fa-tools"></i> Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'),
           'ai-message'
         );
 
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          // Hanya baca teks bersih untuk TTS
-          bicara("Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya!");
+          readWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
         }
         isVoiceMode = false;
       }
@@ -2313,13 +2275,43 @@
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          // Gunakan fungsi bicara yang baru
-          bicara(textToRead);
+          readWithPauses(textToRead);
         }
         isVoiceMode = false;
       }
-      
-      // ** AKHIR PERUBAHAN FUNGSI TTS **
+
+      function readWithPauses(text) {
+        if (!('speechSynthesis' in window)) {
+          console.log("Text-to-speech tidak didukung di browser ini");
+          return;
+        }
+
+        const sentences = text.split(/(?<=[.!?])\s+/);
+        const synth = window.speechSynthesis;
+        synth.cancel();
+
+        function cleanText(t) {
+          return t.replace(/[*"`\-+/:;\\]/g, '');
+        }
+
+        function speakNext(index) {
+          if (index >= sentences.length) return;
+
+          const cleanSentence = cleanText(sentences[index]).trim();
+          if (!cleanSentence) return speakNext(index + 1);
+
+          const utter = new SpeechSynthesisUtterance(cleanSentence);
+          utter.lang = 'id-ID';
+          utter.rate = 1.0;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
+
+          utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
+          synth.speak(utter);
+        }
+
+        speakNext(0);
+      }
     })();
   </script>
 </body>
