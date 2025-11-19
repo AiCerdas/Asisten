@@ -419,10 +419,12 @@
       text-align: left;
       transition: background-color 0.2s;
       border-radius: 6px;
+      color: #4a5568; /* Pastikan warna teks tetap konsisten */
     }
 
     .plus-menu .menu-item:hover {
       background-color: #f3f4f6;
+      color: #4f46e5;
     }
 
     .ocr-btn, .voice-btn, .send-btn {
@@ -846,23 +848,19 @@
       font-size: 12px;
       font-weight: bold;
     }
-  </style>
 
-  <style>
-    body {
-        margin: 0;
-        font-family: 'Google Sans', Arial;
-        background: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 40px;
+    /* --- Gaya Tambahan untuk Panel Shortcut Baru --- */
+    .title-shortcut {
+        font-size: 20px; /* Disesuaikan agar tidak terlalu besar di header chat */
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #2d3748;
     }
 
-    .title {
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 18px;
+    .subtitle-shortcut {
+      color: #718096;
+      font-size: 14px;
+      margin-bottom: 18px;
     }
 
     .shortcut-box {
@@ -873,8 +871,9 @@
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
-        width: 90%;
-        max-width: 380px;
+        width: 100%; /* Lebar penuh dalam chat-header */
+        max-width: 400px; /* Batasi lebar agar tetap rapi */
+        margin: 0 auto 15px auto;
     }
 
     .btn-shortcut {
@@ -886,30 +885,36 @@
         align-items: center;
         gap: 8px;
         cursor: pointer;
-        font-size: 15px;
+        font-size: 14px;
         transition: 0.2s;
     }
 
     .btn-shortcut:hover {
-        background: #f3f3f3;
+        background: #f3f4f6;
+        border-color: #4f46e5;
     }
 
-    .btn-shortcut svg, 
-    .dropdown .item svg {
-        width: 22px;
-        height: 22px;
+    .btn-shortcut svg {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
     }
 
     /* Dropdown */
     .dropdown {
         display: none;
-        margin-top: 12px;
+        margin: 0 auto 15px auto;
         background: #fafafa;
         border-radius: 14px;
         padding: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        width: 90%;
-        max-width: 380px;
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .dropdown.show {
+        display: block;
     }
 
     .dropdown .item {
@@ -920,12 +925,23 @@
         border-radius: 12px;
         cursor: pointer;
         transition: 0.2s;
+        font-size: 14px;
+        color: #4a5568;
     }
 
     .dropdown .item:hover {
         background: #f1f1f1;
+        color: #4f46e5;
     }
-</style>
+    
+    .dropdown .item svg {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+    }
+    /* --- Akhir Gaya Tambahan untuk Panel Shortcut Baru --- */
+  </style>
   
   <script>
     // ** MODIFIKASI: Cek token login saat halaman dimuat **
@@ -1110,131 +1126,117 @@
 
   <div class="main-content" id="mainContainer">
     <div class="chat-container">
-     <div class="chat-header">
-  <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-    <div class="avatar ai-avatar" style="width: 60px; height: 60px; font-size: 2rem;">
-      <i class="fas fa-robot"></i>
+     
+<div class="chat-header">
+    <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+        <div class="avatar ai-avatar" style="width: 60px; height: 60px; font-size: 2rem;">
+            <i class="fas fa-robot"></i>
+        </div>
     </div>
-  </div>
-  <h1 class="chat-title">AbidinAI</h1>
-  <p class="chat-subtitle">Asisten AI cerdas AbidinAI</p>
-   <p class="chat-subtitle">Ada yang bisa saya bantu?</p>
+    <div class="title-shortcut">Hallo Saya AbidinAI</div>
+    <div class="subtitle-shortcut">Apa yang bisa saya bantu?</div>
+
+    <div class="shortcut-box">
+
+        <div class="btn-shortcut" onclick="openOCRModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
+                <path d="M12 16V4" stroke-linecap="round"/>
+                <path d="M6 10l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="4" y="16" width="16" height="4" rx="1.5"/>
+            </svg>
+            Unggah gambar
+        </div>
+
+        <div class="btn-shortcut" onclick="openOCRModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3.2"/>
+            </svg>
+            Analisis gambar
+        </div>
+
+        <div class="btn-shortcut" onclick="setQueryToInput('Rangkum teks ini: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <path d="M7 9h10M7 13h6"/>
+            </svg>
+            Rangkum teks
+        </div>
+
+        <div class="btn-shortcut" onclick="toggleShortcutMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                <circle cx="5" cy="12" r="1.8"/>
+                <circle cx="12" cy="12" r="1.8"/>
+                <circle cx="19" cy="12" r="1.8"/>
+            </svg>
+            Lainnya
+        </div>
+
+    </div>
+
+    <div id="dropdownShortcutMenu" class="dropdown">
+
+        <div class="item" onclick="setQueryToInput('Buat rencana perjalanan/kerja/belajar: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
+                <rect x="3" y="4" width="18" height="16" rx="3"/>
+                <path d="M8 2v4M16 2v4" stroke-linecap="round"/>
+                <path d="M7 11h5M7 15h3M14 15l3-3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Buat Rencana
+        </div>
+
+        <div class="item" onclick="openDeepResearchModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
+                <circle cx="10" cy="10" r="5"/>
+                <line x1="14.5" y1="14.5" x2="20" y2="20" stroke-linecap="round"/>
+                <path d="M3 20 Q8 14 13 20" stroke="#5b6bff" stroke-width="1.5"/>
+            </svg>
+            Riset Mendalam
+        </div>
+
+        <div class="item" onclick="setQueryToInput('Terjemahkan ke bahasa Indonesia: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2">
+                <path d="M4 4h16v16H4z"/>
+                <path d="M7 12h10M12 7l5 5-5 5"/>
+            </svg>
+            Terjemahan
+        </div>
+
+        <a href="https://lynk.id/abidincerdas" target="_blank" class="item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
+            </svg>
+            Produk
+        </a>
+
+        <a href="alarm.html" class="item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
+                <circle cx="12" cy="13" r="8"/>
+                <path d="M12 9v4l3 2"/>
+            </svg>
+            Alarm AI
+        </a>
+
+        <a href="dokter.html" class="item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
+                <path d="M12 3c4 0 7 3 7 7v2a7 7 0 0 1-14 0v-2c0-4 3-7 7-7z"/>
+                <circle cx="12" cy="14" r="3"/>
+            </svg>
+            Dokter AI
+        </a>
+        
+        <div class="item" onclick="setQueryToInput('Apa itu AbidinAI?')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
+                <path d="M4 5h16v10H7l-3 3V5z" stroke-linejoin="round"/>
+                <path d="M9 10h6M9 7h8" stroke-linecap="round"/>
+            </svg>
+            Obrolan AI
+        </div>
+
+    </div>
 </div>
-
-<div class="shortcut-box">
-
-    <!-- Buat Gambar -->
-<div class="btn-shortcut">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
-        <path d="M12 16V4" stroke-linecap="round"/>
-        <path d="M6 10l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="4" y="16" width="16" height="4" rx="1.5"/>
-    </svg>
-    Unggah gambar
-</div>
-
-    <!-- Analisis Gambar (LOGO MATA AI BARU) -->
-    <div class="btn-shortcut">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
-            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-            <circle cx="12" cy="12" r="3.2"/>
-        </svg>
-        Analisis gambar
-    </div>
-
-    <!-- Rangkum Teks -->
-    <div class="btn-shortcut">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
-            <rect x="4" y="4" width="16" height="16" rx="2"/>
-            <path d="M7 9h10M7 13h6"/>
-        </svg>
-        Rangkum teks
-    </div>
-
-    <!-- Lainnya -->
-    <div class="btn-shortcut" onclick="toggleMenu()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-            <circle cx="5" cy="12" r="1.8"/>
-            <circle cx="12" cy="12" r="1.8"/>
-            <circle cx="19" cy="12" r="1.8"/>
-        </svg>
-        Lainnya
-    </div>
-
-</div>
-
-<!-- DROPDOWN MENU -->
-<div id="dropdownMenu" class="dropdown">
-
-    <!-- Riset Mendalam (LOGO KACA PEMBESAR FUTURISTIK) -->
-    <div class="item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-        <rect x="3" y="4" width="18" height="16" rx="3"/>
-        <path d="M8 2v4M16 2v4" stroke-linecap="round"/>
-        <path d="M7 11h5M7 15h3M14 15l3-3" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Buat Rencana
-</div>
-
-    <div class="item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
-            <circle cx="10" cy="10" r="5"/>
-            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke-linecap="round"/>
-            <path d="M3 20 Q8 14 13 20" stroke="#5b6bff" stroke-width="1.5"/>
-        </svg>
-        Riset Mendalam
-    </div>
-
-    <div class="item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2">
-            <path d="M4 4h16v16H4z"/>
-            <path d="M7 12h10M12 7l5 5-5 5"/>
-        </svg>
-        Terjemahan
-    </div>
-
-    <div class="item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
-            <circle cx="12" cy="7" r="4"/>
-            <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
-        </svg>
-        Produk
-    </div>
-
-    <div class="item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
-            <circle cx="12" cy="13" r="8"/>
-            <path d="M12 9v4l3 2"/>
-        </svg>
-        Alarm AI
-    </div>
-
-    <div class="item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-            <path d="M12 3c4 0 7 3 7 7v2a7 7 0 0 1-14 0v-2c0-4 3-7 7-7z"/>
-            <circle cx="12" cy="14" r="3"/>
-        </svg>
-        Dokter AI
-    </div>
-    
-    <div class="item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-        <path d="M4 5h16v10H7l-3 3V5z" stroke-linejoin="round"/>
-        <path d="M9 10h6M9 7h8" stroke-linecap="round"/>
-    </svg>
-    Obrolan AI
-</div>
-
-</div>
-
-<script>
-function toggleMenu() {
-    const menu = document.getElementById("dropdownMenu");
-    menu.style.display = (menu.style.display === "block") ? "none" : "block";
-}
-</script>
-      
-      <div class="memory-controls">
+<div class="memory-controls">
         <button class="memory-btn clear" id="clearMemoryBtn">
           <i class="fas fa-trash"></i> Hapus Memori
         </button>
@@ -1245,7 +1247,6 @@ function toggleMenu() {
 
       <div class="input-container">
         <div class="input-box">
-          <!-- TAMBAHKAN PREVIEW UNTUK 5 GAMBAR DI SINI -->
           <div id="multiple-images-preview" style="display: none;"></div>
           
           <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
@@ -1294,6 +1295,7 @@ function toggleMenu() {
       let ocrExtractedText = '';
       let ocrImageURL = null; 
       let selectedFiles = []; // Array untuk menyimpan file yang dipilih
+      let isShortcutMenuOpen = false; // Status untuk menu shortcut baru
 
       // VARIABLE BARU UNTUK MENYIMPAN GAMBAR YANG DIUPLOAD
       let uploadedImages = [];
@@ -1538,6 +1540,28 @@ function toggleMenu() {
           clearConversationFromDB();
           window.location.href = "../index.html"; 
       };
+
+      // ** FUNGSI BARU UNTUK SHORTCUT MENU **
+      window.toggleShortcutMenu = function() {
+        const menu = document.getElementById("dropdownShortcutMenu");
+        if (isShortcutMenuOpen) {
+          menu.classList.remove("show");
+        } else {
+          menu.classList.add("show");
+        }
+        isShortcutMenuOpen = !isShortcutMenuOpen;
+      }
+      
+      // Fungsi baru untuk memasukkan teks ke input
+      window.setQueryToInput = function(query) {
+        const messageInput = document.getElementById('messageInput');
+        messageInput.value = query;
+        messageInput.focus();
+        // Atur ulang tinggi textarea
+        messageInput.style.height = 'auto';
+        messageInput.style.height = (messageInput.scrollHeight) + 'px';
+        toggleShortcutMenu(); // Tutup menu setelah memilih
+      }
 
       // ** MODIFIKASI KUNCI DI SINI **
       window.handleKeyPress = function(event) {
@@ -1884,9 +1908,19 @@ function toggleMenu() {
       document.addEventListener('click', function(event) {
         const plusMenu = document.getElementById('plusMenu');
         const plusBtn = document.querySelector('.plus-btn');
+        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
+        const shortcutBtn = document.querySelector('.btn-shortcut:last-child');
+
+        // Tutup Plus Menu
         if (plusMenu && plusBtn && !plusMenu.contains(event.target) && !plusBtn.contains(event.target)) {
           plusMenu.style.display = 'none';
           isPlusMenuOpen = false;
+        }
+        
+        // Tutup Shortcut Menu
+        if (dropdownShortcutMenu && shortcutBtn && !dropdownShortcutMenu.contains(event.target) && !shortcutBtn.contains(event.target)) {
+            dropdownShortcutMenu.classList.remove("show");
+            isShortcutMenuOpen = false;
         }
       });
       
@@ -1921,7 +1955,13 @@ function toggleMenu() {
         input.value = messageInput.value.trim();
 
         modal.style.display = 'flex';
-        togglePlusMenu();
+        togglePlusMenu(); // Tutup Plus Menu
+        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
+        if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
+             dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
+             isShortcutMenuOpen = false;
+        }
+        
         input.focus();
         
         sendBtn.onclick = function() {
@@ -2048,7 +2088,13 @@ function toggleMenu() {
           showWarning();
           return false;
         }
-        togglePlusMenu();
+        togglePlusMenu(); // Tutup Plus Menu
+        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
+        if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
+             dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
+             isShortcutMenuOpen = false;
+        }
+
         const modal = document.getElementById('ocrModal');
         modal.style.display = 'flex';
 
@@ -2284,6 +2330,13 @@ function toggleMenu() {
           showWarning();
           return false;
         }
+        
+        // Tutup Shortcut Menu jika terbuka
+        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
+        if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
+             dropdownShortcutMenu.classList.remove('show');
+             isShortcutMenuOpen = false;
+        }
 
         const input = document.getElementById("messageInput");
         const userText = input.value.trim();
@@ -2326,6 +2379,7 @@ function toggleMenu() {
         
         // ** MODIFIKASI: Reset uploadedImages setelah dikirim **
         uploadedImages = [];
+        ocrExtractedText = ''; // Reset extracted text
         updateImagePreview();
 
         try {
