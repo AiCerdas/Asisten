@@ -847,6 +847,85 @@
       font-weight: bold;
     }
   </style>
+
+  <style>
+    body {
+        margin: 0;
+        font-family: 'Google Sans', Arial;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 40px;
+    }
+
+    .title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .shortcut-box {
+        background: #fafafa;
+        padding: 18px;
+        border-radius: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        width: 90%;
+        max-width: 380px;
+    }
+
+    .btn-shortcut {
+        background: #ffffff;
+        padding: 10px 14px;
+        border-radius: 14px;
+        border: 1px solid #e6e6e6;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.2s;
+    }
+
+    .btn-shortcut:hover {
+        background: #f3f3f3;
+    }
+
+    .btn-shortcut svg, 
+    .dropdown .item svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* Dropdown */
+    .dropdown {
+        display: none;
+        margin-top: 12px;
+        background: #fafafa;
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        width: 90%;
+        max-width: 380px;
+    }
+
+    .dropdown .item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .dropdown .item:hover {
+        background: #f1f1f1;
+    }
+</style>
   
   <script>
     // ** MODIFIKASI: Cek token login saat halaman dimuat **
@@ -1042,6 +1121,119 @@
    <p class="chat-subtitle">Ada yang bisa saya bantu?</p>
 </div>
 
+<div class="shortcut-box">
+
+    <!-- Buat Gambar -->
+<div class="btn-shortcut">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
+        <path d="M12 16V4" stroke-linecap="round"/>
+        <path d="M6 10l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="4" y="16" width="16" height="4" rx="1.5"/>
+    </svg>
+    Unggah gambar
+</div>
+
+    <!-- Analisis Gambar (LOGO MATA AI BARU) -->
+    <div class="btn-shortcut">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+            <circle cx="12" cy="12" r="3.2"/>
+        </svg>
+        Analisis gambar
+    </div>
+
+    <!-- Rangkum Teks -->
+    <div class="btn-shortcut">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <path d="M7 9h10M7 13h6"/>
+        </svg>
+        Rangkum teks
+    </div>
+
+    <!-- Lainnya -->
+    <div class="btn-shortcut" onclick="toggleMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+            <circle cx="5" cy="12" r="1.8"/>
+            <circle cx="12" cy="12" r="1.8"/>
+            <circle cx="19" cy="12" r="1.8"/>
+        </svg>
+        Lainnya
+    </div>
+
+</div>
+
+<!-- DROPDOWN MENU -->
+<div id="dropdownMenu" class="dropdown">
+
+    <!-- Riset Mendalam (LOGO KACA PEMBESAR FUTURISTIK) -->
+    <div class="item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
+        <rect x="3" y="4" width="18" height="16" rx="3"/>
+        <path d="M8 2v4M16 2v4" stroke-linecap="round"/>
+        <path d="M7 11h5M7 15h3M14 15l3-3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Buat Rencana
+</div>
+
+    <div class="item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
+            <circle cx="10" cy="10" r="5"/>
+            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke-linecap="round"/>
+            <path d="M3 20 Q8 14 13 20" stroke="#5b6bff" stroke-width="1.5"/>
+        </svg>
+        Riset Mendalam
+    </div>
+
+    <div class="item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M7 12h10M12 7l5 5-5 5"/>
+        </svg>
+        Terjemahan
+    </div>
+
+    <div class="item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
+        </svg>
+        Produk
+    </div>
+
+    <div class="item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
+            <circle cx="12" cy="13" r="8"/>
+            <path d="M12 9v4l3 2"/>
+        </svg>
+        Alarm AI
+    </div>
+
+    <div class="item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
+            <path d="M12 3c4 0 7 3 7 7v2a7 7 0 0 1-14 0v-2c0-4 3-7 7-7z"/>
+            <circle cx="12" cy="14" r="3"/>
+        </svg>
+        Dokter AI
+    </div>
+    
+    <div class="item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
+        <path d="M4 5h16v10H7l-3 3V5z" stroke-linejoin="round"/>
+        <path d="M9 10h6M9 7h8" stroke-linecap="round"/>
+    </svg>
+    Obrolan AI
+</div>
+
+</div>
+
+<script>
+function toggleMenu() {
+    const menu = document.getElementById("dropdownMenu");
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+</script>
+      
       <div class="memory-controls">
         <button class="memory-btn clear" id="clearMemoryBtn">
           <i class="fas fa-trash"></i> Hapus Memori
