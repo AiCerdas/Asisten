@@ -758,7 +758,7 @@
       color: #f59e0b;
     }
 
-    /* GAYA BARU UNTUK PREVIEW 5 GAMBAR */
+    /* GAYA BARU UNTUK PREVIEW 5 GAMBAR (Di dalam Input Box) */
     #multiple-images-preview {
       display: flex;
       flex-wrap: wrap;
@@ -769,6 +769,7 @@
       background-color: #f9fafb;
       margin-bottom: 8px;
       width: 100%;
+      align-items: center; /* Tambahkan ini agar vertikal align rapi */
     }
 
     .image-preview-item {
@@ -805,13 +806,14 @@
       padding: 0;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
+    /* --- END GAYA BARU PREVIEW GAMBAR --- */
 
     /* Gaya untuk modal Riset Mendalam */
     .modal-body-research {
         padding: 10px;
     }
 
-    /* Gaya untuk multiple file preview */
+    /* Gaya untuk multiple file preview (Di dalam Modal OCR) */
     .multiple-preview-container {
       display: flex;
       flex-wrap: wrap;
@@ -908,7 +910,7 @@
         background: #fafafa;
         border-radius: 14px;
         padding: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         width: 100%;
         max-width: 400px;
     }
@@ -1294,11 +1296,11 @@
       let db = null;
       let ocrExtractedText = '';
       let ocrImageURL = null; 
-      let selectedFiles = []; // Array untuk menyimpan file yang dipilih
+      let selectedFiles = []; // Array untuk menyimpan file yang dipilih dari modal
       let isShortcutMenuOpen = false; // Status untuk menu shortcut baru
 
       // VARIABLE BARU UNTUK MENYIMPAN GAMBAR YANG DIUPLOAD
-      let uploadedImages = [];
+      let uploadedImages = []; // Format: [{ file: File, dataURL: string }]
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
@@ -1625,8 +1627,8 @@
         }
       };
 
-      // ** FUNGSI BARU: UPDATE PREVIEW GAMBAR **
-      function updateImagePreview() {
+      // ** FUNGSI BARU: UPDATE PREVIEW GAMBAR DI INPUT CHAT **
+      window.updateImagePreview = function() {
         const previewContainer = document.getElementById('multiple-images-preview');
         previewContainer.innerHTML = '';
         
@@ -1651,7 +1653,12 @@
           removeBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
+            // Hapus file dari array
             uploadedImages.splice(index, 1);
+            // Jika tidak ada gambar, reset ocrExtractedText
+            if (uploadedImages.length === 0) {
+              ocrExtractedText = '';
+            }
             updateImagePreview();
           };
           
@@ -1661,9 +1668,10 @@
         });
       }
 
-      // ** MODIFIKASI: Fungsi untuk menghapus pratinjau gambar **
+      // ** MODIFIKASI: Fungsi untuk menghapus pratinjau gambar (diperbarui) **
       window.removeImagePreview = function() {
         uploadedImages = [];
+        ocrExtractedText = ''; // Reset extracted text
         updateImagePreview();
       }
 
@@ -1755,7 +1763,7 @@
             
             selectedFiles.push(file);
             
-            // Buat preview untuk setiap gambar
+            // Buat preview untuk setiap gambar di modal
             const reader = new FileReader();
             reader.onload = (e) => {
               const previewItem = document.createElement('div');
@@ -1826,6 +1834,7 @@
           const formData = new FormData();
           formData.append('image', file);
 
+          // NOTE: Endpoint API /api/ocr harus tersedia di backend Anda.
           const response = await fetch("/api/ocr", {
             method: "POST",
             body: formData
@@ -1834,20 +1843,17 @@
           // Perbaikan utama: Cek apakah respons adalah JSON yang valid
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
-            // Jika bukan JSON, coba baca sebagai teks untuk debugging
             const textResponse = await response.text();
             
-            // Cek jika respons mengandung HTML (seperti halaman error)
             if (textResponse.trim().startsWith('<!DOCTYPE') || textResponse.includes('<html')) {
-              throw new Error('Server tidak mengembalikan JSON yang valid');
+              throw new Error('Server tidak mengembalikan JSON yang valid. Mungkin terjadi error di server.');
             }
             
-            // Jika bukan HTML, coba parsing sebagai JSON
             try {
               const jsonData = JSON.parse(textResponse);
               return jsonData;
             } catch (parseError) {
-              throw new Error('Server tidak mengembalikan JSON yang valid');
+              throw new Error('Server tidak mengembalikan JSON yang valid: ' + textResponse.substring(0, 50) + '...');
             }
           }
 
@@ -1866,7 +1872,7 @@
           }
         }
         
-        // Fungsi untuk menampilkan semua hasil
+        // FUNGSI KUNCI: Untuk menampilkan semua hasil dan memicu preview di input chat
         function displayAllResults(results) {
           const resultText = results.join('\n\n');
           
@@ -1879,20 +1885,27 @@
           
           // ** MODIFIKASI: Simpan semua gambar ke uploadedImages **
           uploadedImages = [];
-          selectedFiles.forEach((file, index) => {
+          let loadedCount = 0;
+          
+          // Memastikan setiap file dibaca dan disimpan
+          selectedFiles.forEach((file) => {
             const reader = new FileReader();
             reader.onload = (e) => {
               uploadedImages.push({
                 file: file,
                 dataURL: e.target.result
               });
-              if (index === selectedFiles.length - 1) {
-                updateImagePreview();
+              loadedCount++;
+              
+              // Setelah semua gambar selesai dimuat (penting!)
+              if (loadedCount === selectedFiles.length) {
+                updateImagePreview(); // Tampilkan preview di input chat
               }
             };
             reader.readAsDataURL(file);
           });
-
+          
+          // Tutup modal
           modal.style.display = 'none';
         }
       }
@@ -2115,8 +2128,13 @@
         document.getElementById('fileInput').value = '';
         document.querySelector('.upload-text').innerHTML = 
           '<strong>Klik untuk mengunggah gambar</strong><br>Maksimal 5 gambar (JPG/PNG, 5MB per file)';
+        
+        // Reset variabel dan hapus preview di input chat
+        uploadedImages = [];
         ocrExtractedText = '';
-        selectedFiles = [];
+        updateImagePreview();
+        
+        selectedFiles = []; // Reset file yang dipilih di modal
       };
 
       window.startVoiceRecognition = function() {
@@ -2353,7 +2371,9 @@
         // ** MODIFIKASI: Tambahkan informasi gambar ke teks lengkap **
         let fullMessageText = userText;
         if (uploadedImages.length > 0) {
-            fullMessageText = `[Analisis ${uploadedImages.length} Gambar] ${ocrExtractedText}\n\n${userText}`;
+            // Gabungkan hasil OCR dan teks pengguna
+            const imageInfo = `[Hasil Analisis ${uploadedImages.length} Gambar: ${ocrExtractedText}]`;
+            fullMessageText = `${imageInfo}\n\n${userText}`;
         }
 
         const chatbox = document.getElementById("chatbox");
@@ -2361,7 +2381,12 @@
 
         let displayMessage = userText;
         if (!displayMessage && uploadedImages.length > 0) {
-            displayMessage = `[${uploadedImages.length} Gambar terunggah]`;
+            // Tampilkan hanya informasi gambar di chat jika teks kosong
+            displayMessage = `[${uploadedImages.length} Gambar terunggah untuk dianalisis]`;
+            // Jika ada extracted text, tambahkan ke display message
+            if (ocrExtractedText) {
+                 displayMessage += `\n\n<i>(Hasil OCR: ${ocrExtractedText.substring(0, 100)}...)</i>`;
+            }
         }
 
         if (!displayMessage && uploadedImages.length === 0) return;
