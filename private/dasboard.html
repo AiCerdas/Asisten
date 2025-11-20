@@ -1061,8 +1061,7 @@
         <i class="fas fa-paint-brush"></i>
         <span>ABIDINAI CREATOR</span>
       </a>
-
-<a href="translate.html" class="menu-item" id="creatorMenuItem">
+      <a href="translate.html" class="menu-item" id="creatorMenuItem">
   <i class="fas fa-language"></i>
   <span>Terjemahan Otomatis</span>
 </a>
@@ -1148,8 +1147,7 @@
     </svg>
     Creator
 </div>
-
-        <div class="btn-shortcut" onclick="openOCRModal()">
+<div class="btn-shortcut" onclick="openOCRModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
                 <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
                 <circle cx="12" cy="12" r="3.2"/>
@@ -1563,6 +1561,15 @@
         messageInput.style.height = 'auto';
         messageInput.style.height = (messageInput.scrollHeight) + 'px';
         toggleShortcutMenu(); // Tutup menu setelah memilih
+      }
+
+      // ** FUNGSI BARU: openCreatorModal **
+      window.openCreatorModal = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+        window.location.href = "creator.html";
       }
 
       // ** MODIFIKASI KUNCI DI SINI **
