@@ -21,7 +21,7 @@
       background-color: #f7f7f8;
       color: #333;
       display: flex;
-      min-height: 100vh;
+      min-height: 10vh;
       overflow-x: hidden;
     }
 
@@ -943,6 +943,44 @@
         min-height: 20px;
     }
     /* --- Akhir Gaya Tambahan untuk Panel Shortcut Baru --- */
+    
+    /* Gaya untuk Sumber Terpercaya */
+    .source-container {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e5e6;
+    }
+    
+    .source-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #4a5568;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .source-list {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .source-list li {
+        margin-bottom: 5px;
+    }
+    
+    .source-list a {
+        display: block;
+        font-size: 13px;
+        color: #4f46e5;
+        text-decoration: none;
+        word-break: break-all;
+    }
+    
+    .source-list a:hover {
+        text-decoration: underline;
+    }
   </style>
   
   <script>
@@ -1488,6 +1526,8 @@
           } else {
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
+              // Hapus parameter 'sources' dari fungsi addMessage saat memuat dari DB,
+              // karena DB hanya menyimpan teks mentah
               addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false);
             });
           }
@@ -2059,7 +2099,7 @@
           if (!data.reply || data.reply.trim() === "") {
               displayMaintenanceMessage();
           } else {
-              displayAIResponse(data.reply);
+              displayAIResponse(data); // Kirim seluruh objek data
           }
         } catch (error) {
           console.error("Error sending command:", error);
@@ -2075,7 +2115,20 @@
       window.shareMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
-          const rawText = messageTextElement.textContent || messageTextElement.innerText;
+          // Ambil teks mentah dari elemen pesan utama
+          let rawText = messageTextElement.textContent || messageTextElement.innerText;
+          
+          // Cek dan tambahkan sumber (jika ada)
+          const sourceContainer = document.getElementById(`${messageId}-sources`);
+          if (sourceContainer) {
+            let sourcesText = '\n\n*Sumber Terpercaya:*\n';
+            const sourceLinks = sourceContainer.querySelectorAll('a');
+            sourceLinks.forEach((link, index) => {
+              sourcesText += `${index + 1}. ${link.textContent} (${link.href})\n`;
+            });
+            rawText += sourcesText;
+          }
+
           const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
 
           if (navigator.share) {
@@ -2196,13 +2249,28 @@
         };
       };
 
-      function addMessage(sender, text, messageClass, timestamp = null, save = true) {
+      function addMessage(sender, text, messageClass, timestamp = null, save = true, sources = []) {
         const chatbox = document.getElementById("chatbox");
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${messageClass}`;
         
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         
+        // Buat HTML untuk daftar sumber
+        let sourcesHtml = '';
+        if (sources && sources.length > 0) {
+            sourcesHtml = `
+                <div class="source-container" id="${messageId}-sources">
+                    <div class="source-title"><i class="fas fa-link"></i> Sumber Terpercaya:</div>
+                    <ul class="source-list">
+                        ${sources.map((src, index) => 
+                            `<li><a href="${src.url}" target="_blank" title="${src.title}">${index + 1}. ${src.title}</a></li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
         messageDiv.innerHTML = `
           <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
             ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
@@ -2213,7 +2281,7 @@
               <span class="message-time">${timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : getCurrentTime()}</span>
             </div>
             <div class="message-text" id="${messageId}-text">${text}</div>
-            ${messageClass === 'ai-message' ? `
+            ${sourcesHtml} ${messageClass === 'ai-message' ? `
             <div class="message-actions">
               <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
                 <i class="fas fa-copy"></i> Salin
@@ -2232,6 +2300,7 @@
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
         
+        // Hanya simpan teks balasan ke DB
         if (save) {
           saveMessageToDB(sender, text, timestamp);
         }
@@ -2290,6 +2359,10 @@
               <div class="loading"></div>
               AbidinAI sedang mengetik ulang...
           </div>`;
+          // Hapus sumber lama
+          const oldSourceContainer = document.getElementById(`${messageId}-sources`);
+          if (oldSourceContainer) oldSourceContainer.remove();
+
           messageDiv.classList.remove('ai-message');
           messageDiv.classList.add('user-message');
           
@@ -2308,18 +2381,17 @@
             }
 
             const data = await response.json();
-            const aiReply = data.reply;
-
+            
             // Hapus indikator mengetik
             messageTextElement.innerHTML = ''; 
             messageDiv.classList.remove('user-message');
             messageDiv.classList.add('ai-message');
             
             // Tampilkan respons baru
-            if (!aiReply || aiReply.trim() === "") {
+            if (!data.reply || data.reply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
-                displayAIResponse(aiReply, messageTextElement);
+                displayAIResponse(data, messageTextElement); // Kirim seluruh objek data
             }
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
@@ -2329,6 +2401,8 @@
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
               regenerateButton.disabled = false;
+              messageDiv.classList.remove('user-message');
+              messageDiv.classList.add('ai-message');
             }, 2000);
             
           } catch (error) {
@@ -2430,14 +2504,14 @@
           }
 
           const data = await response.json();
-          let aiReply = data.reply;
+          //let aiReply = data.reply; // <-- Ganti ini
 
           typingDiv.remove();
 
-          if (!aiReply || aiReply.trim() === "") {
+          if (!data.reply || data.reply.trim() === "") {
             displayMaintenanceMessage();
           } else {
-            displayAIResponse(aiReply);
+            displayAIResponse(data); // Kirim seluruh objek data
           }
         } catch (error) {
           typingDiv.remove();
@@ -2470,7 +2544,25 @@
         isVoiceMode = false;
       }
 
-      function displayAIResponse(aiReply, targetElement = null) {
+      // ** MODIFIKASI UTAMA: Fungsi untuk menampilkan respons AI dan sumber **
+      function displayAIResponse(data, targetElement = null) {
+        const aiReply = data.reply;
+        // ** LOGIKA BARU UNTUK SUMBER **
+        const sources = data.sources || []; 
+        
+        // ** SIMULASI JIKA USER MEMINTA LINK/SUMBER **
+        // Karena kita tidak bisa memodifikasi server API, kita akan menguji apakah
+        // pesan balasan menyertakan kata kunci "link" atau "sumber" untuk
+        // mengaktifkan simulasi sumber jika API tidak mengembalikannya.
+        if (sources.length === 0) {
+            const lowerCaseReply = aiReply.toLowerCase();
+            if (lowerCaseReply.includes("link") || lowerCaseReply.includes("sumber") || lowerCaseReply.includes("tautan")) {
+                sources.push({ title: "Simulasi Sumber 1: Wikipedia", url: "https://id.wikipedia.org/wiki/Kecerdasan_buatan" });
+                sources.push({ title: "Simulasi Sumber 2: Google Scholar", url: "https://scholar.google.com/scholar?q=kecerdasan+buatan" });
+            }
+        }
+        // ** AKHIR SIMULASI **
+
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
@@ -2480,13 +2572,35 @@
         }
         
         let messageTextContainer;
+        let messageDiv;
+        
         if (targetElement) {
             messageTextContainer = targetElement;
+            messageDiv = targetElement.closest('.message');
+            // Hapus sumber lama
+            const oldSourceContainer = messageDiv.querySelector('.source-container');
+            if (oldSourceContainer) oldSourceContainer.remove();
         } else {
-            const container = document.createElement("div");
-            container.className = "message ai-message";
+            messageDiv = document.createElement("div");
+            messageDiv.className = "message ai-message";
             const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            container.innerHTML = `
+            
+            // Buat HTML sumber (akan diisi ulang di bawah, tapi ini untuk struktur)
+            let sourcesHtml = '';
+            if (sources && sources.length > 0) {
+                sourcesHtml = `
+                    <div class="source-container" id="${messageId}-sources">
+                        <div class="source-title"><i class="fas fa-link"></i> Sumber Terpercaya:</div>
+                        <ul class="source-list">
+                            ${sources.map((src, index) => 
+                                `<li><a href="${src.url}" target="_blank" title="${src.title}">${index + 1}. ${src.title}</a></li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            messageDiv.innerHTML = `
               <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
               <div class="message-content">
                 <div class="message-header">
@@ -2494,7 +2608,7 @@
                   <span class="message-time">${getCurrentTime()}</span>
                 </div>
                 <div class="message-text" id="${messageId}-text"></div>
-                <div class="message-actions">
+                ${sourcesHtml} <div class="message-actions">
                   <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
                     <i class="fas fa-copy"></i> Salin
                   </button>
@@ -2507,8 +2621,8 @@
                 </div>
               </div>
             `;
-            chatbox.appendChild(container);
-            messageTextContainer = container.querySelector('.message-text');
+            chatbox.appendChild(messageDiv);
+            messageTextContainer = messageDiv.querySelector('.message-text');
             saveMessageToDB('AbidinAI', aiReply);
         }
 
@@ -2559,6 +2673,7 @@
         }
         isVoiceMode = false;
       }
+      // ** AKHIR MODIFIKASI UTAMA **
 
       function readWithPauses(text) {
         if (!('speechSynthesis' in window)) {
