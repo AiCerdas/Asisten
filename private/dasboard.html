@@ -1725,7 +1725,7 @@
           return false;
         }
         
-        togglePlusMenu(); // Tutup Plus Menu
+        togglePlusMenu(true); // Tutup Plus Menu
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
              dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
@@ -2203,14 +2203,15 @@
       let isPlusMenuOpen = false;
 
       // Fungsi untuk menampilkan/menyembunyikan menu plus
-      window.togglePlusMenu = function() {
+      window.togglePlusMenu = function(forceClose = false) {
         const plusMenu = document.getElementById('plusMenu');
-        if (isPlusMenuOpen) {
+        if (isPlusMenuOpen || forceClose) {
           plusMenu.style.display = 'none';
+          isPlusMenuOpen = false;
         } else {
           plusMenu.style.display = 'flex';
+          isPlusMenuOpen = true;
         }
-        isPlusMenuOpen = !isPlusMenuOpen;
       }
 
       // Tambahkan event listener untuk menutup menu saat klik di luar
@@ -2240,7 +2241,7 @@
         }
         const modal = document.getElementById('audioSpectrumModal');
         modal.style.display = 'flex';
-        togglePlusMenu();
+        togglePlusMenu(true);
       };
 
       function initAudioSpectrumModal() {
@@ -2264,7 +2265,7 @@
         input.value = messageInput.value.trim();
 
         modal.style.display = 'flex';
-        togglePlusMenu(); // Tutup Plus Menu
+        togglePlusMenu(true); // Tutup Plus Menu
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
              dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
@@ -2413,7 +2414,7 @@
           showWarning();
           return false;
         }
-        togglePlusMenu(); // Tutup Plus Menu
+        togglePlusMenu(true); // Tutup Plus Menu
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
              dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
