@@ -502,6 +502,11 @@
       max-width: 500px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
+    
+    /* MODAL KHUSUS GAMBAR */
+    #imageCreatorModal .modal-content {
+      max-width: 600px; /* Lebar yang lebih besar untuk gambar */
+    }
 
     .modal-header {
       display: flex;
@@ -522,6 +527,53 @@
       font-size: 20px;
       cursor: pointer;
       color: #718096;
+    }
+    
+    /* Gaya untuk input prompt di modal gambar */
+    #imagePromptInput {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        margin-bottom: 10px;
+        resize: vertical;
+    }
+    
+    /* Gaya untuk hasil gambar */
+    #imageResultContainer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+        min-height: 100px; /* Tinggi minimum */
+        align-items: center;
+        background: #f3f4f6;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    
+    .generated-image {
+        width: 48%; /* Untuk 2 kolom di layar besar */
+        max-width: 250px;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .generated-image:hover {
+        transform: scale(1.03);
+    }
+    
+    #imageLoading {
+        display: none;
+        color: #4f46e5;
+        font-weight: 500;
+        text-align: center;
     }
 
     .upload-area {
@@ -570,13 +622,20 @@
       border-radius: 5px;
       cursor: pointer;
       font-weight: 500;
-      display: none;
+      display: block;
       margin: 10px auto;
+      width: 100%;
     }
 
     .process-btn:hover {
       background-color: #4338ca;
     }
+    
+    .process-btn:disabled {
+        background-color: #a5b4fc;
+        cursor: not-allowed;
+    }
+
 
     .ocr-result {
       margin-top: 20px;
@@ -651,6 +710,11 @@
 
       .mobile-menu-btn {
         display: flex;
+      }
+      
+      .generated-image {
+        width: 100%; /* Satu kolom di layar kecil */
+        max-width: none;
       }
     }
 
@@ -1000,7 +1064,33 @@
       <p>Silakan tutup Developer Tools untuk melanjutkan.</p>
     </div>
   </div>
+  
+  <div class="modal" id="imageCreatorModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-paint-brush"></i> ABIDINAI CREATOR
+        </div>
+        <button class="close-btn" id="closeImageCreatorModal">&times;</button>
+      </div>
 
+      <p style="margin-bottom: 10px; color: #4a5568;">Masukkan deskripsi gambar yang Anda inginkan (gunakan Bahasa Inggris untuk hasil terbaik).</p>
+      <textarea id="imagePromptInput" placeholder="Contoh: A futuristic cityscape at sunset, highly detailed, digital painting..." rows="3"></textarea>
+      
+      <button id="generateImageBtn" class="process-btn">
+        <i class="fas fa-magic"></i> Buat Gambar
+      </button>
+
+      <div id="imageLoading" class="ocr-progress">
+        <div class="loading"></div>
+        <span id="imageProgressText">Membuat gambar... Ini mungkin memerlukan waktu 30-60 detik.</span>
+      </div>
+
+      <div id="imageResultContainer">
+        <p style="color: #718096;">Gambar yang dibuat akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
   <div class="modal" id="ocrModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1177,7 +1267,7 @@
 
     <div class="shortcut-box">
 
-<div class="btn-shortcut" onclick="openCreatorModal()">
+<div class="btn-shortcut" onclick="openImageCreatorModal()">
     <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
 
         <rect x="4" y="7" width="16" height="12" rx="2" stroke-linejoin="round"/>
@@ -1307,6 +1397,9 @@
                 <i class="fas fa-plus"></i>
               </button>
               <div class="plus-menu" id="plusMenu">
+                <button class="menu-item" onclick="openImageCreatorModal()">
+                  <i class="fas fa-paint-brush"></i> Buat Gambar AI
+                </button>
                 <button class="menu-item" onclick="openDeepResearchModal()">
                   <i class="fas fa-search"></i> Riset Mendalam
                 </button>
@@ -1553,6 +1646,8 @@
 
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
+        
+        initImageCreatorModal(); // Panggil inisialisasi modal gambar
         initOCRModal();
         initAudioSpectrumModal();
         initDeepResearchModal();
@@ -1613,13 +1708,155 @@
         toggleShortcutMenu(); // Tutup menu setelah memilih
       }
 
-      // ** FUNGSI BARU: openCreatorModal **
+      // ** FUNGSI BARU: openCreatorModal (Diarahkan ke modal baru) **
       window.openCreatorModal = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        window.location.href = "creator.html";
+        // Ganti dengan fungsi untuk membuka modal baru
+        openImageCreatorModal();
+      }
+      
+      // ** FUNGSI BARU: openImageCreatorModal **
+      window.openImageCreatorModal = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+        
+        togglePlusMenu(); // Tutup Plus Menu
+        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
+        if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
+             dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
+             isShortcutMenuOpen = false;
+        }
+
+        const modal = document.getElementById('imageCreatorModal');
+        modal.style.display = 'flex';
+        
+        // Reset state
+        document.getElementById('imageResultContainer').innerHTML = 
+            '<p style="color: #718096;">Gambar yang dibuat akan muncul di sini.</p>';
+        document.getElementById('imagePromptInput').value = '';
+        document.getElementById('generateImageBtn').disabled = false;
+        document.getElementById('imageLoading').style.display = 'none';
+        
+        document.getElementById('imagePromptInput').focus();
+      }
+      
+      // ** FUNGSI BARU: initImageCreatorModal **
+      function initImageCreatorModal() {
+        const modal = document.getElementById('imageCreatorModal');
+        const closeBtn = document.getElementById('closeImageCreatorModal');
+        const generateBtn = document.getElementById('generateImageBtn');
+        const promptInput = document.getElementById('imagePromptInput');
+        const loadingDiv = document.getElementById('imageLoading');
+        const resultContainer = document.getElementById('imageResultContainer');
+
+        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+        
+        generateBtn.addEventListener('click', generateImage);
+        
+        promptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateImage();
+            }
+        });
+
+        async function generateImage() {
+          const prompt = promptInput.value.trim();
+          if (!prompt) {
+            alert('Silakan masukkan deskripsi gambar (prompt)!');
+            promptInput.focus();
+            return;
+          }
+
+          generateBtn.disabled = true;
+          loadingDiv.style.display = 'flex';
+          resultContainer.innerHTML = '';
+          resultContainer.style.alignItems = 'center';
+
+          // Tampilkan pesan pengguna di chatbox
+          addMessage('Anda', `Meminta pembuatan gambar: <i>"${prompt}"</i>`, 'user-message');
+          
+          const typingDiv = document.createElement("div");
+          typingDiv.className = "message ai-message";
+          typingDiv.innerHTML = `
+            <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+              <div class="typing-indicator">
+                <div class="loading"></div>
+                AbidinAI sedang melukis gambar...
+              </div>
+            </div>
+          `;
+          document.getElementById("chatbox").appendChild(typingDiv);
+          document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+          
+          try {
+            // ** NOTE: Endpoint ini harus tersedia di server Anda dan memproses permintaan **
+            const response = await fetch("/api/generate-image", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ prompt: prompt, n: 2 }) // Minta 2 gambar
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || `Error: ${response.status} - ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            typingDiv.remove(); // Hapus indikator mengetik
+
+            if (!data.image_urls || data.image_urls.length === 0) {
+              throw new Error("Gagal mendapatkan URL gambar dari server.");
+            }
+            
+            resultContainer.innerHTML = '';
+            resultContainer.style.alignItems = 'flex-start';
+            let chatMessageContent = `Gambar berhasil dibuat dari prompt: <i>"${prompt}"</i><br><br>`;
+            
+            // Tampilkan gambar di modal dan siapkan konten chat
+            data.image_urls.forEach((url, index) => {
+                // Tampilkan di modal
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'generated-image';
+                img.alt = `Hasil Gambar ${index + 1}`;
+                img.onclick = () => window.open(url, '_blank'); // Buka gambar di tab baru
+                resultContainer.appendChild(img);
+                
+                // Siapkan konten chat (embed gambar di chat)
+                chatMessageContent += `<img src="${url}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; display: block;" alt="Gambar Dibuat AI ${index + 1}"><br>`;
+            });
+            
+            // Tampilkan pesan sukses di chatbox dengan gambar
+            addMessage('AbidinAI', chatMessageContent, 'ai-message');
+
+
+          } catch (error) {
+            console.error("Error generating image:", error);
+            typingDiv.remove();
+            
+            resultContainer.innerHTML = 
+                `<p style="color: #ef4444; text-align: center;">Gagal membuat gambar: ${error.message}. Coba lagi nanti.</p>`;
+            
+            // Kirim pesan error ke chat
+            addMessage('AbidinAI', `❌ Gagal membuat gambar untuk prompt: <i>"${prompt}"</i>. Server error: ${error.message}`, 'ai-message');
+            
+          } finally {
+            generateBtn.disabled = false;
+            loadingDiv.style.display = 'none';
+            document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+          }
+        }
       }
 
       // ** MODIFIKASI KUNCI DI SINI **
@@ -1843,8 +2080,8 @@
         async function processAllImages() {
           if (selectedFiles.length === 0) return;
 
-          processBtn.style.display = 'none';
-          progressContainer.style.display = 'flex';
+          processBtn.disabled = true;
+          loadingDiv.style.display = 'flex';
           
           let allResults = [];
           
@@ -1872,7 +2109,7 @@
             progressText.textContent = `Error: ${error.message}`;
             setTimeout(() => {
               progressContainer.style.display = 'none';
-              processBtn.style.display = 'block';
+              processBtn.disabled = false;
             }, 2000);
           }
         }
@@ -1953,6 +2190,8 @@
             reader.readAsDataURL(file);
           });
           
+          // Reset tombol proses
+          processBtn.disabled = false;
           // Tutup modal
           modal.style.display = 'none';
         }
@@ -2037,7 +2276,7 @@
         sendBtn.onclick = function() {
             const query = input.value.trim();
             if (query) {
-                sendMessageWithCommand(`Berikut hasil riset untuk <b>${query}</b>`);
+                sendMessageWithCommand(query); // Kirim query riset langsung
                 modal.style.display = 'none';
             }
         };
@@ -2068,7 +2307,7 @@
         const messageInput = document.getElementById("messageInput");
 
         // Tambahkan pesan pengguna ke chatbox
-        addMessage('Anda', command, 'user-message');
+        addMessage('Anda', `Melakukan Riset Mendalam: <i>"${command}"</i>`, 'user-message');
 
         // Tampilkan indikator mengetik
         const typingDiv = document.createElement("div");
@@ -2093,7 +2332,7 @@
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: command })
+            body: JSON.stringify({ message: `Lakukan Riset Mendalam untuk pertanyaan: ${command}` })
           });
 
           if (!response.ok) {
@@ -2125,6 +2364,9 @@
         if (messageTextElement) {
           // Ambil teks mentah dari elemen pesan utama
           let rawText = messageTextElement.textContent || messageTextElement.innerText;
+          
+          // Hapus tag HTML yang mungkin tersisa
+          rawText = rawText.replace(/<[^>]*>?/gm, '');
           
           // Cek dan tambahkan sumber (jika ada)
           const sourceContainer = document.getElementById(`${messageId}-sources`);
@@ -2183,7 +2425,8 @@
 
         // Reset state
         document.getElementById('multiplePreviewContainer').innerHTML = '';
-        document.getElementById('processBtn').style.display = 'none';
+        document.getElementById('processBtn').style.display = 'block'; // Pastikan tombol proses terlihat
+        document.getElementById('processBtn').disabled = false;
         document.getElementById('progressContainer').style.display = 'none';
         document.getElementById('ocrResult').style.display = 'none';
         document.getElementById('fileInput').value = '';
@@ -2308,9 +2551,17 @@
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
         
-        // Hanya simpan teks balasan ke DB
+        // Hanya simpan teks balasan ke DB. Untuk pesan yang mengandung HTML (gambar),
+        // simpan teks mentah atau indikator.
         if (save) {
-          saveMessageToDB(sender, text, timestamp);
+          // Hanya simpan teks mentah atau pesan khusus yang bersih dari HTML/Markdown
+          let textForDB = text;
+          // Hapus tag HTML
+          textForDB = textForDB.replace(/<[^>]*>?/gm, '');
+          // Hapus kode yang dibungkus (hanya simpan kontennya)
+          textForDB = textForDB.replace(/```(?:\w+)?\n?([\s\S]*?)```/g, ' [BLOK KODE] '); 
+          
+          saveMessageToDB(sender, textForDB.trim(), timestamp);
         }
         
         return messageDiv;
@@ -2319,7 +2570,22 @@
       window.copyMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
-          const textToCopy = messageTextElement.innerText; 
+          // Ekstrak teks mentah, abaikan HTML/gambar untuk salin
+          let textToCopy = messageTextElement.innerText;
+          
+          // Hapus bagian dari pesan yang mungkin merupakan deskripsi gambar buatan AI yang tidak perlu disalin
+          textToCopy = textToCopy.replace(/Gambar berhasil dibuat dari prompt: ".*?"\n\n/i, '').trim(); 
+          
+          // Cari dan salin juga teks dari blok kode
+          let codeBlocks = [];
+          const codeContainers = messageTextElement.querySelectorAll('.code-container pre');
+          codeContainers.forEach(pre => {
+              codeBlocks.push(pre.textContent);
+          });
+          
+          if (codeBlocks.length > 0) {
+              textToCopy += '\n\n' + codeBlocks.map(code => '```\n' + code + '\n```').join('\n\n');
+          }
           
           navigator.clipboard.writeText(textToCopy).then(() => {
             const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
@@ -2348,7 +2614,11 @@
             return;
         }
         
-        const userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
+        // Ambil teks mentah dari pesan pengguna
+        let userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
+        // Hapus HTML dan indikator gambar untuk mendapatkan prompt asli
+        userMessageText = userMessageText.replace(/<[^>]*>?/gm, '').trim();
+
 
         const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
         if (regenerateButton) {
