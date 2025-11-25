@@ -22,8 +22,15 @@ const upload = multer({
 app.use(cors());
 app.use(express.json());
 
+// ==========================================================
+// 🚨 INI BAGIAN UTAMA YANG DITAMBAHKAN/DIUBAH 🚨
+// ==========================================================
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+// 🆕 Deklarasi model untuk Image Generation (menggunakan Imagen)
+// Perhatikan: Model ini memerlukan kuota Image Generation
+const imageGenerationModel = genAI.getGenerativeModel({ model: "imagen-3.0-generate-002" });
+// ==========================================================
 
 function fileToGenerativePart(buffer, mimeType) {
     return {
@@ -835,6 +842,82 @@ ${combinedGeminiAnalysis}`;
     });
   }
 });
+
+
+// ==========================================================
+// 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI (IMAGEN) 🎨
+// ==========================================================
+app.post('/api/image-generation', async (req, res) => {
+  const { prompt, count = 1, aspect_ratio = "1:1" } = req.body;
+  
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
+  }
+
+  // Validasi jumlah gambar (maksimal 5 sesuai permintaan)
+  const finalCount = Math.min(Math.max(parseInt(count) || 1, 1), 5);
+  
+  // Mapping rasio aspek
+  let size;
+  switch (aspect_ratio) {
+      case "9:16":
+          size = "1080x1920"; // Portrait
+          break;
+      case "16:9":
+          size = "1920x1080"; // Landscape
+          break;
+      case "4:3":
+          size = "1024x768";
+          break;
+      case "3:4":
+          size = "768x1024";
+          break;
+      case "1:1":
+      default:
+          size = "1024x1024"; // Square
+          break;
+  }
+
+  console.log(`➡️ Memicu Generasi Gambar: Prompt='${prompt}' | Count=${finalCount} | Size=${size}`);
+
+  try {
+    const response = await imageGenerationModel.generateImages({
+      model: 'imagen-3.0-generate-002', // Model yang didukung untuk gambar
+      prompt: prompt,
+      config: {
+        numberOfImages: finalCount,
+        outputMimeType: 'image/png', // Format output
+        aspectRatio: size,
+      },
+    });
+
+    const imageUrls = response.generatedImages.map(img => {
+      // Data gambar dikembalikan sebagai base64 string
+      // Kita bisa mengembalikannya langsung atau membuat data URI
+      const base64Image = img.image.imageBytes;
+      return {
+          base64: base64Image,
+          url: `data:image/png;base64,${base64Image}` // Data URI untuk ditampilkan langsung di klien
+      };
+    });
+
+    res.json({ 
+      status: "success",
+      prompt: prompt,
+      count: imageUrls.length,
+      images: imageUrls
+    });
+
+  } catch (error) {
+    console.error("Gemini Image Generation Error:", error);
+    res.status(500).json({ 
+      error: 'Gagal menghasilkan gambar dari Gemini API.', 
+      details: error.message 
+    });
+  }
+});
+// ==========================================================
+
 
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
