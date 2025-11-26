@@ -22,15 +22,8 @@ const upload = multer({
 app.use(cors());
 app.use(express.json());
 
-// ==========================================================
-// 🚨 INI BAGIAN UTAMA YANG DITAMBAHKAN/DIUBAH 🚨
-// ==========================================================
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-// 🆕 Deklarasi model untuk Image Generation (menggunakan Imagen)
-// Perhatikan: Model ini memerlukan kuota Image Generation
-const imageGenerationModel = genAI.getGenerativeModel({ model: "imagen-3.0-generate-002" });
-// ==========================================================
 
 function fileToGenerativePart(buffer, mimeType) {
     return {
@@ -364,13 +357,13 @@ Gunakan format berikut dalam setiap jawaban:
 7.  **Default:** Jika pengguna tidak meminta sumber terpercaya, kamu tetap boleh menjawab normal selama informasi yang diberikan valid dan akurat.
 8. Jika diminta sumber, hanya gunakan sumber nyata (media resmi, jurnal, buku, situs pemerintah).
 9. Dilarang keras membuat sumber palsu, link palsu, buku palsu, tanggal palsu, atau nama ahli yang tidak ada.
-10. Jika kamu tidak yakin sumbernya, jawab: "Saya tidak menemukan sumber terpercaya."
+10. Jika kamu tidak yakin sumbernya, jawab: “Saya tidak menemukan sumber terpercaya.”
 11. Jika harus membuat daftar sumber, hanya gunakan sumber yang benar-benar bisa diverifikasi manusia.
 12. Tidak boleh menggunakan domain yang tidak ada atau mengarang referensi ilmiah.
 13. Jika pengguna meminta berita, gunakan sumber besar seperti: Kompas, CNN Indonesia, BBC, Reuters, NatGeo, Kemendikbud, Perpusnas.
 14. Periksa apakah fakta yang disampaikan memiliki referensi nyata—jika tidak ada sumber terpercaya, jangan jawab.
 - Jika kamu ragu 1% pun terhadap kebenaran sumber, kamu wajib mengatakan:
-"Saya tidak menemukan informasi pasti."
+“Saya tidak menemukan informasi pasti.”
 - Saat memberikan fakta:
 - Tulis jawabannya
 - Lalu tulis sumbernya di bawahnya
@@ -557,22 +550,15 @@ app.post('/api/chat', async (req, res) => {
           // System prompt khusus untuk Gemini menggunakan context dari javaneseDB.context yang baru
           const geminiSystemPrompt = javaneseDB.context;
 
-          // PERBAIKAN: Menggunakan format yang sama seperti kode Python
           const response = await geminiModel.generateContent({
-            contents: [
-              {
-                parts: [
-                  { text: geminiSystemPrompt + "\n\nPertanyaan pengguna: " + message }
-                ]
-              }
-            ],
-            generationConfig: {
-              temperature: 0.8,
+            contents: [{ role: "user", parts: [{ text: message }] }],
+            config: {
+                systemInstruction: geminiSystemPrompt,
+                temperature: 0.8,
             }
           });
 
-          // PERBAIKAN: Mengambil response text dengan cara yang benar
-          const geminiReply = response.response?.text() || "Maaf, Gemini tidak memberikan balasan yang valid.";
+          const geminiReply = response.text || "Maaf, Gemini tidak memberikan balasan yang valid.";
           return res.json({ reply: geminiReply });
 
       } catch (error) {
@@ -850,82 +836,6 @@ ${combinedGeminiAnalysis}`;
   }
 });
 
-
-// ==========================================================
-// 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI (IMAGEN) 🎨
-// ==========================================================
-app.post('/api/image-generation', async (req, res) => {
-  const { prompt, count = 1, aspect_ratio = "1:1" } = req.body;
-  
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
-  }
-
-  // Validasi jumlah gambar (maksimal 5 sesuai permintaan)
-  const finalCount = Math.min(Math.max(parseInt(count) || 1, 1), 5);
-  
-  // Mapping rasio aspek
-  let size;
-  switch (aspect_ratio) {
-      case "9:16":
-          size = "1080x1920"; // Portrait
-          break;
-      case "16:9":
-          size = "1920x1080"; // Landscape
-          break;
-      case "4:3":
-          size = "1024x768";
-          break;
-      case "3:4":
-          size = "768x1024";
-          break;
-      case "1:1":
-      default:
-          size = "1024x1024"; // Square
-          break;
-  }
-
-  console.log(`➡️ Memicu Generasi Gambar: Prompt='${prompt}' | Count=${finalCount} | Size=${size}`);
-
-  try {
-    const response = await imageGenerationModel.generateImages({
-      model: 'imagen-3.0-generate-002', // Model yang didukung untuk gambar
-      prompt: prompt,
-      config: {
-        numberOfImages: finalCount,
-        outputMimeType: 'image/png', // Format output
-        aspectRatio: size,
-      },
-    });
-
-    const imageUrls = response.generatedImages.map(img => {
-      // Data gambar dikembalikan sebagai base64 string
-      // Kita bisa mengembalikannya langsung atau membuat data URI
-      const base64Image = img.image.imageBytes;
-      return {
-          base64: base64Image,
-          url: `data:image/png;base64,${base64Image}` // Data URI untuk ditampilkan langsung di klien
-      };
-    });
-
-    res.json({ 
-      status: "success",
-      prompt: prompt,
-      count: imageUrls.length,
-      images: imageUrls
-    });
-
-  } catch (error) {
-    console.error("Gemini Image Generation Error:", error);
-    res.status(500).json({ 
-      error: 'Gagal menghasilkan gambar dari Gemini API.', 
-      details: error.message 
-    });
-  }
-});
-// ==========================================================
-
-
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
@@ -968,7 +878,7 @@ app.post('/api/research', async (req, res) => {
     // 2. OpenAlex (API Publik) - Untuk artikel akademik & data riset Open Access
     // =========================================================================
     try {
-        // Filter is_oa:true untuk memrioritaskan konten Akses Terbuka (Gratis)
+        // Filter is_oa:true untuk memprioritaskan konten Akses Terbuka (Gratis)
         const openAlexUrl = `https://api.openalex.org/works?search=${encodedQuery}&filter=is_oa:true&sort=cited_by_count:desc`; 
         const openAlexRes = await fetch(openAlexUrl);
         const openAlexData = await openAlexRes.json();
