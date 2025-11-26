@@ -5,7 +5,9 @@ require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// PERBAIKAN: Ganti ke library resmi baru untuk fitur gambar
+// const { GoogleGenerativeAI } = require('@google/generative-ai'); // Kode lama
+const { GoogleGenAI } = require('@google/genai'); // Gunakan GoogleGenAI dari @google/genai
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,79 +27,55 @@ app.use(express.json());
 // ==========================================================
 // 🚨 INI BAGIAN UTAMA YANG DIPERBAIKI 🚨
 // ==========================================================
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Kode lama
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }); // Inisialisasi GoogleGenAI dari @google/genai
+// const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Kode lama
+const geminiModel = ai.models.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Sesuaikan dengan ai.models
 
 // ==========================================================
 // 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI (IMAGEN) - DIPERBAIKI 🎨
+// PERBAIKAN: Ganti endpoint ke /generate-image
+// PERBAIKAN: Gunakan library @google/genai dan model gemini-2.5-flash-image
+// PERBAIKAN: Pastikan response SELALU JSON
 // ==========================================================
-app.post('/api/generate-image', async (req, res) => {
-  const { prompt, n = 2 } = req.body;
-  
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
-  }
-
-  // Validasi jumlah gambar (maksimal 4 sesuai dokumentasi)
-  const imageCount = Math.min(Math.max(parseInt(n) || 2, 1), 4);
-
-  console.log(`➡️ Memicu Generasi Gambar: Prompt='${prompt}' | Count=${imageCount}`);
-
+// app.post('/api/generate-image', async (req, res) => { ... }) // Endpoint lama dihapus/diganti
+app.post("/generate-image", async (req, res) => {
   try {
-    // PERBAIKAN: Gunakan endpoint Imagen 3.0 yang benar
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImage?key=${process.env.GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        prompt: {
-          text: prompt
-        },
-        numberOfImages: imageCount,
-        aspectRatio: "1:1" // Default aspect ratio
-      })
-    });
-
-    // PERBAIKAN: Pastikan response adalah JSON yang valid
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const textResponse = await response.text();
-      console.error('Response bukan JSON:', textResponse.substring(0, 200));
-      throw new Error('Server tidak mengembalikan JSON yang valid');
-    }
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Gemini API Error:', data);
-      throw new Error(data.error?.message || `HTTP ${response.status}: Gagal menghasilkan gambar`);
-    }
-
-    // Format respons sesuai output dari Gemini Image Generation
-    if (data.images && data.images.length > 0) {
-      const imageUrls = data.images.map((image, index) => {
-        return `data:image/png;base64,${image.bytes}`;
-      });
-
-      res.json({ 
-        status: "success",
-        message: "Gambar berhasil dihasilkan menggunakan Gemini Imagen 3.0",
-        prompt: prompt,
-        image_urls: imageUrls
-      });
-    } else {
-      throw new Error('Tidak ada gambar yang dihasilkan');
-    }
-
-  } catch (error) {
-    console.error("Gemini Image Generation Error:", error);
+    const prompt = req.body.prompt;
     
-    // PERBAIKAN: Selalu kirim response JSON bahkan saat error
-    res.status(500).json({ 
-      error: 'Gagal menghasilkan gambar dari Gemini API.', 
-      details: error.message
+    if (!prompt) {
+        return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
+    }
+
+    // Menggunakan gemini-2.5-flash-image seperti instruksi
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: prompt,
     });
+
+    // Menarik bagian 'inlineData' (base64 gambar)
+    const parts = response.candidates[0].content.parts;
+
+    let base64Image = null;
+
+    for (const part of parts) {
+      if (part.inlineData) {
+        // base64 data adalah part.inlineData.data
+        base64Image = part.inlineData.data; 
+        break; // Ambil gambar pertama saja
+      }
+    }
+    
+    if (!base64Image) {
+        return res.json({ error: "Model tidak menghasilkan gambar." });
+    }
+
+    // Response HARUS berupa JSON valid
+    return res.json({ image: base64Image });
+  } catch (err) {
+    console.error("Gemini Image Generation Error:", err.message);
+    // Pastikan SELALU kirim JSON, bahkan saat error
+    return res.status(500).json({ error: `Gagal menghasilkan gambar: ${err.message}` });
   }
 });
 // ==========================================================
@@ -339,14 +317,14 @@ Gunakan format berikut dalam setiap jawaban:
 ### 📜 ATURAN UTAMA SUMBER TEPERCAYA:
 1.  **Akurasi:** Jawab hanya berdasarkan informasi faktual, valid, dan akurat.
 2.  **PEMBERIAN LINK (SANGAT PENTING):**
-    a. Jika pengguna secara eksplisit meminta link sumber terpercaya ("berikan link", "sumbernya mana?", "tautan berita"), **WAJIB** berikan link yang valid dan relevan dari daftar WHITELIST.
+    a. Jika pengguna secara eksplisit meminta link sumber tepercaya ("berikan link", "sumbernya mana?", "tautan berita"), **WAJIB** berikan link yang valid dan relevan dari daftar WHITELIST.
     b. Jika pengguna **TIDAK** meminta link, **JANGAN** berikan link atau URL dalam balasanmu, cukup berikan nama sumber atau informasi faktualnya saja.
     c. Gunakan pencarian real-time untuk menemukan tautan yang paling valid dan terbaru dari WHITELIST.
 3.  **Integritas Link:** Dilarang keras membuat link palsu atau sumber yang tidak ada. Selalu cek validitas sebelum memberikan link.
 4.  **Keraguan:** Jika ragu terhadap fakta atau tidak menemukan informasi pasti, katakan "**Saya tidak menemukan informasi pasti mengenai hal ini.**"
 5.  **Hoax:** Kamu tidak bisa terjebak hoax. Utamakan keakuratan, bukan kecepatan.
 6.  **Pencarian Real-Time:** Jika pengguna meminta informasi terbaru, kamu **diizinkan** untuk melakukan pencarian real-time untuk mendapatkan data terkini.
-7.  **Default:** Jika pengguna tidak meminta sumber terpercaya, kamu tetap boleh menjawab normal selama informasi yang diberikan valid dan akurat.
+7.  **Default:** Jika pengguna tidak meminta sumber tepercaya, kamu tetap boleh menjawab normal selama informasi yang diberikan valid dan akurat.
 
 ### 🌐 DAFTAR DOMAIN WHITELIST TEPERCAYA:
 ${domainList}
