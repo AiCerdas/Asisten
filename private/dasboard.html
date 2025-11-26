@@ -1745,7 +1745,7 @@
         document.getElementById('imagePromptInput').focus();
       }
       
-      // ** FUNGSI BARU: initImageCreatorModal **
+      // ** FUNGSI BARU: initImageCreatorModal - DIPERBAIKI **
       function initImageCreatorModal() {
         const modal = document.getElementById('imageCreatorModal');
         const closeBtn = document.getElementById('closeImageCreatorModal');
@@ -1799,47 +1799,55 @@
           document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
           
           try {
-            // ** NOTE: Endpoint ini harus tersedia di server Anda dan memproses permintaan **
-            const response = await fetch("/api/generate-image", {
+            // ** PERBAIKAN: Gunakan endpoint baru dengan error handling JSON **
+            const response = await fetch("/generate-image", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt: prompt, n: 2 }) // Minta 2 gambar
+              body: JSON.stringify({ prompt: prompt })
             });
 
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || `Error: ${response.status} - ${response.statusText}`);
+            let data;
+            try {
+              data = await response.json();
+            } catch (e) {
+              throw new Error("Server mengirim respons tidak valid. Bukan JSON.");
             }
 
-            const data = await response.json();
-            
+            if (!response.ok) {
+              throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
+            }
+
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
             typingDiv.remove(); // Hapus indikator mengetik
 
-            if (!data.image_urls || data.image_urls.length === 0) {
-              throw new Error("Gagal mendapatkan URL gambar dari server.");
+            if (!data.image) {
+              throw new Error("Tidak ada gambar yang dihasilkan oleh server.");
             }
             
             resultContainer.innerHTML = '';
             resultContainer.style.alignItems = 'flex-start';
-            let chatMessageContent = `Gambar berhasil dibuat dari prompt: <i>"${prompt}"</i><br><br>`;
             
-            // Tampilkan gambar di modal dan siapkan konten chat
-            data.image_urls.forEach((url, index) => {
-                // Tampilkan di modal
-                const img = document.createElement('img');
-                img.src = url;
-                img.className = 'generated-image';
-                img.alt = `Hasil Gambar ${index + 1}`;
-                img.onclick = () => window.open(url, '_blank'); // Buka gambar di tab baru
-                resultContainer.appendChild(img);
-                
-                // Siapkan konten chat (embed gambar di chat)
-                chatMessageContent += `<img src="${url}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; display: block;" alt="Gambar Dibuat AI ${index + 1}"><br>`;
-            });
+            // Tampilkan gambar di modal
+            const img = document.createElement('img');
+            img.src = "data:image/png;base64," + data.image;
+            img.className = 'generated-image';
+            img.alt = 'Hasil Gambar AI';
+            img.onclick = () => {
+              // Buka gambar di tab baru
+              const newWindow = window.open();
+              newWindow.document.write(`<img src="${img.src}" style="max-width: 100%; height: auto;">`);
+            };
+            resultContainer.appendChild(img);
+            
+            // Siapkan konten chat (embed gambar di chat)
+            const chatMessageContent = `Gambar berhasil dibuat dari prompt: <i>"${prompt}"</i><br><br>
+              <img src="${img.src}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; display: block;" alt="Gambar Dibuat AI">`;
             
             // Tampilkan pesan sukses di chatbox dengan gambar
             addMessage('AbidinAI', chatMessageContent, 'ai-message');
-
 
           } catch (error) {
             console.error("Error generating image:", error);
@@ -1849,7 +1857,7 @@
                 `<p style="color: #ef4444; text-align: center;">Gagal membuat gambar: ${error.message}. Coba lagi nanti.</p>`;
             
             // Kirim pesan error ke chat
-            addMessage('AbidinAI', `❌ Gagal membuat gambar untuk prompt: <i>"${prompt}"</i>. Server error: ${error.message}`, 'ai-message');
+            addMessage('AbidinAI', `❌ Gagal membuat gambar untuk prompt: <i>"${prompt}"</i>. Error: ${error.message}`, 'ai-message');
             
           } finally {
             generateBtn.disabled = false;
