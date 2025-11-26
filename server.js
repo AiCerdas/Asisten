@@ -5,9 +5,7 @@ require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
-// PERBAIKAN: Ganti ke library resmi baru untuk fitur gambar
-// const { GoogleGenerativeAI } = require('@google/generative-ai'); // Kode lama
-const { GoogleGenAI } = require('@google/genai'); // Gunakan GoogleGenAI dari @google/genai
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,60 +25,11 @@ app.use(express.json());
 // ==========================================================
 // 🚨 INI BAGIAN UTAMA YANG DIPERBAIKI 🚨
 // ==========================================================
-// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Kode lama
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }); // Inisialisasi GoogleGenAI dari @google/genai
-// const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Kode lama
-const geminiModel = ai.models.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); // Sesuaikan dengan ai.models
-
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+// 🆕 Model untuk Image Generation (menggunakan Imagen 3.0)
+const imageGenerationModel = genAI.getGenerativeModel({ model: "imagen-3.0-generate-002" });
 // ==========================================================
-// 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI (IMAGEN) - DIPERBAIKI 🎨
-// PERBAIKAN: Ganti endpoint ke /generate-image
-// PERBAIKAN: Gunakan library @google/genai dan model gemini-2.5-flash-image
-// PERBAIKAN: Pastikan response SELALU JSON
-// ==========================================================
-// app.post('/api/generate-image', async (req, res) => { ... }) // Endpoint lama dihapus/diganti
-app.post("/generate-image", async (req, res) => {
-  try {
-    const prompt = req.body.prompt;
-    
-    if (!prompt) {
-        return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
-    }
-
-    // Menggunakan gemini-2.5-flash-image seperti instruksi
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: prompt,
-    });
-
-    // Menarik bagian 'inlineData' (base64 gambar)
-    const parts = response.candidates[0].content.parts;
-
-    let base64Image = null;
-
-    for (const part of parts) {
-      if (part.inlineData) {
-        // base64 data adalah part.inlineData.data
-        base64Image = part.inlineData.data; 
-        break; // Ambil gambar pertama saja
-      }
-    }
-    
-    if (!base64Image) {
-        return res.json({ error: "Model tidak menghasilkan gambar." });
-    }
-
-    // Response HARUS berupa JSON valid
-    return res.json({ image: base64Image });
-  } catch (err) {
-    console.error("Gemini Image Generation Error:", err.message);
-    // Pastikan SELALU kirim JSON, bahkan saat error
-    return res.status(500).json({ error: `Gagal menghasilkan gambar: ${err.message}` });
-  }
-});
-// ==========================================================
-
-// ... (kode lainnya tetap sama, tidak diubah)
 
 function fileToGenerativePart(buffer, mimeType) {
     return {
@@ -95,8 +44,9 @@ function fileToGenerativePart(buffer, mimeType) {
 // 🏯 ABEDINAI JAWA 2.0 – SISTEM TRANSLITERASI RESMI HANACARAKA
 // ==========================================================
 
-// ... (kode javaneseDB dan fungsi terkait tetap sama)
-
+// ==========================
+// 🕊️ DATA LATIHAN AKSARA JAWA
+// ==========================
 const javaneseDB = {
   context: `
 Kamu adalah *AbedinAI Jawa*, asisten AI pelatih aksara Hanacaraka (Aksara Jawa).
@@ -128,8 +78,9 @@ Sebagai AbidinAI Jawa, jika pengguna bertanya siapa pembuatmu, jawab bahwa kamu 
   ]
 };
 
-// ... (fungsi aksaraKeLatin, latinKeAksara, isJavaneseTopic tetap sama)
-
+// ==========================
+// ⚙️ TRANSLITERASI ARAH 1: AKSARA → LATIN
+// ==========================
 function aksaraKeLatin(teks) {
   const { aksara, sandhangan } = javaneseDB;
   let hasil = "";
@@ -175,6 +126,9 @@ function aksaraKeLatin(teks) {
   return hasil;
 }
 
+// ==========================
+// ⚙️ TRANSLITERASI ARAH 2: LATIN → AKSARA
+// ==========================
 function latinKeAksara(teks) {
   const { aksara, sandhangan } = javaneseDB;
   let hasil = "";
@@ -238,6 +192,7 @@ function latinKeAksara(teks) {
   return hasil;
 }
 
+// 🔎 Kata Kunci Pendeteksi Topik Jawa
 const javanese_keywords = [
     "bahasa jawa", "aksara jawa", "hanacaraka", "carakan", "sandhangan",
     "pangkon", "murda", "rekan", "swara", "pasangan", "transliterasi",
@@ -257,7 +212,9 @@ function isJavaneseTopic(message) {
     return javanese_keywords.some(keyword => lowerCaseMessage.includes(keyword));
 }
 
-// ... (kode trustedDomains, getGroqResponse, dan endpoint lainnya tetap sama)
+// ==========================================================
+// 🆕 FITUR BARU: DAFTAR DOMAIN DAN SUMBER TERPERCAYA (WHITELIST)
+// ==========================================================
 
 const trustedDomains = [
     "kompas.com", "detik.com", "tempo.co", "cnnindonesia.com", "cnbcindonesia.com", 
@@ -294,6 +251,9 @@ function getTrustedDomainsString() {
     return trustedDomains.join(', ');
 }
 
+// ==========================================================
+// ⚙️ FUNGSI BANTUAN GROQ
+// ==========================================================
 async function getGroqResponse(message, systemPromptOverride = null) {
   if (!process.env.GROQ_API_KEY) {
       throw new Error("GROQ_API_KEY belum dikonfigurasi di file .env.");
@@ -310,21 +270,21 @@ async function getGroqResponse(message, systemPromptOverride = null) {
 Kamu adalah AbidinAI, asisten AI terpercaya.
 Kamu adalah AbidinAI — asisten kecerdasan buatan yang sangat cerdas, cepat beradaptasi, dan berwawasan luas.  
 Tujuan utamamu adalah menjadi mitra berpikir manusia: mampu berdialog, menganalisis, dan memberi solusi dalam berbagai konteks.  
-Kamu bisa browse real-time untuk mencari informasi terbaru dan merangkum artikel.
-kamu adalah AbidinAI - asisten AI cerdas yang selalu menulis jawaban dengan format rapi, terstruktur, dan mudah dipahami.
+Kamu bisa browsing real-time untuk mencari informasi terbaru dan merangkum artikel.
+kmu adalah AbidinAI - asisten AI cerdas yang selalu menulis jawaban dengan format rapi, terstruktur, dan mudah dipahami.
 Gunakan format berikut dalam setiap jawaban:
 
 ### 📜 ATURAN UTAMA SUMBER TEPERCAYA:
 1.  **Akurasi:** Jawab hanya berdasarkan informasi faktual, valid, dan akurat.
 2.  **PEMBERIAN LINK (SANGAT PENTING):**
-    a. Jika pengguna secara eksplisit meminta link sumber tepercaya ("berikan link", "sumbernya mana?", "tautan berita"), **WAJIB** berikan link yang valid dan relevan dari daftar WHITELIST.
+    a. Jika pengguna secara eksplisit meminta link sumber terpercaya ("berikan link", "sumbernya mana?", "tautan berita"), **WAJIB** berikan link yang valid dan relevan dari daftar WHILTELIST.
     b. Jika pengguna **TIDAK** meminta link, **JANGAN** berikan link atau URL dalam balasanmu, cukup berikan nama sumber atau informasi faktualnya saja.
-    c. Gunakan pencarian real-time untuk menemukan tautan yang paling valid dan terbaru dari WHITELIST.
+    c. Gunakan pencarian real-time untuk menemukan tautan yang paling valid dan terbaru dari WHILTELIST.
 3.  **Integritas Link:** Dilarang keras membuat link palsu atau sumber yang tidak ada. Selalu cek validitas sebelum memberikan link.
 4.  **Keraguan:** Jika ragu terhadap fakta atau tidak menemukan informasi pasti, katakan "**Saya tidak menemukan informasi pasti mengenai hal ini.**"
 5.  **Hoax:** Kamu tidak bisa terjebak hoax. Utamakan keakuratan, bukan kecepatan.
 6.  **Pencarian Real-Time:** Jika pengguna meminta informasi terbaru, kamu **diizinkan** untuk melakukan pencarian real-time untuk mendapatkan data terkini.
-7.  **Default:** Jika pengguna tidak meminta sumber tepercaya, kamu tetap boleh menjawab normal selama informasi yang diberikan valid dan akurat.
+7.  **Default:** Jika pengguna tidak meminta sumber terpercaya, kamu tetap boleh menjawab normal selama informasi yang diberikan valid dan akurat.
 
 ### 🌐 DAFTAR DOMAIN WHITELIST TEPERCAYA:
 ${domainList}
@@ -365,6 +325,9 @@ ${domainList}
   return data.choices?.[0]?.message?.content || "Maaf, AI tidak memberikan balasan yang valid.";
 }
 
+// ==========================================================
+// ¨ ENDPOINT UTAMA YANG DIPERBAIKI
+// ==========================================================
 app.post('/api/chat', async (req, res) => {
   const { message, system_prompt } = req.body;
   
@@ -403,6 +366,9 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// ==========================================================
+// ¨ ENDPOINT TELEGRAM
+// ==========================================================
 app.post('/api/telegram', async (req, res) => {
   const { text } = req.body;
 
@@ -441,6 +407,9 @@ app.post('/api/telegram', async (req, res) => {
   }
 });
 
+// ==========================================================
+// 🖼️ ENDPOINT OCR
+// ==========================================================
 app.post('/api/ocr', upload.array('image', 5), async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   const { user_prompt } = req.body;
@@ -548,6 +517,86 @@ ${combinedGeminiAnalysis}`;
   }
 });
 
+
+// ==========================================================
+// 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI (IMAGEN) - DIPERBAIKI 🎨
+// ==========================================================
+app.post('/api/image-generation', async (req, res) => {
+  const { prompt, count = 1, aspect_ratio = "1:1" } = req.body;
+  
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
+  }
+
+  // Validasi jumlah gambar (maksimal 4 sesuai dokumentasi)
+  const finalCount = Math.min(Math.max(parseInt(count) || 1, 1), 4);
+  
+  // Mapping rasio aspek
+  let size;
+  switch (aspect_ratio) {
+      case "9:16":
+          size = "1080x1920"; // Portrait
+          break;
+      case "16:9":
+          size = "1920x1080"; // Landscape
+          break;
+      case "4:3":
+          size = "1024x768";
+          break;
+      case "3:4":
+          size = "768x1024";
+          break;
+      case "1:1":
+      default:
+          size = "1024x1024"; // Square
+          break;
+  }
+
+  console.log(`➡️ Memicu Generasi Gambar: Prompt='${prompt}' | Count=${finalCount} | Size=${size}`);
+
+  try {
+    // PERBAIKAN: Gunakan model Imagen 3.0 yang benar untuk generasi gambar
+    const result = await imageGenerationModel.generateImages({
+      prompt: prompt,
+      numberOfImages: finalCount,
+      // Opsional: tambahkan parameter tambahan jika didukung
+      // width: parseInt(size.split('x')[0]),
+      // height: parseInt(size.split('x')[1])
+    });
+
+    // Format respons sesuai output dari Gemini Image Generation
+    const imageUrls = result.images.map((image, index) => {
+      return {
+        index: index + 1,
+        base64: image.base64Data, // Data gambar dalam format base64
+        url: `data:image/png;base64,${image.base64Data}`, // Data URI untuk ditampilkan
+        mimeType: 'image/png'
+      };
+    });
+
+    res.json({ 
+      status: "success",
+      message: "Gambar berhasil dihasilkan menggunakan Gemini Imagen 3.0",
+      prompt: prompt,
+      count: imageUrls.length,
+      aspect_ratio: aspect_ratio,
+      images: imageUrls
+    });
+
+  } catch (error) {
+    console.error("Gemini Image Generation Error:", error);
+    
+    // Fallback: Jika masih error, berikan pesan yang lebih spesifik
+    res.status(500).json({ 
+      error: 'Gagal menghasilkan gambar dari Gemini API.', 
+      details: error.message,
+      suggestion: "Pastikan API key memiliki akses ke fitur Imagen 3.0 dan model tersedia di region Anda."
+    });
+  }
+});
+// ==========================================================
+
+// ENDPOINT LAINNYA TETAP SAMA
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
@@ -580,6 +629,8 @@ app.post('/api/research', async (req, res) => {
     } catch (error) {
         results.wikipedia.message = `Gagal mencari di Wikipedia: ${error.message}`;
     }
+
+    // ... (kode research lainnya tetap sama)
 
     res.json(results);
 });
