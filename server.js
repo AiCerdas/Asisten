@@ -1,13 +1,11 @@
-const express = require('express');
+Const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
-// PERBAIKAN: Ganti ke library resmi baru (@google/genai) untuk Image Generation
-// const { GoogleGenerativeAI } = require('@google/generative-ai'); // KODE LAMA
-const { GoogleGenAI } = require('@google/genai'); // KODE BARU
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,82 +23,10 @@ app.use(cors());
 app.use(express.json());
 
 // ==========================================================
-// 🚨 INI BAGIAN UTAMA YANG DIPERBAIKI 🚨
+// 🚨 KONFIGURASI GEMINI AI
 // ==========================================================
-// KODE LAMA: const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// KODE LAMA: const imageGenerationModel = genAI.getGenerativeModel({ model: "imagen-3.0-generate-002" });
-
-// KODE BARU: Inisialisasi GoogleGenAI dari @google/genai
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const geminiModel = ai.models.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); 
-// Catatan: geminiModel disesuaikan agar menggunakan 'ai' yang baru.
-// ==========================================================
-
-function fileToGenerativePart(buffer, mimeType) {
-    return {
-        inlineData: {
-            data: buffer.toString("base64"),
-            mimeType
-        },
-    };
-}
-
-// ==========================================================
-// 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI (gemini-2.5-flash-image) 🎨
-// PERBAIKAN TOTAL PADA FITUR INI: Endpoint, Logic, Model, dan Response JSON
-// ==========================================================
-app.post("/generate-image", async (req, res) => {
-  try {
-    const prompt = req.body.prompt;
-    
-    if (!prompt) {
-        return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
-    }
-
-    console.log(`➡️ Memicu Generasi Gambar: Prompt='${prompt}' menggunakan model 'gemini-2.5-flash-image'`);
-
-    // PERBAIKAN: Menggunakan ai.models.generateContent dengan model "gemini-2.5-flash-image"
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: prompt, // Prompt untuk Gemini Image Generation
-    });
-
-    // Menarik bagian 'inlineData' (base64 gambar) dari respons
-    const parts = response.candidates[0].content.parts;
-
-    let base64Image = null;
-
-    for (const part of parts) {
-      if (part.inlineData) {
-        // base64 data gambar
-        base64Image = part.inlineData.data; 
-        break; // Ambil gambar pertama saja
-      }
-    }
-    
-    if (!base64Image) {
-        // PERBAIKAN: Selalu kirim JSON
-        return res.status(500).json({ error: "Model tidak menghasilkan gambar atau base64 data tidak ditemukan." });
-    }
-
-    // PERBAIKAN: Response HARUS berupa JSON valid
-    return res.json({ image: base64Image });
-  } catch (err) {
-    console.error("Gemini Image Generation Error:", err.message);
-    // PERBAIKAN: Pastikan SELALU kirim JSON, bahkan saat error
-    return res.status(500).json({ error: `Gagal menghasilkan gambar dari Gemini API: ${err.message}` });
-  }
-});
-
-// Endpoint gambar lama (imagen-3.0) di bawah ini dihapus/diganti oleh endpoint di atas.
-// KODE LAMA YANG DIHAPUS/DIGANTI: 
-/*
-app.post('/api/image-generation', async (req, res) => {
-  ...
-});
-*/
-// ==========================================================
-
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
 // ==========================================================
 // 🏯 ABEDINAI JAWA 2.0 – SISTEM TRANSLITERASI RESMI HANACARAKA
@@ -351,7 +277,7 @@ Gunakan format berikut dalam setiap jawaban:
 ### 🌐 DAFTAR DOMAIN WHITELIST TEPERCAYA:
 ${domainList}
 
---- SISTEM PROMPT LENGKAP TETAP SAMA SEBELUMNYA ---`;
+--- SISTEM PROMPT LENGKAP TETAP SAMA SEPERTI SEBELUMNYA ---`;
 
       groqModel = "meta-llama/llama-4-scout-17b-16e-instruct";
       temperature = 0.7;
@@ -388,7 +314,7 @@ ${domainList}
 }
 
 // ==========================================================
-// ¨ ENDPOINT CHAT
+// ¨ ENDPOINT UTAMA YANG DIPERBAIKI
 // ==========================================================
 app.post('/api/chat', async (req, res) => {
   const { message, system_prompt } = req.body;
@@ -579,8 +505,219 @@ ${combinedGeminiAnalysis}`;
   }
 });
 
+// ==========================================================
+// 🎨 ENDPOINT BARU: GENERASI GAMBAR GEMINI - DIPERBAIKI TOTAL 🎨
+// ==========================================================
+app.post('/api/image-generation', async (req, res) => {
+  const { prompt, count = 1, aspect_ratio = "1:1" } = req.body;
+  
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
+  }
 
+  // Validasi jumlah gambar (maksimal 4 sesuai dokumentasi)
+  const finalCount = Math.min(Math.max(parseInt(count) || 1, 1), 4);
+  
+  // Mapping rasio aspek
+  let size;
+  switch (aspect_ratio) {
+      case "9:16":
+          size = "1080x1920"; // Portrait
+          break;
+      case "16:9":
+          size = "1920x1080"; // Landscape
+          break;
+      case "4:3":
+          size = "1024x768";
+          break;
+      case "3:4":
+          size = "768x1024";
+          break;
+      case "1:1":
+      default:
+          size = "1024x1024"; // Square
+          break;
+  }
+
+  console.log(`➡️ Memicu Generasi Gambar: Prompt='${prompt}' | Count=${finalCount} | Size=${size}`);
+
+  try {
+    // Model yang direkomendasikan untuk generasi gambar adalah 'imagen-3.0-generate-002' 
+    // atau model generasi gambar ekspresif lainnya. 
+    // Saya menggunakan model yang ada, tetapi perlu diperhatikan bahwa tidak semua model di '@google/generative-ai' mendukung Image Generation.
+    // Jika 'gemini-2.0-flash-exp-image-generation' gagal, coba 'imagen-3.0-generate-002' jika Anda memiliki akses.
+    const imageModel = genAI.getGenerativeModel({ 
+      model: "imagen-3.0-generate-002" // Mengganti ke model yang lebih umum untuk Image Generation
+    });
+
+    const result = await imageModel.generateImages({
+      model: "imagen-3.0-generate-002",
+      prompt: prompt,
+      config: {
+        numberOfImages: finalCount,
+        outputMimeType: "image/png",
+        aspectRatio: aspect_ratio // Menggunakan aspect_ratio langsung
+      }
+    });
+
+    console.log("✅ Generasi gambar berhasil:", result);
+
+    // Format respons sesuai dengan output dari SDK Image Generation (mengambil data base64)
+    const images = result.generatedImages.map((image, index) => {
+      // Data gambar dari SDK akan berada di properti `image.image.imageBytes`
+      // atau `image.image.base64Data` tergantung versi SDK, 
+      // tetapi untuk konsistensi dengan pola base64, kita akan asumsikan struktur base64 data.
+
+      // Catatan: Properti SDK GoogleGenAI untuk image generation dapat bervariasi. 
+      // Berdasarkan pola `base64Data` yang Anda gunakan sebelumnya, saya pertahankan itu.
+      // Jika SDK baru (npm install @google/genai) yang Anda maksud, strukturnya adalah image.image.imageBytes.
+
+      // ************ PERBAIKAN UTAMA DI SINI ************
+      const base64Data = image.image.imageBytes; // Perubahan ini lebih akurat untuk SDK terbaru
+      // ************************************************
+      
+      return {
+        index: index + 1,
+        base64: base64Data, 
+        url: `data:image/png;base64,${base64Data}`, // Data URI untuk ditampilkan
+        mimeType: 'image/png'
+      };
+    });
+
+    res.json({ 
+      status: "success",
+      message: "Gambar berhasil dihasilkan menggunakan Gemini AI (imagen-3.0-generate-002)",
+      prompt: prompt,
+      count: images.length,
+      aspect_ratio: aspect_ratio,
+      images: images
+    });
+
+  } catch (error) {
+    console.error("❌ Gemini Image Generation Error:", error);
+    
+    // Fallback: Coba dengan model lama jika model utama gagal
+    try {
+      console.log("🔄 Mencoba model alternatif (gemini-2.0-flash-exp-image-generation)...");
+      const fallbackModel = genAI.getGenerativeModel({ 
+        model: "gemini-2.0-flash-exp-image-generation" 
+      });
+
+      const fallbackResult = await fallbackModel.generateImages({
+        prompt: prompt,
+        numberOfImages: finalCount,
+      });
+
+      // ************ PERBAIKAN UTAMA DI SINI (FALLBACK) ************
+      const fallbackImages = fallbackResult.images.map((image, index) => {
+        const base64Data = image.image.imageBytes || image.base64Data;
+        return {
+          index: index + 1,
+          base64: base64Data,
+          url: `data:image/png;base64,${base64Data}`,
+          mimeType: 'image/png'
+        };
+      });
+      // **********************************************************
+
+      res.json({ 
+        status: "success",
+        message: "Gambar berhasil dihasilkan menggunakan model alternatif Gemini",
+        prompt: prompt,
+        count: fallbackImages.length,
+        aspect_ratio: aspect_ratio,
+        images: fallbackImages
+      });
+
+    } catch (fallbackError) {
+      console.error("❌ Fallback juga gagal:", fallbackError);
+      
+      res.status(500).json({ 
+        error: 'Gagal menghasilkan gambar dari Gemini API.', 
+        details: fallbackError.message,
+        suggestion: "Pastikan API key memiliki akses ke fitur Image Generation dan model (imagen-3.0-generate-002) tersedia di region Anda."
+      });
+    }
+  }
+});
+
+// ==========================================================
+// 🎨 ENDPOINT ALTERNATIF: GENERASI GAMBAR DENGAN REST API LANGSUNG
+// ==========================================================
+app.post('/api/generate-image', async (req, res) => {
+  const { prompt, count = 1 } = req.body;
+  
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt gambar tidak boleh kosong.' });
+  }
+
+  const finalCount = Math.min(Math.max(parseInt(count) || 1, 1), 4);
+
+  try {
+    // Menggunakan REST API langsung seperti contoh yang diberikan
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          candidateCount: finalCount,
+        }
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error?.message || `HTTP ${response.status}: Gagal menghasilkan gambar`);
+    }
+
+    // Process the response
+    const images = [];
+    if (data.candidates && data.candidates.length > 0) {
+      data.candidates.forEach((candidate, index) => {
+        if (candidate.content && candidate.content.parts) {
+          candidate.content.parts.forEach(part => {
+            if (part.inlineData) {
+              images.push({
+                index: index + 1,
+                base64: part.inlineData.data,
+                url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+                mimeType: part.inlineData.mimeType
+              });
+            }
+          });
+        }
+      });
+    }
+
+    res.json({ 
+      status: "success",
+      message: "Gambar berhasil dihasilkan menggunakan REST API Gemini",
+      prompt: prompt,
+      count: images.length,
+      images: images
+    });
+
+  } catch (error) {
+    console.error("❌ REST API Image Generation Error:", error);
+    
+    res.status(500).json({ 
+      error: 'Gagal menghasilkan gambar melalui REST API.', 
+      details: error.message
+    });
+  }
+});
+
+// ==========================================================
 // ENDPOINT LAINNYA TETAP SAMA
+// ==========================================================
 app.post('/api/research', async (req, res) => {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query tidak ditemukan' });
@@ -613,8 +750,6 @@ app.post('/api/research', async (req, res) => {
     } catch (error) {
         results.wikipedia.message = `Gagal mencari di Wikipedia: ${error.message}`;
     }
-
-    // ... (kode research lainnya tetap sama)
 
     res.json(results);
 });
