@@ -21,7 +21,7 @@
       background-color: #f7f7f8;
       color: #333;
       display: flex;
-      min-height: 10vh;
+      min-height: 100vh;
       overflow-x: hidden;
     }
 
@@ -502,11 +502,6 @@
       max-width: 500px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
-    
-    /* MODAL KHUSUS GAMBAR */
-    #imageCreatorModal .modal-content {
-      max-width: 600px; /* Lebar yang lebih besar untuk gambar */
-    }
 
     .modal-header {
       display: flex;
@@ -527,53 +522,6 @@
       font-size: 20px;
       cursor: pointer;
       color: #718096;
-    }
-    
-    /* Gaya untuk input prompt di modal gambar */
-    #imagePromptInput {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-size: 16px;
-        margin-bottom: 10px;
-        resize: vertical;
-    }
-    
-    /* Gaya untuk hasil gambar */
-    #imageResultContainer {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: center;
-        margin-top: 15px;
-        min-height: 100px; /* Tinggi minimum */
-        align-items: center;
-        background: #f3f4f6;
-        padding: 15px;
-        border-radius: 8px;
-    }
-    
-    .generated-image {
-        width: 48%; /* Untuk 2 kolom di layar besar */
-        max-width: 250px;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    
-    .generated-image:hover {
-        transform: scale(1.03);
-    }
-    
-    #imageLoading {
-        display: none;
-        color: #4f46e5;
-        font-weight: 500;
-        text-align: center;
     }
 
     .upload-area {
@@ -622,20 +570,13 @@
       border-radius: 5px;
       cursor: pointer;
       font-weight: 500;
-      display: block;
+      display: none;
       margin: 10px auto;
-      width: 100%;
     }
 
     .process-btn:hover {
       background-color: #4338ca;
     }
-    
-    .process-btn:disabled {
-        background-color: #a5b4fc;
-        cursor: not-allowed;
-    }
-
 
     .ocr-result {
       margin-top: 20px;
@@ -710,11 +651,6 @@
 
       .mobile-menu-btn {
         display: flex;
-      }
-      
-      .generated-image {
-        width: 100%; /* Satu kolom di layar kecil */
-        max-width: none;
       }
     }
 
@@ -1007,44 +943,6 @@
         min-height: 20px;
     }
     /* --- Akhir Gaya Tambahan untuk Panel Shortcut Baru --- */
-    
-    /* Gaya untuk Sumber Terpercaya */
-    .source-container {
-        margin-top: 15px;
-        padding-top: 10px;
-        border-top: 1px solid #e5e5e6;
-    }
-    
-    .source-title {
-        font-weight: 600;
-        font-size: 14px;
-        color: #4a5568;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .source-list {
-        list-style: none;
-        padding-left: 0;
-    }
-    
-    .source-list li {
-        margin-bottom: 5px;
-    }
-    
-    .source-list a {
-        display: block;
-        font-size: 13px;
-        color: #4f46e5;
-        text-decoration: none;
-        word-break: break-all;
-    }
-    
-    .source-list a:hover {
-        text-decoration: underline;
-    }
   </style>
   
   <script>
@@ -1064,19 +962,7 @@
       <p>Silakan tutup Developer Tools untuk melanjutkan.</p>
     </div>
   </div>
-  
-  <div class="modal" id="imageCreatorModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-paint-brush"></i> ABIDINAI CREATOR
-        </div>
-        <button class="close-btn" id="closeImageCreatorModal">&times;</button>
-      </div>
 
-      <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
-    </div>
-  </div>
   <div class="modal" id="ocrModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1253,7 +1139,7 @@
 
     <div class="shortcut-box">
 
-<div class="btn-shortcut" onclick="openImageCreatorModal()">
+<div class="btn-shortcut" onclick="openCreatorModal()">
     <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
 
         <rect x="4" y="7" width="16" height="12" rx="2" stroke-linejoin="round"/>
@@ -1292,14 +1178,6 @@
 
     <div id="dropdownShortcutMenu" class="dropdown">
 
-      <div class="btn-shortcut" onclick="setQueryToInput('Tampilkan tren investasi dan saham terbaru: ')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2">
-        <path d="M3 17l6-6 4 4 7-7" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="19" cy="5" r="2" />
-        <path d="M3 21h18" stroke-linecap="round"/>
-    </svg>
-    Treding Investasi dll
-</div>
         <div class="item" onclick="setQueryToInput('Buat rencana perjalanan/kerja/belajar: ')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
                 <rect x="3" y="4" width="18" height="16" rx="3"/>
@@ -1383,9 +1261,6 @@
                 <i class="fas fa-plus"></i>
               </button>
               <div class="plus-menu" id="plusMenu">
-                <button class="menu-item" onclick="openImageCreatorModal()">
-                  <i class="fas fa-paint-brush"></i> Buat Gambar AI
-                </button>
                 <button class="menu-item" onclick="openDeepResearchModal()">
                   <i class="fas fa-search"></i> Riset Mendalam
                 </button>
@@ -1613,8 +1488,6 @@
           } else {
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
-              // Hapus parameter 'sources' dari fungsi addMessage saat memuat dari DB,
-              // karena DB hanya menyimpan teks mentah
               addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false);
             });
           }
@@ -1632,8 +1505,6 @@
 
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
-        
-        initImageCreatorModal(); // Panggil inisialisasi modal gambar
         initOCRModal();
         initAudioSpectrumModal();
         initDeepResearchModal();
@@ -1694,52 +1565,13 @@
         toggleShortcutMenu(); // Tutup menu setelah memilih
       }
 
-      // ** FUNGSI BARU: openCreatorModal (Diarahkan ke modal baru) **
+      // ** FUNGSI BARU: openCreatorModal **
       window.openCreatorModal = function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
-        // Ganti dengan fungsi untuk membuka modal baru
-        openImageCreatorModal();
-      }
-      
-      // ** FUNGSI BARU: openImageCreatorModal **
-      window.openImageCreatorModal = function() {
-        if (devToolsState.open) {
-          showWarning();
-          return false;
-        }
-        
-        togglePlusMenu(true); // Tutup Plus Menu
-        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
-        if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
-             dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
-             isShortcutMenuOpen = false;
-        }
-
-        const modal = document.getElementById('imageCreatorModal');
-        modal.style.display = 'flex';
-        
-        // Reset state
-        document.getElementById('imageResultContainer').innerHTML = 
-            '<p style="color: #718096;">Gambar yang dibuat akan muncul di sini.</p>';
-        document.getElementById('imagePromptInput').value = '';
-        document.getElementById('generateImageBtn').disabled = false;
-        document.getElementById('imageLoading').style.display = 'none';
-        
-        document.getElementById('imagePromptInput').focus();
-      }
-      
-      // ** FUNGSI BARU: initImageCreatorModal - DIPERBAIKI **
-      function initImageCreatorModal() {
-        const modal = document.getElementById('imageCreatorModal');
-        const closeBtn = document.getElementById('closeImageCreatorModal');
-
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) modal.style.display = 'none';
-        });
+        window.location.href = "creator.html";
       }
 
       // ** MODIFIKASI KUNCI DI SINI **
@@ -1963,8 +1795,8 @@
         async function processAllImages() {
           if (selectedFiles.length === 0) return;
 
-          processBtn.disabled = true;
-          loadingDiv.style.display = 'flex';
+          processBtn.style.display = 'none';
+          progressContainer.style.display = 'flex';
           
           let allResults = [];
           
@@ -1992,7 +1824,7 @@
             progressText.textContent = `Error: ${error.message}`;
             setTimeout(() => {
               progressContainer.style.display = 'none';
-              processBtn.disabled = false;
+              processBtn.style.display = 'block';
             }, 2000);
           }
         }
@@ -2073,8 +1905,6 @@
             reader.readAsDataURL(file);
           });
           
-          // Reset tombol proses
-          processBtn.disabled = false;
           // Tutup modal
           modal.style.display = 'none';
         }
@@ -2086,15 +1916,14 @@
       let isPlusMenuOpen = false;
 
       // Fungsi untuk menampilkan/menyembunyikan menu plus
-      window.togglePlusMenu = function(forceClose = false) {
+      window.togglePlusMenu = function() {
         const plusMenu = document.getElementById('plusMenu');
-        if (isPlusMenuOpen || forceClose) {
+        if (isPlusMenuOpen) {
           plusMenu.style.display = 'none';
-          isPlusMenuOpen = false;
         } else {
           plusMenu.style.display = 'flex';
-          isPlusMenuOpen = true;
         }
+        isPlusMenuOpen = !isPlusMenuOpen;
       }
 
       // Tambahkan event listener untuk menutup menu saat klik di luar
@@ -2124,7 +1953,7 @@
         }
         const modal = document.getElementById('audioSpectrumModal');
         modal.style.display = 'flex';
-        togglePlusMenu(true);
+        togglePlusMenu();
       };
 
       function initAudioSpectrumModal() {
@@ -2148,7 +1977,7 @@
         input.value = messageInput.value.trim();
 
         modal.style.display = 'flex';
-        togglePlusMenu(true); // Tutup Plus Menu
+        togglePlusMenu(); // Tutup Plus Menu
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
              dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
@@ -2160,7 +1989,7 @@
         sendBtn.onclick = function() {
             const query = input.value.trim();
             if (query) {
-                sendMessageWithCommand(query); // Kirim query riset langsung
+                sendMessageWithCommand(`Berikut hasil riset untuk <b>${query}</b>`);
                 modal.style.display = 'none';
             }
         };
@@ -2191,7 +2020,7 @@
         const messageInput = document.getElementById("messageInput");
 
         // Tambahkan pesan pengguna ke chatbox
-        addMessage('Anda', `Melakukan Riset Mendalam: <strong><i>${command}</i><strong/>`, 'user-message');
+        addMessage('Anda', command, 'user-message');
 
         // Tampilkan indikator mengetik
         const typingDiv = document.createElement("div");
@@ -2216,7 +2045,7 @@
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: `Lakukan Riset Mendalam untuk pertanyaan: ${command}` })
+            body: JSON.stringify({ message: command })
           });
 
           if (!response.ok) {
@@ -2230,7 +2059,7 @@
           if (!data.reply || data.reply.trim() === "") {
               displayMaintenanceMessage();
           } else {
-              displayAIResponse(data); // Kirim seluruh objek data
+              displayAIResponse(data.reply);
           }
         } catch (error) {
           console.error("Error sending command:", error);
@@ -2246,23 +2075,7 @@
       window.shareMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
-          // Ambil teks mentah dari elemen pesan utama
-          let rawText = messageTextElement.textContent || messageTextElement.innerText;
-          
-          // Hapus tag HTML yang mungkin tersisa
-          rawText = rawText.replace(/<[^>]*>?/gm, '');
-          
-          // Cek dan tambahkan sumber (jika ada)
-          const sourceContainer = document.getElementById(`${messageId}-sources`);
-          if (sourceContainer) {
-            let sourcesText = '\n\n*Sumber Terpercaya:*\n';
-            const sourceLinks = sourceContainer.querySelectorAll('a');
-            sourceLinks.forEach((link, index) => {
-              sourcesText += `${index + 1}. ${link.textContent} (${link.href})\n`;
-            });
-            rawText += sourcesText;
-          }
-
+          const rawText = messageTextElement.textContent || messageTextElement.innerText;
           const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
 
           if (navigator.share) {
@@ -2297,7 +2110,7 @@
           showWarning();
           return false;
         }
-        togglePlusMenu(true); // Tutup Plus Menu
+        togglePlusMenu(); // Tutup Plus Menu
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
              dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
@@ -2309,8 +2122,7 @@
 
         // Reset state
         document.getElementById('multiplePreviewContainer').innerHTML = '';
-        document.getElementById('processBtn').style.display = 'block'; // Pastikan tombol proses terlihat
-        document.getElementById('processBtn').disabled = false;
+        document.getElementById('processBtn').style.display = 'none';
         document.getElementById('progressContainer').style.display = 'none';
         document.getElementById('ocrResult').style.display = 'none';
         document.getElementById('fileInput').value = '';
@@ -2384,28 +2196,13 @@
         };
       };
 
-      function addMessage(sender, text, messageClass, timestamp = null, save = true, sources = []) {
+      function addMessage(sender, text, messageClass, timestamp = null, save = true) {
         const chatbox = document.getElementById("chatbox");
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${messageClass}`;
         
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         
-        // Buat HTML untuk daftar sumber
-        let sourcesHtml = '';
-        if (sources && sources.length > 0) {
-            sourcesHtml = `
-                <div class="source-container" id="${messageId}-sources">
-                    <div class="source-title"><i class="fas fa-link"></i> Sumber Terpercaya:</div>
-                    <ul class="source-list">
-                        ${sources.map((src, index) => 
-                            `<li><a href="${src.url}" target="_blank" title="${src.title}">${index + 1}. ${src.title}</a></li>`
-                        ).join('')}
-                    </ul>
-                </div>
-            `;
-        }
-
         messageDiv.innerHTML = `
           <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
             ${messageClass === 'ai-message' ? '<i class="fas fa-robot"></i>' : sender.charAt(0)}
@@ -2416,7 +2213,7 @@
               <span class="message-time">${timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : getCurrentTime()}</span>
             </div>
             <div class="message-text" id="${messageId}-text">${text}</div>
-            ${sourcesHtml} ${messageClass === 'ai-message' ? `
+            ${messageClass === 'ai-message' ? `
             <div class="message-actions">
               <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
                 <i class="fas fa-copy"></i> Salin
@@ -2435,17 +2232,8 @@
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
         
-        // Hanya simpan teks balasan ke DB. Untuk pesan yang mengandung HTML (gambar),
-        // simpan teks mentah atau indikator.
         if (save) {
-          // Hanya simpan teks mentah atau pesan khusus yang bersih dari HTML/Markdown
-          let textForDB = text;
-          // Hapus tag HTML
-          textForDB = textForDB.replace(/<[^>]*>?/gm, '');
-          // Hapus kode yang dibungkus (hanya simpan kontennya)
-          textForDB = textForDB.replace(/```(?:\w+)?\n?([\s\S]*?)```/g, ' [BLOK KODE] '); 
-          
-          saveMessageToDB(sender, textForDB.trim(), timestamp);
+          saveMessageToDB(sender, text, timestamp);
         }
         
         return messageDiv;
@@ -2454,22 +2242,7 @@
       window.copyMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
-          // Ekstrak teks mentah, abaikan HTML/gambar untuk salin
-          let textToCopy = messageTextElement.innerText;
-          
-          // Hapus bagian dari pesan yang mungkin merupakan deskripsi gambar buatan AI yang tidak perlu disalin
-          textToCopy = textToCopy.replace(/Gambar berhasil dibuat dari prompt: ".*?"\n\n/i, '').trim(); 
-          
-          // Cari dan salin juga teks dari blok kode
-          let codeBlocks = [];
-          const codeContainers = messageTextElement.querySelectorAll('.code-container pre');
-          codeContainers.forEach(pre => {
-              codeBlocks.push(pre.textContent);
-          });
-          
-          if (codeBlocks.length > 0) {
-              textToCopy += '\n\n' + codeBlocks.map(code => '```\n' + code + '\n```').join('\n\n');
-          }
+          const textToCopy = messageTextElement.innerText; 
           
           navigator.clipboard.writeText(textToCopy).then(() => {
             const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
@@ -2498,11 +2271,7 @@
             return;
         }
         
-        // Ambil teks mentah dari pesan pengguna
-        let userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
-        // Hapus HTML dan indikator gambar untuk mendapatkan prompt asli
-        userMessageText = userMessageText.replace(/<[^>]*>?/gm, '').trim();
-
+        const userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
 
         const regenerateButton = document.querySelector(`button[onclick="regenerateMessage('${messageId}')"]`);
         if (regenerateButton) {
@@ -2521,10 +2290,6 @@
               <div class="loading"></div>
               AbidinAI sedang mengetik ulang...
           </div>`;
-          // Hapus sumber lama
-          const oldSourceContainer = document.getElementById(`${messageId}-sources`);
-          if (oldSourceContainer) oldSourceContainer.remove();
-
           messageDiv.classList.remove('ai-message');
           messageDiv.classList.add('user-message');
           
@@ -2543,17 +2308,18 @@
             }
 
             const data = await response.json();
-            
+            const aiReply = data.reply;
+
             // Hapus indikator mengetik
             messageTextElement.innerHTML = ''; 
             messageDiv.classList.remove('user-message');
             messageDiv.classList.add('ai-message');
             
             // Tampilkan respons baru
-            if (!data.reply || data.reply.trim() === "") {
+            if (!aiReply || aiReply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
-                displayAIResponse(data, messageTextElement); // Kirim seluruh objek data
+                displayAIResponse(aiReply, messageTextElement);
             }
             
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
@@ -2563,8 +2329,6 @@
             setTimeout(() => {
               regenerateButton.innerHTML = originalHtml;
               regenerateButton.disabled = false;
-              messageDiv.classList.remove('user-message');
-              messageDiv.classList.add('ai-message');
             }, 2000);
             
           } catch (error) {
@@ -2666,14 +2430,14 @@
           }
 
           const data = await response.json();
-          //let aiReply = data.reply; // <-- Ganti ini
+          let aiReply = data.reply;
 
           typingDiv.remove();
 
-          if (!data.reply || data.reply.trim() === "") {
+          if (!aiReply || aiReply.trim() === "") {
             displayMaintenanceMessage();
           } else {
-            displayAIResponse(data); // Kirim seluruh objek data
+            displayAIResponse(aiReply);
           }
         } catch (error) {
           typingDiv.remove();
@@ -2706,16 +2470,7 @@
         isVoiceMode = false;
       }
 
-      // ** MODIFIKASI UTAMA: Fungsi untuk menampilkan respons AI dan sumber **
-      function displayAIResponse(data, targetElement = null) {
-        const aiReply = data.reply;
-        // ** LOGIKA BARU UNTUK SUMBER **
-        // Langsung ambil sources dari data API tanpa simulasi.
-        const sources = data.sources || []; 
-        
-        // Catatan: Asumsi array 'sources' memiliki format:
-        // [{ title: "Judul Sumber", url: "URL Sumber" }, ...]
-
+      function displayAIResponse(aiReply, targetElement = null) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
@@ -2725,39 +2480,13 @@
         }
         
         let messageTextContainer;
-        let messageDiv;
-        let messageId; // Deklarasi di sini agar bisa digunakan di scope ini
-
         if (targetElement) {
             messageTextContainer = targetElement;
-            messageDiv = targetElement.closest('.message');
-            messageId = messageTextContainer.id.replace('-text', ''); // Ambil ID pesan yang sudah ada
-            
-            // Hapus sumber lama
-            const oldSourceContainer = messageDiv.querySelector('.source-container');
-            if (oldSourceContainer) oldSourceContainer.remove();
         } else {
-            messageDiv = document.createElement("div");
-            messageDiv.className = "message ai-message";
-            messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            
-            
-            // Buat HTML sumber (akan dirender ulang di bawah)
-            let sourcesHtml = '';
-            if (sources && sources.length > 0) {
-                sourcesHtml = `
-                    <div class="source-container" id="${messageId}-sources">
-                        <div class="source-title"><i class="fas fa-link"></i> Sumber Terpercaya:</div>
-                        <ul class="source-list">
-                            ${sources.map((src, index) => 
-                                `<li><a href="${src.url}" target="_blank" title="${src.title}">${index + 1}. ${src.title}</a></li>`
-                            ).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            messageDiv.innerHTML = `
+            const container = document.createElement("div");
+            container.className = "message ai-message";
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            container.innerHTML = `
               <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
               <div class="message-content">
                 <div class="message-header">
@@ -2765,7 +2494,7 @@
                   <span class="message-time">${getCurrentTime()}</span>
                 </div>
                 <div class="message-text" id="${messageId}-text"></div>
-                ${sourcesHtml} <div class="message-actions">
+                <div class="message-actions">
                   <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
                     <i class="fas fa-copy"></i> Salin
                   </button>
@@ -2778,8 +2507,8 @@
                 </div>
               </div>
             `;
-            chatbox.appendChild(messageDiv);
-            messageTextContainer = messageDiv.querySelector('.message-text');
+            chatbox.appendChild(container);
+            messageTextContainer = container.querySelector('.message-text');
             saveMessageToDB('AbidinAI', aiReply);
         }
 
@@ -2821,21 +2550,6 @@
             messageTextContainer.appendChild(codeContainer);
           }
         }
-
-        // TAMBAHKAN KEMBALI SUMBER JIKA ADA, UNTUK KASUS REGENERATE
-        if (targetElement && sources && sources.length > 0) {
-            let sourcesHtml = `
-                <div class="source-container" id="${messageId}-sources">
-                    <div class="source-title"><i class="fas fa-link"></i> Sumber Terpercaya:</div>
-                    <ul class="source-list">
-                        ${sources.map((src, index) => 
-                            `<li><a href="${src.url}" target="_blank" title="${src.title}">${index + 1}. ${src.title}</a></li>`
-                        ).join('')}
-                    </ul>
-                </div>
-            `;
-            messageDiv.querySelector('.message-content').insertAdjacentHTML('beforeend', sourcesHtml);
-        }
         
         chatbox.scrollTop = chatbox.scrollHeight;
         sendButton.disabled = false;
@@ -2845,7 +2559,6 @@
         }
         isVoiceMode = false;
       }
-      // ** AKHIR MODIFIKASI UTAMA **
 
       function readWithPauses(text) {
         if (!('speechSynthesis' in window)) {
