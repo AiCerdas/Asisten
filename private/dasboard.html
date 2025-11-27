@@ -1074,21 +1074,7 @@
         <button class="close-btn" id="closeImageCreatorModal">&times;</button>
       </div>
 
-      <p style="margin-bottom: 10px; color: #4a5568;">Masukkan deskripsi gambar yang Anda inginkan (gunakan Bahasa Inggris untuk hasil terbaik).</p>
-      <textarea id="imagePromptInput" placeholder="Contoh: A futuristic cityscape at sunset, highly detailed, digital painting..." rows="3"></textarea>
-      
-      <button id="generateImageBtn" class="process-btn">
-        <i class="fas fa-magic"></i> Buat Gambar
-      </button>
-
-      <div id="imageLoading" class="ocr-progress">
-        <div class="loading"></div>
-        <span id="imageProgressText">Membuat gambar... Ini mungkin memerlukan waktu 30-60 detik.</span>
-      </div>
-
-      <div id="imageResultContainer">
-        <p style="color: #718096;">Gambar yang dibuat akan muncul di sini.</p>
-      </div>
+      <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
     </div>
   </div>
   <div class="modal" id="ocrModal">
@@ -1749,122 +1735,11 @@
       function initImageCreatorModal() {
         const modal = document.getElementById('imageCreatorModal');
         const closeBtn = document.getElementById('closeImageCreatorModal');
-        const generateBtn = document.getElementById('generateImageBtn');
-        const promptInput = document.getElementById('imagePromptInput');
-        const loadingDiv = document.getElementById('imageLoading');
-        const resultContainer = document.getElementById('imageResultContainer');
 
         closeBtn.addEventListener('click', () => modal.style.display = 'none');
         modal.addEventListener('click', (e) => {
           if (e.target === modal) modal.style.display = 'none';
         });
-        
-        generateBtn.addEventListener('click', generateImage);
-        
-        promptInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                generateImage();
-            }
-        });
-
-        async function generateImage() {
-          const prompt = promptInput.value.trim();
-          if (!prompt) {
-            alert('Silakan masukkan deskripsi gambar (prompt)!');
-            promptInput.focus();
-            return;
-          }
-
-          generateBtn.disabled = true;
-          loadingDiv.style.display = 'flex';
-          resultContainer.innerHTML = '';
-          resultContainer.style.alignItems = 'center';
-
-          // Tampilkan pesan pengguna di chatbox
-          addMessage('Anda', `Meminta pembuatan gambar: <i>"${prompt}"</i>`, 'user-message');
-          
-          const typingDiv = document.createElement("div");
-          typingDiv.className = "message ai-message";
-          typingDiv.innerHTML = `
-            <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-            <div class="message-content">
-              <div class="typing-indicator">
-                <div class="loading"></div>
-                AbidinAI sedang melukis gambar...
-              </div>
-            </div>
-          `;
-          document.getElementById("chatbox").appendChild(typingDiv);
-          document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
-          
-          try {
-            // ** PERBAIKAN: Gunakan endpoint baru dengan error handling JSON **
-            const response = await fetch("/generate-image", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt: prompt })
-            });
-
-            let data;
-            try {
-              data = await response.json();
-            } catch (e) {
-              throw new Error("Server mengirim respons tidak valid. Bukan JSON.");
-            }
-
-            if (!response.ok) {
-              throw new Error(data.error || `Error: ${response.status} - ${response.statusText}`);
-            }
-
-            if (data.error) {
-              throw new Error(data.error);
-            }
-
-            typingDiv.remove(); // Hapus indikator mengetik
-
-            if (!data.image) {
-              throw new Error("Tidak ada gambar yang dihasilkan oleh server.");
-            }
-            
-            resultContainer.innerHTML = '';
-            resultContainer.style.alignItems = 'flex-start';
-            
-            // Tampilkan gambar di modal
-            const img = document.createElement('img');
-            img.src = "data:image/png;base64," + data.image;
-            img.className = 'generated-image';
-            img.alt = 'Hasil Gambar AI';
-            img.onclick = () => {
-              // Buka gambar di tab baru
-              const newWindow = window.open();
-              newWindow.document.write(`<img src="${img.src}" style="max-width: 100%; height: auto;">`);
-            };
-            resultContainer.appendChild(img);
-            
-            // Siapkan konten chat (embed gambar di chat)
-            const chatMessageContent = `Gambar berhasil dibuat dari prompt: <i>"${prompt}"</i><br><br>
-              <img src="${img.src}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; display: block;" alt="Gambar Dibuat AI">`;
-            
-            // Tampilkan pesan sukses di chatbox dengan gambar
-            addMessage('AbidinAI', chatMessageContent, 'ai-message');
-
-          } catch (error) {
-            console.error("Error generating image:", error);
-            typingDiv.remove();
-            
-            resultContainer.innerHTML = 
-                `<p style="color: #ef4444; text-align: center;">Gagal membuat gambar: ${error.message}. Coba lagi nanti.</p>`;
-            
-            // Kirim pesan error ke chat
-            addMessage('AbidinAI', `❌ Gagal membuat gambar untuk prompt: <i>"${prompt}"</i>. Error: ${error.message}`, 'ai-message');
-            
-          } finally {
-            generateBtn.disabled = false;
-            loadingDiv.style.display = 'none';
-            document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
-          }
-        }
       }
 
       // ** MODIFIKASI KUNCI DI SINI **
