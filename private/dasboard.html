@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -981,7 +981,7 @@
           Maksimal 5 gambar (JPG/PNG, 5MB)
         </div>
         <div style="font-size: 12px; color: #718096;">
-          Format yang didukung: JPG, PNG (maks. 5MB semua)
+          Format yang didukung:<br> JPG, PNG (maks. 5MB semua)
         </div>
         <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
       </div>
@@ -989,7 +989,7 @@
       <div id="multiplePreviewContainer" class="multiple-preview-container"></div>
 
       <button id="processBtn" class="process-btn">
-        <i class="fas fa-paper-plane"></i> Proses Semua Gambar
+        <i class="fas fa-paper-plane"></i> Proses Gambar Pintar
       </button>
 
       <div class="ocr-progress" id="progressContainer" style="display: none;">
@@ -1133,7 +1133,11 @@
         <div class="avatar ai-avatar" style="width: 60px; height: 60px; font-size: 2rem;">
             <i class="fas fa-robot"></i>
         </div>
-    </div>
+        <div class="header">
+            <div class="logo-circle">
+                <img src="https://i.ibb.co.com/PKcC0nF/images-2.jpg" alt="Otak AI" />
+            </div>
+      </div>
     <div class="title-shortcut">Hallo Saya AbidinAI</div>
     <div class="subtitle-shortcut">Apa yang bisa saya bantu?</div>
 
@@ -1596,7 +1600,7 @@
             textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
             
             textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
+            textarea.style.height = (textarea.scrollHeight) + 'px');
 
             event.preventDefault();
             event.stopPropagation();
@@ -2127,7 +2131,7 @@
         document.getElementById('ocrResult').style.display = 'none';
         document.getElementById('fileInput').value = '';
         document.querySelector('.upload-text').innerHTML = 
-          '<strong>Klik untuk mengunggah gambar</strong><br>Maksimal 5 gambar (JPG/PNG, 5MB per file)';
+          '<strong>Klik untuk mengunggah gambar</strong><br>Maksimal 5 gambar (JPG/PNG, 5MB)';
         
         // Reset variabel dan hapus preview di input chat
         uploadedImages = [];
