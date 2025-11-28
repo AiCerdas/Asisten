@@ -1303,7 +1303,7 @@
         <div class="input-box">
           <div id="multiple-images-preview" style="display: none;"></div>
 
-          <textarea id="messageInput" placeholder="Ketik pesan..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+          <textarea id="messageInput" placeholder="Ketik pesan ke AbidinAI..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
@@ -2437,7 +2437,7 @@
             displayMessage = `[${uploadedImages.length} Gambar terunggah untuk dianalisis]`;
             // Jika ada extracted text, tambahkan ke display message
             if (ocrExtractedText) {
-                 displayMessage += `\n\n<i>(Hasil OCR: ${ocrExtractedText.substring(0, 100)}...)</i>`;
+                 displayMessage += `\n\n<i>(Hasil Analisis: ${ocrExtractedText.substring(0, 100)}...)</i>`;
             }
         }
 
