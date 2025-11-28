@@ -58,6 +58,16 @@
       color: #4f46e5;
     }
 
+    /* KODE MODIFIKASI DIMULAI DI SINI */
+    .sidebar-title span {
+      /* Pastikan teks AbidinAI/Balas AI di sidebar mengikuti gambar di chat-header */
+      font-weight: 700; 
+      color: #5A4FF3; /* Mengambil warna ungu dari logo */
+      font-size: 22px; /* Disesuaikan agar lebih menonjol */
+    }
+    /* KODE MODIFIKASI BERAKHIR DI SINI */
+
+
     .sidebar-menu {
       flex: 1;
       overflow-y: auto;
@@ -1058,7 +1068,7 @@
         <button class="close-btn" id="closeDeepResearchModal">&times;</button>
       </div>
       <div class="modal-body-research">
-        <p>Masukkan pertanyaan Anda. AbidinAI akan mengumpulkan informasi mendalam dari basis pengetahuan global dan riset ilmiah terbaru..</p>
+        <p>Masukkan pertanyaan Anda. Balas AI akan mengumpulkan informasi mendalam dari basis pengetahuan global dan riset ilmiah terbaru..</p>
         <div style="margin-top: 15px;">
           <input type="text" id="researchQueryInput" placeholder="Contoh: Efek rumah kaca..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px;">
         </div>
@@ -1089,8 +1099,8 @@
     <div class="sidebar-header">
       <div class="sidebar-title">
         <i class="fas fa-robot"></i>
-        <span>AbidinAI</span>
-      </div>
+        <span>Balas AI</span>
+        </div>
     </div>
 
     <div class="sidebar-menu">
@@ -1101,7 +1111,7 @@
 
       <a href="creator.html" class="menu-item" id="creatorMenuItem">
         <i class="fas fa-paint-brush"></i>
-        <span>ABIDINAI CREATOR</span>
+        <span>BALAS AI CREATOR</span>
       </a>
       <a href="translate.html" class="menu-item" id="creatorMenuItem">
   <i class="fas fa-language"></i>
@@ -1176,7 +1186,7 @@
             </div>
             </div>
         </div>
-    <div class="title-shortcut">Hallo Saya AbidinAI</div>
+    <div class="title-shortcut">Hallo Saya Balas AI</div>
     <div class="subtitle-shortcut">Apa yang bisa saya bantu?</div>
 
     <div class="shortcut-box">
@@ -1270,7 +1280,7 @@
             Dokter AI
         </a>
 
-        <div class="item" onclick="setQueryToInput('Apa itu AbidinAI?')">
+        <div class="item" onclick="setQueryToInput('Apa itu Balas AI?')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
                 <path d="M4 5h16v10H7l-3 3V5z" stroke-linejoin="round"/>
                 <path d="M9 10h6M9 7h8" stroke-linecap="round"/>
@@ -1397,7 +1407,7 @@
           console.clear();
           console.log('%c🚫 STOP!', 'color: red; font-size: 50px; font-weight: bold;');
           console.log('%c⚠️ PERINGATAN KEAMANAN!', 'color: red; font-size: 20px; font-weight: bold;');
-          console.log('%cHalaman ini dilindungi sistem keamanan AbidinAI. Akses tidak sah akan diblokir!', 'color: red; font-size: 14px;');
+          console.log('%cHalaman ini dilindungi sistem keamanan Balas AI. Akses tidak sah akan diblokir!', 'color: red; font-size: 14px;');
         }
       };
 
@@ -2072,7 +2082,7 @@
           <div class="message-content">
             <div class="typing-indicator">
               <div class="loading"></div>
-              AbidinAI sedang melakukan riset...
+              Balas AI sedang melakukan riset...
             </div>
           </div>
         `;
@@ -2118,11 +2128,11 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
           const rawText = messageTextElement.textContent || messageTextElement.innerText;
-          const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
+          const shareText = `*⚙️ Balasan Otomatis oleh Balas AI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi Balas AI._`;
 
           if (navigator.share) {
             navigator.share({
-              title: 'Balasan AbidinAI',
+              title: 'Balasan Balas AI',
               text: shareText
             }).catch(error => {
               if (error.name !== 'AbortError') {
@@ -2330,7 +2340,7 @@
           // Hapus konten pesan AI yang lama dan ganti dengan indikator mengetik
           messageTextElement.innerHTML = `<div class="typing-indicator">
               <div class="loading"></div>
-              AbidinAI sedang mengetik ulang...
+              Balas AI sedang mengetik ulang...
           </div>`;
           messageDiv.classList.remove('ai-message');
           messageDiv.classList.add('user-message');
@@ -2442,7 +2452,7 @@
           <div class="message-content">
             <div class="typing-indicator">
               <div class="loading"></div>
-              AbidinAI sedang ${uploadedImages.length > 0 ? 'menganalisis gambar dan mengetik...' : 'mengetik...'}
+              Balas AI sedang ${uploadedImages.length > 0 ? 'menganalisis gambar dan mengetik...' : 'mengetik...'}
             </div>
           </div>
         `;
@@ -2499,8 +2509,8 @@
         }
 
         const maintenanceDiv = addMessage(
-          'AbidinAI',
-          formatBoldText('<i class="fas fa-tools"></i> Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'),
+          'Balas AI',
+          formatBoldText('<i class="fas fa-tools"></i> Maaf, server Balas AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'),
           'ai-message'
         );
 
@@ -2532,7 +2542,7 @@
               <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
               <div class="message-content">
                 <div class="message-header">
-                  <span class="message-sender">AbidinAI</span>
+                  <span class="message-sender">Balas AI</span>
                   <span class="message-time">${getCurrentTime()}</span>
                 </div>
                 <div class="message-text" id="${messageId}-text"></div>
@@ -2551,7 +2561,7 @@
             `;
             chatbox.appendChild(container);
             messageTextContainer = container.querySelector('.message-text');
-            saveMessageToDB('AbidinAI', aiReply);
+            saveMessageToDB('Balas AI', aiReply);
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
