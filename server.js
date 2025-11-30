@@ -931,6 +931,7 @@ app.post('/api/unlimited-chat', async (req, res) => {
   }
 });
 
+app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'intro.html')));
 app.get('/index', (req, res) => res.sendFile(path.join(__dirname, 'private/index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'private/login.html')));
@@ -944,7 +945,5 @@ app.get('/translate', (req, res) => res.sendFile(path.join(__dirname, 'private/t
 app.get('/creator', (req, res) => res.sendFile(path.join(__dirname, 'private/creator.html')));
 // fallback
 app.use((req, res) => res.redirect('/'));
-
-app.use(express.static(path.join(__dirname)));
 
 app.listen(PORT, () => console.log(`🌐AbidinAI Server jalan di port ${PORT}`));
