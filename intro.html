@@ -215,7 +215,7 @@
    🔥 INTRO HANYA 1x SEUMUR HIDUP
 ============================================================ */
 if (localStorage.getItem("intro_done") === "true") {
-    window.location.href = "index.html";
+    window.location.href = "private/index.html";
 }
 
 /* ============================================================
@@ -235,7 +235,7 @@ function startAudio() {
     // ⏳ MASUK INDEX SETELAH 20 DETIK
     setTimeout(() => {
         localStorage.setItem("intro_done", "true");
-        window.location.href = "index.html";
+        window.location.href = "private/index.html";
     }, 15000);
 }
 
