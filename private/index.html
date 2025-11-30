@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbidinAI</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7086399222908016"
+     crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(10, 15, 35, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header {
+      margin-bottom: 30px;
+    }
+    
+    .title {
+      font-size: 28px;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, cyan, #00ffaa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+    
+    .logo {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      border-radius: 15px;
+      border: 2px solid cyan;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      margin: 0 auto 20px;
+      display: block;
+    }
+    
+    .auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .auth-btn {
+      padding: 14px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      border: none;
+    }
+    
+    .login-btn {
+      background: linear-gradient(45deg, #00ccff, #00ffcc);
+      color: black;
+    }
+    
+    .register-btn {
+      background: linear-gradient(45deg, #ff00cc, #cc00ff);
+      color: white;
+    }
+    
+    .auth-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+    }
+    
+    .auth-btn i {
+      font-size: 18px;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .title {
+        font-size: 24px;
+      }
+      
+      .auth-btn {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title"><i class="fas fa-robot"></i> AbidinAI</h1>
+      <img src="https://i.imgur.com/rSOV5AZ.jpg" alt="AbidinAI" class="logo">
+      <p>Silakan pilih untuk melanjutkan</p>
+    </div>
+    
+    <div class="auth-buttons">
+      <button onclick="window.location.href='private/login.html'" class="auth-btn login-btn">
+        <i class="fas fa-sign-in-alt"></i> Masuk
+      </button>
+      <button onclick="window.location.href='private/register.html'" class="auth-btn register-btn">
+        <i class="fas fa-user-plus"></i> Daftar
+      </button>
+    </div>
+  </div>
+</body>
+</html>
