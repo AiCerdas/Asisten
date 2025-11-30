@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AbidinAI V5</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        overflow: hidden;
+        font-family: "Orbitron", sans-serif;
+    }
+
+    /* ======================================================
+       🔥 BACKGROUND JARVIS SUPER KEREN
+    ====================================================== */
+
+    /* LAYER 1 – cahaya pusat */
+    .core-glow {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at center,
+            rgba(0,255,255,0.25) 0%,
+            rgba(0,90,90,0.15) 40%,
+            transparent 70%);
+        z-index: -3;
+        animation: glowPulse 6s infinite ease-in-out;
+    }
+
+    @keyframes glowPulse {
+        0% { opacity: 0.4; }
+        50% { opacity: 0.9; }
+        100% { opacity: 0.4; }
+    }
+
+    /* LAYER 2 – grid neon bergerak */
+    .grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(0,255,255,0.10) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,255,255,0.10) 1px, transparent 1px);
+        background-size: 70px 70px;
+        animation: gridMove 18s linear infinite;
+        z-index: -2;
+    }
+
+    @keyframes gridMove {
+        from { transform: translateY(0); }
+        to { transform: translateY(70px); }
+    }
+
+    /* LAYER 3 – partikel hologram */
+    .particles {
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(0,255,255,0.5) 2px, transparent 2px);
+        background-size: 4px 4px;
+        opacity: 0.25;
+        animation: particleDrift 35s linear infinite;
+        z-index: -1;
+    }
+
+    @keyframes particleDrift {
+        from { transform: translate(0,0); }
+        to { transform: translate(80px,120px); }
+    }
+
+    /* LAYER 4 – scanner line */
+    .scanner {
+        position: fixed;
+        width: 100%;
+        height: 3px;
+        top: -10%;
+        background: rgba(0,255,255,0.45);
+        box-shadow: 0 0 22px cyan;
+        animation: scan 4.5s linear infinite;
+        z-index: 0;
+    }
+
+    @keyframes scan {
+        0% { top: -10%; }
+        100% { top: 110%; }
+    }
+
+    /* LAYER 5 – lingkaran scanner 3 lapis */
+    .circle-layer {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 420px;
+        height: 420px;
+        transform: translate(-50%, -50%);
+        border: 2px solid rgba(0,255,255,0.25);
+        border-radius: 50%;
+        animation: rotate1 9s linear infinite;
+        filter: drop-shadow(0 0 15px cyan);
+    }
+
+    .circle-layer::before {
+        content: "";
+        position: absolute;
+        inset: 25px;
+        border: 2px dashed rgba(0,255,255,0.3);
+        border-radius: 50%;
+        animation: rotate2 11s linear infinite reverse;
+    }
+
+    .circle-layer::after {
+        content: "";
+        position: absolute;
+        inset: 55px;
+        border: 2px dotted rgba(0,255,255,0.25);
+        border-radius: 50%;
+        animation: rotate3 14s linear infinite;
+    }
+
+    @keyframes rotate1 { to { transform: translate(-50%, -50%) rotate(360deg); } }
+    @keyframes rotate2 { to { transform: rotate(360deg); } }
+    @keyframes rotate3 { to { transform: rotate(-360deg); } }
+
+    /* ======================================================
+       🔥 INTRO TEKS
+    ====================================================== */
+
+    #intro {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        z-index: 5;
+    }
+
+    .intro-title {
+        font-size: 56px;
+        font-weight: bold;
+        color: cyan;
+        text-shadow: 0 0 20px cyan, 0 0 40px #00aaff;
+        animation: glowTitle 2.2s infinite alternate;
+        letter-spacing: 3px;
+        line-height: 1.2;
+    }
+
+    @keyframes glowTitle {
+        from { opacity: 0.4; transform: scale(0.96); }
+        to   { opacity: 1; transform: scale(1.05); }
+    }
+
+    .intro-sub {
+        margin-top: 18px;
+        font-size: 20px;
+        color: #a8faff;
+        text-shadow: 0 0 12px cyan;
+        opacity: 0;
+        animation: introSub 2s forwards;
+        animation-delay: 1.5s;
+    }
+
+    @keyframes introSub {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* TAP BUTTON */
+    .tap {
+        position: fixed;
+        bottom: 40px;
+        width: 100%;
+        text-align: center;
+        font-size: 22px;
+        color: #5aeaff;
+        animation: pulse 1.5s infinite;
+        z-index: 10;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.2; }
+        50% { opacity: 1; }
+        100% { opacity: 0.2; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ================= BACKGROUND ================= -->
+<div class="core-glow"></div>
+<div class="grid"></div>
+<div class="particles"></div>
+<div class="scanner"></div>
+<div class="circle-layer"></div>
+
+<!-- ================= INTRO ================= -->
+<div id="intro">
+    <div class="intro-title">ABIDINAI<br>V5<br>TERBARU</div>
+    <div class="intro-sub">
+        Dilengkapi berbagai fitur tanpa batas. Buatan anak Indonesia. Dikembangkan oleh ilmuwan muda bernama ABIDIN.
+    </div>
+</div>
+
+<!-- TAP TO START -->
+<div class="tap">Klik untuk memulai…</div>
+
+<!-- SUARA -->
+<audio id="voice">
+    <source src="https://profound-blue-lyasdsfltp-916ri5czya.edgeone.dev/ttsmaker-file-2025-11-30-18-47-22.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ============================================================
+   🔥 INTRO HANYA 1x SEUMUR HIDUP
+============================================================ */
+if (localStorage.getItem("intro_done") === "true") {
+    window.location.href = "index.html";
+}
+
+/* ============================================================
+   🔥 START AUDIO + TIMER MASUK INDEX
+============================================================ */
+const voice = document.getElementById("voice");
+let started = false;
+
+function startAudio() {
+    if (started) return;
+    started = true;
+
+    document.querySelector(".tap").style.display = "none";
+
+    voice.play().catch(() => setTimeout(() => voice.play(), 300));
+
+    // ⏳ MASUK INDEX SETELAH 20 DETIK
+    setTimeout(() => {
+        localStorage.setItem("intro_done", "true");
+        window.location.href = "index.html";
+    }, 15000);
+}
+
+document.addEventListener("click", startAudio);
+document.addEventListener("touchstart", startAudio);
+</script>
+
+</body>
+</html>
