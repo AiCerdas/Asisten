@@ -10,6 +10,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static(path.join(__dirname, "private")));
+
 // Konfigurasi multer untuk multiple files (maksimal 5)
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -945,7 +947,5 @@ app.get('/translate', (req, res) => res.sendFile(path.join(__dirname, 'private/t
 app.get('/creator', (req, res) => res.sendFile(path.join(__dirname, 'private/creator.html')));
 // fallback
 app.use((req, res) => res.redirect('/'));
-app.use(express.static(path.join(__dirname)));
-app.use('/private', express.static(path.join(__dirname, 'private'))); 
 
 app.listen(PORT, () => console.log(`🌐AbidinAI Server jalan di port ${PORT}`));
