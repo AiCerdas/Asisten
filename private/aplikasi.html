@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Install AbidinAI</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --accent:#6ee7b7;
+    --muted:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Inter, system-ui, sans-serif;
+    background: radial-gradient(1000px 600px at 10% 20%, rgba(110,231,183,0.06), transparent 10%),
+                radial-gradient(800px 500px at 90% 80%, rgba(99,102,241,0.04), transparent 10%),
+                var(--bg);
+    color:#e6eef8;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .card{
+    width:100%;
+    max-width:520px;
+    background: rgba(255,255,255,0.03);
+    border-radius:16px;
+    padding:28px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    border: 1px solid rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+  }
+  .brand{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .logo{
+    width:64px;
+    height:64px;
+    border-radius:12px;
+    background: linear-gradient(135deg, #06b6d4, #7c3aed);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:22px;
+    color:white;
+  }
+  h1{
+    margin:0;
+    font-size:20px;
+  }
+  p.lead{
+    margin:10px 0 20px;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .btn{
+    appearance:none;
+    border:0;
+    cursor:pointer;
+    padding:14px 20px;
+    border-radius:12px;
+    font-weight:600;
+    font-size:15px;
+    display:inline-flex;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    transition:transform .12s ease;
+    background: linear-gradient(90deg, #10b981, #06b6d4);
+    color: #042028;
+    width:100%;
+    margin-bottom:15px;
+    animation: pulse 2.6s ease-in-out infinite;
+  }
+  .btn:active{ transform: scale(.97) }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 6px 24px rgba(6,182,129,0.12) }
+    50% { box-shadow: 0 10px 30px rgba(6,182,129,0.16) }
+    100% { box-shadow: 0 6px 24px rgba(6,182,129,0.12) }
+  }
+
+  .safe-box{
+    background: rgba(255,255,255,0.02);
+    padding:16px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.05);
+    margin-top:14px;
+  }
+
+  .safe-box b{
+    color:#6ee7b7;
+  }
+
+  .safe-title{
+    margin:0 0 8px;
+    font-weight:600;
+    font-size:15px;
+    color:#6ee7b7;
+  }
+
+  .status{
+    font-size:13px;
+    margin-top:12px;
+    color:var(--muted);
+  }
+
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">
+    <img src="https://i.ibb.co.com/C5shxwWT/20251120-193509.jpg" alt="Logo" style="width: 70px; height: auto;">
+</div>
+      <div>
+        <h1>Install AbidinAI</h1>
+        <div style="font-size:12px;color:#94a3b8;">Asisten AI Buatan Anak Bangsa</div>
+      </div>
+    </div>
+
+    <p class="lead">
+      Tekan tombol di bawah untuk memulai instalasi aplikasi AbidinAI.  
+      Kamu akan diarahkan ke halaman pemasangan berikutnya.
+    </p>
+
+    <!-- Tombol Install -->
+    <button id="installBtn" class="btn">
+      Install Aplikasi AbidinAI
+    </button>
+
+    <div id="statusText" class="status"></div>
+
+    <!-- Informasi Keamanan -->
+    <div class="safe-box">
+      <p class="safe-title">🛡 Informasi Keamanan AbidinAI</p>
+      <p style="font-size:13px; line-height:1.5;">
+        Jangan khawatir! <b>AbidinAI 100% aman</b> untuk di-install.  
+        Setiap versi aplikasi telah melalui pemeriksaan manual, tidak mengandung virus,
+        tidak mengambil data pribadi tanpa izin, dan sepenuhnya <b>dibangun oleh developer muda Indonesia</b>.
+        <br><br>
+        Keamanan adalah prioritas utama kami — teknologi boleh canggih, tapi privasi tetap nomor satu.
+      </p>
+    </div>
+  </div>
+
+<script>
+  const NEXT_URL = "https://example.com/next-step"; // ganti linkmu di sini
+  const installBtn = document.getElementById('installBtn');
+  const status = document.getElementById('statusText');
+
+  installBtn.addEventListener('click', () => {
+    const opened = window.open(NEXT_URL, '_blank');
+    if (opened) {
+      status.textContent = "Membuka halaman instalasi...";
+      opened.focus();
+    } else {
+      status.textContent = "Mengarahkan ke halaman instalasi...";
+      window.location.href = NEXT_URL;
+    }
+  });
+</script>
+
+</body>
+</html>
