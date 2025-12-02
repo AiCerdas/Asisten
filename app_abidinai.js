@@ -977,6 +977,7 @@ app.get('/obrolan', (req, res) => res.sendFile(path.join(__dirname, 'private/obr
 app.get('/obrolanfull', (req, res) => res.sendFile(path.join(__dirname, 'private/obrolanfull.html')));
 app.get('/translate', (req, res) => res.sendFile(path.join(__dirname, 'private/translate.html')));
 app.get('/creator', (req, res) => res.sendFile(path.join(__dirname, 'private/creator.html')));
+app.get('/aplikasi', (req, res) => res.sendFile(path.join(__dirname, 'private/aplikasi.html')));
 // fallback
 app.use((req, res) => res.redirect('/'));
 
