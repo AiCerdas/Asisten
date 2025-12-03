@@ -2505,6 +2505,7 @@
         }
       };
 
+      // *** PERBAIKAN FUNGSI DISPLAY MAINTENANCE MESSAGE ***
       function displayMaintenanceMessage() {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
@@ -2514,20 +2515,28 @@
           listeningElement = null;
         }
 
+        const rawMessage = 'Maaf, server Balas AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya!';
+
+        const formattedMessage = formatBoldText('<i class="fas fa-tools"></i> ' + rawMessage);
+
         const maintenanceDiv = addMessage(
           'Balas AI',
-          formatBoldText('<i class="fas fa-tools"></i> Maaf, server Balas AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya! 🔧'),
+          formattedMessage,
           'ai-message'
         );
 
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          readWithPauses("Maaf, server AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat.");
+          // Kirim teks mentah tanpa HTML atau Markdown ke TTS
+          readWithPauses(rawMessage);
         }
         isVoiceMode = false;
       }
+      // *** AKHIR PERBAIKAN FUNGSI DISPLAY MAINTENANCE MESSAGE ***
 
+
+      // *** PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
       function displayAIResponse(aiReply, targetElement = null) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
@@ -2571,17 +2580,22 @@
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
-        let textToRead = "";
+        let textToRead = ""; // Teks bersih untuk TTS
 
         messageTextContainer.innerHTML = '';
 
         for (let i = 0; i < parts.length; i++) {
           if (i % 2 === 0) {
+            const textPart = parts[i];
             const span = document.createElement("span");
-            span.innerHTML = formatBoldText(parts[i]);
-            textToRead += parts[i] + " ";
+            span.innerHTML = formatBoldText(textPart);
+            
+            // Tambahkan teks biasa ke textToRead
+            textToRead += textPart.replace(/\*\*/g, '') + " "; 
+            
             messageTextContainer.appendChild(span);
           } else {
+            const codeContent = parts[i];
             const codeContainer = document.createElement("div");
             codeContainer.className = "code-container";
 
@@ -2592,7 +2606,7 @@
             copyButton.className = "copy-btn";
             copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
             copyButton.onclick = () => {
-              navigator.clipboard.writeText(parts[i]).then(() => {
+              navigator.clipboard.writeText(codeContent).then(() => {
                 copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
                 setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
               });
@@ -2601,11 +2615,13 @@
             codeHeader.appendChild(copyButton);
 
             const pre = document.createElement("pre");
-            pre.textContent = parts[i];
+            pre.textContent = codeContent;
 
             codeContainer.appendChild(codeHeader);
             codeContainer.appendChild(pre);
             messageTextContainer.appendChild(codeContainer);
+            
+            // Kode blok tidak perlu dibaca oleh TTS
           }
         }
 
@@ -2617,6 +2633,8 @@
         }
         isVoiceMode = false;
       }
+      // *** AKHIR PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
+
 
       function readWithPauses(text) {
         if (!('speechSynthesis' in window)) {
@@ -2629,7 +2647,8 @@
         synth.cancel();
 
         function cleanText(t) {
-          return t.replace(/[*"`\-+/:;\\]/g, '');
+          // Hanya hapus karakter yang BUKAN bagian dari kalimat normal
+          return t.replace(/[*"`\-+/:;\\]/g, '').replace(/<i[^>]*>.*?<\/i>/g, '').trim(); 
         }
 
         function speakNext(index) {
