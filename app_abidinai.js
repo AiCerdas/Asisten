@@ -345,7 +345,7 @@ Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
 3. SEMUA output WAJIB dalam format HTML PENUH.
 4. Gunakan tag HTML yang DITUTUP LENGKAP:
    -Untuk judul gunakan tag html tebal pada umumnya.
-   - Paragraf: gunakan <p> tanpa di baca 
+   - Paragraf: gunakan tag HTML pada umumnya.
    - List: <ul><li> atau <ol><li></li></ol>
    - Tebal: <b></b>, Miring: <i></i>, Garis Bawah: <u></u>
    - Kutipan: <blockquote></blockquote>
