@@ -349,7 +349,6 @@ JANGAB Bicara kurang dari jika menjelaskan dll.
 JANGAN gunakan tanda pagar (#) dalam teks. 
 Semua output harus full HTML.
 
-   - Tebal: (<b></b>)
    - Miring: (<i></i>)
    - Garis Bawah: (<u></u>)
    - Kutipan: <blockquote></blockquote>
