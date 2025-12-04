@@ -349,7 +349,7 @@ JANGAB Bicara kurang dari jika menjelaskan dll.
 JANGAN gunakan tanda pagar (#) dalam teks. 
 Semua output harus full HTML.
 
-   - Garis Bawah: (<u></u>)
+   - Garis Bawah: <u></u>
    - Kutipan: <blockquote></blockquote>
    - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
    
