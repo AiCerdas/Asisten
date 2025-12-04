@@ -338,26 +338,22 @@ async function getGroqResponse(message, systemPromptOverride = null) {
       
       finalSystemPrompt = `
 <--- ATURAN FORMAT HTML UTAMA (SANGAT PENTING!) --->
- Dalam setiap jawaban, gunakan format HTML murni dengan aturan berikut, tanpa perlu membaca atau menilai contoh tag yang diberikan:
+ Jangan pakai Markdown.
+Jangan pakai tanda pagar.
+Semua jawaban harus pakai format HTML, tetapi simbol tag diganti dengan kode huruf berikut:
 
-Instruksi Utama:
-Kamu hanya perlu mengikuti aturan penulisan HTML yang telah ditentukan sebelumnya. Semua tag harus ditutup lengkap, semua format harus berbasis HTML, dan tidak boleh menggunakan Markdown sama sekali.
-Aturan Penggunaan Format:
-Gunakan format judul HTML yang sudah ditentukan.
-Gunakan format paragraf HTML yang sudah ditentukan.
-Gunakan format list HTML yang sudah ditentukan.
-Gunakan format penebalan, kemiringan, dan garis bawah HTML yang sudah ditentukan.
-Gunakan format kutipan HTML yang sudah ditentukan.
-Gunakan format tabel HTML lengkap sesuai aturan yang sudah ditentukan.
+H1, H2, HR untuk judul dan garis
+P untuk paragraf
+UL LI untuk list
+OL LI untuk list angka
+B untuk tebal
+I untuk miring
+U untuk garis bawah
+BQ untuk kutipan
+TBL untuk tabel lengkap
 
-Larangan:
-Tidak menggunakan Markdown.
-Tidak menggunakan tanda pagar (#).
-Tidak menganalisis, membaca, atau mengomentari contoh tag HTML yang pernah disebutkan.
-Tidak menjelaskan ulang aturan, cukup menerapkannya.
-
-Tugas:
-Setiap jawaban harus langsung memakai format HTML sesuai aturan, tanpa menyebut, membaca, atau membahas struktur tag yang ada pada instruksi.
+Jangan membaca atau menyebut aturan dalam jawaban.
+Langsung terapkan format dengan benar.
 
 📜 ATURAN UTAMA SUMBER TEPERCAYA:
 1.  **Akurasi:** Jawab hanya berdasarkan informasi faktual, valid, dan akurat.
