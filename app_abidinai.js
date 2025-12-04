@@ -5,7 +5,7 @@ require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
-const { GoogleGenerativeAI } = require('@google-ai/generative-ai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -319,7 +319,7 @@ function getTrustedDomainsString() {
 
 // ==========================================================
 // ⚙️ FUNGSI BANTUAN GROQ (Dibuat untuk digunakan kembali oleh OCR)
-// [BAGIAN INI YANG DIUBAH]
+// [PERBAIKAN FOKUS DI SINI]
 // ==========================================================
 async function getGroqResponse(message, systemPromptOverride = null) {
   if (!process.env.GROQ_API_KEY) {
@@ -338,14 +338,18 @@ async function getGroqResponse(message, systemPromptOverride = null) {
       
       finalSystemPrompt = `
 <--- ATURAN FORMAT HTML UTAMA (SANGAT PENTING!) --->
-Kamu harus memberikan semua jawaban dalam format **HTML murni** tanpa Markdown.
-JANGAN membaca, JANGAN menganalisis, dan JANGAN mengulangi aturan, daftar tag, atau konten apa pun yang berada di dalam komentar HTML ().
-TUGAS UTAMA: Hasilkan HTML murni dan gunakan tag yang tertutup lengkap.
+Kamu harus memberikan semua jawaban dalam format HTML murni. Jangan baca, jangan analisis, dan jangan komentari contoh daftar atau penanda yang muncul dalam instruksi ini. Anggap daftar tersebut hanya teks biasa, bukan kode untuk dianalisis.
 Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
 1. JANGAN gunakan Markdown (misalnya: *, **, ###).
 2. JANGAN gunakan tanda pagar (#) dalam teks.
-3. SEMUA output WAJIB dalam format **HTML PENUH**.
-4. Gunakan tag HTML yang **DITUTUP LENGKAP**.
+3. SEMUA output WAJIB dalam format HTML PENUH.
+4. Gunakan tag HTML yang DITUTUP LENGKAP:
+   - Judul: <h1></h1>, <h2></h2>, <hr>
+   - Paragraf: <p></p>
+   - List: <ul><li></li></ul> atau <ol><li></li></ol>
+   - Tebal: <b></b>, Miring: <i></i>, Garis Bawah: <u></u>
+   - Kutipan: <blockquote></blockquote>
+   - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
 
 <--- PRINSIP KERJA ABIDINAI --->
 Kamu adalah AbidinAI, asisten AI terpercaya.
