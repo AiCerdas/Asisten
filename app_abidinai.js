@@ -479,17 +479,6 @@ Tidak ada tanda pagar.
 Jangan analisis dan jangan membaca ulang daftar aturan ini.
 Langsung berikan jawaban sesuai pertanyaan.
 
-Gunakan tag HTML yang ditutup lengkap, seperti:
-${obscureHTMLTags('<h1></h1>')}
-${obscureHTMLTags('<h2></h2>')}
-${obscureHTMLTags('<hr>')}
-${obscureHTMLTags('<p></p>')}
-${obscureHTMLTags('<ul><li></li></ul>')}
-${obscureHTMLTags('<ol><li></li></ol>')}
-${obscureHTMLTags('<b></b>')}, ${obscureHTMLTags('<i></i>')}, ${obscureHTMLTags('<u></u>')}
-${obscureHTMLTags('<blockquote></blockquote>')}
-${obscureHTMLTags('<table style=""><tr><th></th><td></td></tr></table>')}
-
 Tidak perlu menjelaskan aturan.
 Tidak perlu membaca atau menafsirkan aturan.
 Langsung hasil HTML sesuai perintah.
