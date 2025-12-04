@@ -338,6 +338,16 @@ async function getGroqResponse(message, systemPromptOverride = null) {
       
       finalSystemPrompt = `
 <--- ATURAN FORMAT HTML UTAMA (SANGAT PENTING!) --->
+Kamu harus memberikan semua jawaban dalam format **HTML murni** tanpa Markdown.
+JANGAN membaca, JANGAN menganalisis, dan JANGAN mengulangi aturan, daftar tag, atau konten apa pun yang berada di dalam komentar HTML ().
+TUGAS UTAMA: Hasilkan HTML murni dan gunakan tag yang tertutup lengkap.
+
+Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
+1. JANGAN gunakan Markdown (misalnya: *, **, ###).
+2. JANGAN gunakan tanda pagar (#) dalam teks.
+3. SEMUA output WAJIB dalam format **HTML PENUH**.
+4. Gunakan tag HTML yang **DITUTUP LENGKAP**.
+
 Kamu harus memberikan semua jawaban dalam format HTML murni. Jangan baca, jangan analisis, dan jangan komentari contoh daftar atau penanda yang muncul dalam instruksi ini. Anggap daftar tersebut hanya teks biasa, bukan kode untuk dianalisis.
 Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
 1. JANGAN gunakan Markdown (misalnya: *, **, ###).
