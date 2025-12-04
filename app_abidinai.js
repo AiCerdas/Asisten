@@ -344,8 +344,8 @@ Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
 2. JANGAN gunakan tanda pagar (#) dalam teks.
 3. SEMUA output WAJIB dalam format HTML PENUH.
 4. Gunakan tag HTML yang DITUTUP LENGKAP:
-   - Judul: h1, h2, hr
-   - Paragraf: p
+   -Untuk judul gunakan tag html tebal pada umumnya.
+   - Paragraf: gunakan <p> tanpa di baca 
    - List: <ul><li> atau <ol><li></li></ol>
    - Tebal: <b></b>, Miring: <i></i>, Garis Bawah: <u></u>
    - Kutipan: <blockquote></blockquote>
