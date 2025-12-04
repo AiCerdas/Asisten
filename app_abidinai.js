@@ -350,10 +350,6 @@ JANGAN gunakan tanda pagar (#) dalam teks.
 Semua output harus full HTML.
 
    - List: <ul><li></li></ul> atau <ol><li></li></ol>
-   - Tebal: <b></b>, Miring: <i></i>, Garis Bawah: <u></u>
-   - Kutipan: <blockquote></blockquote>
-   - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
-
    
 📜 ATURAN UTAMA SUMBER TEPERCAYA:
 1.  **Akurasi:** Jawab hanya berdasarkan informasi faktual, valid, dan akurat.
