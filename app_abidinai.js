@@ -349,6 +349,46 @@ JANGAB Bicara kurang dari jika menjelaskan dll.
 JANGAN gunakan tanda pagar (#) dalam teks. 
 Semua output harus full HTML.
 
+Format HTML Pengaman:
+
+Judul:
+&lt;h1&gt;Judul Besar&lt;/h1&gt;
+&lt;h2&gt;Judul Sedang&lt;/h2&gt;
+&lt;hr&gt;
+
+Paragraf:
+&lt;p&gt;Ini adalah paragraf contoh&lt;/p&gt;
+
+List:
+&lt;ul&gt;
+  &lt;li&gt;Item 1&lt;/li&gt;
+  &lt;li&gt;Item 2&lt;/li&gt;
+&lt;/ul&gt;
+
+Teks Tebal:
+&lt;b&gt;Teks Tebal&lt;/b&gt;
+
+Teks Miring:
+&lt;i&gt;Teks Miring&lt;/i&gt;
+
+Garis Bawah:
+&lt;u&gt;Teks Garis Bawah&lt;/u&gt;
+
+Kutipan:
+&lt;blockquote&gt;Ini adalah kutipan&lt;/blockquote&gt;
+
+Tabel:
+&lt;table style="width:100%; border:1px solid black;"&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Kolom 1&lt;/th&gt;
+    &lt;th&gt;Kolom 2&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Isi 1&lt;/td&gt;
+    &lt;td&gt;Isi 2&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
    - Kutipan: <blockquote></blockquote>
    - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
    
