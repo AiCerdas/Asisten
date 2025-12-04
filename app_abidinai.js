@@ -5,7 +5,7 @@ require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
 const FormData = require('form-data');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenerativeAI } = require('@google-ai/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -319,7 +319,7 @@ function getTrustedDomainsString() {
 
 // ==========================================================
 // ⚙️ FUNGSI BANTUAN GROQ (Dibuat untuk digunakan kembali oleh OCR)
-// [PERBAIKAN FOKUS DI SINI]
+// [BAGIAN INI YANG DIUBAH]
 // ==========================================================
 async function getGroqResponse(message, systemPromptOverride = null) {
   if (!process.env.GROQ_API_KEY) {
@@ -338,20 +338,15 @@ async function getGroqResponse(message, systemPromptOverride = null) {
       
       finalSystemPrompt = `
 <--- ATURAN FORMAT HTML UTAMA (SANGAT PENTING!) --->
-Kamu harus memberikan semua jawaban dalam format HTML murni. Jangan baca, jangan analisis, dan jangan komentari daftar tag.
+Kamu harus memberikan semua jawaban dalam format **HTML murni** tanpa Markdown.
+JANGAN membaca, JANGAN menganalisis, dan JANGAN mengulangi aturan, daftar tag, atau konten apa pun yang berada di dalam komentar HTML ().
+TUGAS UTAMA: Hasilkan HTML murni dan gunakan tag yang tertutup lengkap.
 Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
 1. JANGAN gunakan Markdown (misalnya: *, **, ###).
 2. JANGAN gunakan tanda pagar (#) dalam teks.
-3. SEMUA output WAJIB dalam format HTML PENUH.
-4. Gunakan tag HTML yang DITUTUP LENGKAP.
-Gunakan tag HTML yang DITUTUP LENGKAP:
-   - Judul: <h1></h1>, <h2></h2>, <hr>
-   - Paragraf: <p></p>
-   - List: <ul><li></li></ul> atau <ol><li></li></ol>
-   - Tebal: <b></b>, Miring: <i></i>, Garis Bawah: <u></u>
-   - Kutipan: <blockquote></blockquote>
-   - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
-   
+3. SEMUA output WAJIB dalam format **HTML PENUH**.
+4. Gunakan tag HTML yang **DITUTUP LENGKAP**.
+
 <--- PRINSIP KERJA ABIDINAI --->
 Kamu adalah AbidinAI, asisten AI terpercaya.
 Kamu adalah AbidinAI — asisten kecerdasan buatan yang sangat cerdas, cepat beradaptasi, dan berwawasan luas.  
@@ -889,7 +884,7 @@ app.post('/api/research', async (req, res) => {
     // Format URL pencarian DOAJ mungkin kompleks, namun ini adalah yang paling andal:
     results.doaj = {
         message: "Jurnal Akses Terbuka (Open Access) berkualitas tinggi yang terkurasi dan terjamin peer-review.",
-        search_link: `https://doaj.org/search?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%7B%22${encodedQuery}%22%7D%7D%7D`
+        search_link: `https://doaj.org/search?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22${encodedQuery}%22%7D%7D%7D`
     };
 
     // =========================================================================
