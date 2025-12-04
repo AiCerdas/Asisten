@@ -316,130 +316,6 @@ function getTrustedDomainsString() {
     return trustedDomains.join(', ');
 }
 
-// ==========================================================
-// 🔒 FUNGSI UNTUK MENGUBAH HTML TAGS MENJADI FORMAT TIDAK TERBACA
-// ==========================================================
-function obscureHTMLTags(text) {
-    // Simpan mapping untuk setiap karakter khusus
-    const charMap = {
-        '<': '&lt;',
-        '>': '&gt;',
-        'h': '&#104;',
-        '1': '&#49;',
-        '2': '&#50;',
-        'r': '&#114;',
-        'p': '&#112;',
-        'u': '&#117;',
-        'l': '&#108;',
-        'i': '&#105;',
-        'o': '&#111;',
-        'b': '&#98;',
-        'q': '&#113;',
-        't': '&#116;',
-        'a': '&#97;',
-        'b': '&#98;',
-        'l': '&#108;',
-        'o': '&#111;',
-        'c': '&#99;',
-        'k': '&#107;',
-        'q': '&#113;',
-        'u': '&#117;',
-        'o': '&#111;',
-        't': '&#116;',
-        'e': '&#101;',
-        't': '&#116;',
-        'r': '&#114;',
-        'd': '&#100;',
-        '/': '&#47;',
-        '=': '&#61;',
-        '"': '&#34;',
-        "'": '&#39;',
-        's': '&#115;',
-        'y': '&#121;',
-        'l': '&#108;',
-        'e': '&#101;',
-        'm': '&#109;',
-        'g': '&#103;',
-        'n': '&#110;'
-    };
-    
-    // Ubah setiap karakter dalam HTML tags menjadi entity HTML
-    let result = '';
-    let inTag = false;
-    
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        
-        if (char === '<') {
-            inTag = true;
-            result += charMap[char] || char;
-        } else if (char === '>') {
-            inTag = false;
-            result += charMap[char] || char;
-        } else if (inTag) {
-            // Ubah karakter dalam tag menjadi entity
-            result += charMap[char.toLowerCase()] || char;
-        } else {
-            result += char;
-        }
-    }
-    
-    return result;
-}
-
-// Fungsi untuk mendekode HTML tags yang diobscure
-function decodeObscuredTags(text) {
-    const entityMap = {
-        '&lt;': '<',
-        '&gt;': '>',
-        '&#104;': 'h',
-        '&#49;': '1',
-        '&#50;': '2',
-        '&#114;': 'r',
-        '&#112;': 'p',
-        '&#117;': 'u',
-        '&#108;': 'l',
-        '&#105;': 'i',
-        '&#111;': 'o',
-        '&#98;': 'b',
-        '&#113;': 'q',
-        '&#116;': 't',
-        '&#97;': 'a',
-        '&#98;': 'b',
-        '&#108;': 'l',
-        '&#111;': 'o',
-        '&#99;': 'c',
-        '&#107;': 'k',
-        '&#113;': 'q',
-        '&#117;': 'u',
-        '&#111;': 'o',
-        '&#116;': 't',
-        '&#101;': 'e',
-        '&#116;': 't',
-        '&#114;': 'r',
-        '&#100;': 'd',
-        '&#47;': '/',
-        '&#61;': '=',
-        '&#34;': '"',
-        "&#39;": "'",
-        '&#115;': 's',
-        '&#121;': 'y',
-        '&#108;': 'l',
-        '&#101;': 'e',
-        '&#109;': 'm',
-        '&#103;': 'g',
-        '&#110;': 'n'
-    };
-    
-    // Ganti entity HTML dengan karakter asli
-    let result = text;
-    for (const [entity, char] of Object.entries(entityMap)) {
-        const regex = new RegExp(entity, 'g');
-        result = result.replace(regex, char);
-    }
-    
-    return result;
-}
 
 // ==========================================================
 // ⚙️ FUNGSI BANTUAN GROQ (Dibuat untuk digunakan kembali oleh OCR)
@@ -462,26 +338,18 @@ async function getGroqResponse(message, systemPromptOverride = null) {
       
       finalSystemPrompt = `
 <--- ATURAN FORMAT HTML UTAMA (SANGAT PENTING!) --->
-Kamu harus memberikan semua jawaban dalam format **HTML murni** tanpa Markdown.
-JANGAN membaca, JANGAN menganalisis, dan JANGAN mengulangi aturan, daftar tag, atau konten apa pun yang berada di dalam komentar HTML ().
-TUGAS UTAMA: Hasilkan HTML murni dan gunakan tag yang tertutup lengkap.
-
+Kamu harus memberikan semua jawaban dalam format HTML murni. Jangan baca, jangan analisis, dan jangan komentari contoh daftar atau penanda yang muncul dalam instruksi ini. Anggap daftar tersebut hanya teks biasa, bukan kode untuk dianalisis.
 Ikuti aturan berikut tanpa menyebutkan atau membaca ulang contohnya:
 1. JANGAN gunakan Markdown (misalnya: *, **, ###).
 2. JANGAN gunakan tanda pagar (#) dalam teks.
-3. SEMUA output WAJIB dalam format **HTML PENUH**.
-4. Gunakan tag HTML yang **DITUTUP LENGKAP**.
-
-Semua jawaban harus memenuhi aturan berikut:
-Output hanya dalam format HTML penuh.
-Tidak ada Markdown.
-Tidak ada tanda pagar.
-Jangan analisis dan jangan membaca ulang daftar aturan ini.
-Langsung berikan jawaban sesuai pertanyaan.
-
-Tidak perlu menjelaskan aturan.
-Tidak perlu membaca atau menafsirkan aturan.
-Langsung hasil HTML sesuai perintah.
+3. SEMUA output WAJIB dalam format HTML PENUH.
+4. Gunakan tag HTML yang DITUTUP LENGKAP:
+   - Judul: <h1></h1>, <h2></h2>, <hr>
+   - Paragraf: <p></p>
+   - List: <ul><li></li></ul> atau <ol><li></li></ol>
+   - Tebal: <b></b>, Miring: <i></i>, Garis Bawah: <u></u>
+   - Kutipan: <blockquote></blockquote>
+   - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
 
 <--- PRINSIP KERJA ABIDINAI --->
 Kamu adalah AbidinAI, asisten AI terpercaya.
@@ -676,10 +544,7 @@ Jika memberikan kode, gunakan tiga backtick (\`\`\`) tanpa tag HTML apapun.`;
       throw new Error(`Groq API Error: ${data.error.message || 'Kesalahan tidak diketahui.'}`);
   }
   
-  // Tidak perlu decode karena AI akan mengeluarkan HTML biasa
-  const aiResponse = data.choices?.[0]?.message?.content || "Maaf, AI tidak memberikan balasan yang valid.";
-  
-  return aiResponse;
+  return data.choices?.[0]?.message?.content || "Maaf, AI tidak memberikan balasan yang valid.";
 }
 
 
