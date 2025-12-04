@@ -349,21 +349,6 @@ JANGAB Bicara kurang dari jika menjelaskan dll.
 JANGAN gunakan tanda pagar (#) dalam teks. 
 Semua output harus full HTML.
 
-    Paragraf:
-❬p❭Ini adalah contoh paragraf❬/p❭
-
-List:
-❬ul❭
-  ❬li❭Item 1❬/li❭
-  ❬li❭Item 2❬/li❭
-❬/ul❭
-
-Tebal:
-❬b❭Teks Tebal❬/b❭
-
-Miring:
-❬i❭Teks Miring❬/i❭
-
    - Kutipan: <blockquote></blockquote>
    - Tabel: WAJIB MENGGUNAKAN <table style=".."><tr><th>/<td>...</td></tr></table> yang lengkap.
    
