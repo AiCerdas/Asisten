@@ -2528,13 +2528,14 @@
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          // Kirim teks mentah tanpa HTML atau Markdown ke TTS
-          readWithPauses(rawMessage);
+          // **PERUBAHAN: Tambahkan filter regex untuk TTS**
+          if (!/[<>\/{}[\]=;]/.test(rawMessage)) {
+            readWithPauses(rawMessage);
+          }
         }
         isVoiceMode = false;
       }
       // *** AKHIR PERBAIKAN FUNGSI DISPLAY MAINTENANCE MESSAGE ***
-
 
       // *** PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
       function displayAIResponse(aiReply, targetElement = null) {
@@ -2629,12 +2630,14 @@
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          readWithPauses(textToRead);
+          // **PERUBAHAN PENTING: Filter regex untuk mencegah AI membaca teks berbahaya**
+          if (!/[<>\/{}[\]=;]/.test(textToRead)) {
+            readWithPauses(textToRead);
+          }
         }
         isVoiceMode = false;
       }
       // *** AKHIR PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
-
 
       function readWithPauses(text) {
         if (!('speechSynthesis' in window)) {
@@ -2657,14 +2660,22 @@
           const cleanSentence = cleanText(sentences[index]).trim();
           if (!cleanSentence) return speakNext(index + 1);
 
-          const utter = new SpeechSynthesisUtterance(cleanSentence);
-          utter.lang = 'id-ID';
-          utter.rate = 1.0;
-          utter.pitch = 1.0;
-          utter.volume = 1.0;
+          // **PERUBAHAN PENTING: FILTER KARAKTER BERBAHAYA**
+          // Cek jika teks mengandung karakter HTML atau kode berbahaya
+          if (!/[<>\/{}[\]=;]/.test(cleanSentence)) {
+            const utter = new SpeechSynthesisUtterance(cleanSentence);
+            utter.lang = 'id-ID';
+            utter.rate = 1.0;
+            utter.pitch = 1.0;
+            utter.volume = 1.0;
 
-          utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
-          synth.speak(utter);
+            utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
+            synth.speak(utter);
+          } else {
+            // Lewati kalimat yang mengandung karakter berbahaya
+            console.log("Kalimat mengandung karakter berbahaya, TTS dibatalkan:", cleanSentence);
+            speakNext(index + 1);
+          }
         }
 
         speakNext(0);
@@ -2672,4 +2683,4 @@
     })();
   </script>
 </body>
-</html>
+  </html>
