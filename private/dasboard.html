@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -2528,10 +2529,7 @@
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          // **PERUBAHAN: Tambahkan filter regex untuk TTS**
-          if (!/[<>\/{}[\]=;]/.test(rawMessage)) {
-            readWithPauses(rawMessage);
-          }
+          speakClean(rawMessage);
         }
         isVoiceMode = false;
       }
@@ -2630,14 +2628,39 @@
         sendButton.disabled = false;
 
         if (isVoiceMode) {
-          // **PERUBAHAN PENTING: Filter regex untuk mencegah AI membaca teks berbahaya**
-          if (!/[<>\/{}[\]=;]/.test(textToRead)) {
-            readWithPauses(textToRead);
-          }
+          speakClean(textToRead);
         }
         isVoiceMode = false;
       }
       // *** AKHIR PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
+
+      // ** FUNGSI BARU: cleanForSpeech - HANYA untuk membersihkan teks HTML/Kode **
+      function cleanForSpeech(text) {
+        // HAPUS SEMUA TAG HTML
+        text = text.replace(/<[^>]*>/g, '');
+        
+        // HAPUS TANDA <> SAJA (sesuai permintaan)
+        text = text.replace(/[<>]/g, '');
+        
+        // HAPUS SIMBOL KODE (tambahan opsional)
+        text = text.replace(/[{}[\]\/=;]/g, '');
+        
+        // HAPUS BARIS KODE jika mengandung kata kunci pemrograman
+        if (/function|const|let|var|if\s*\(|=>/.test(text)) {
+          return '';
+        }
+        
+        return text.trim();
+      }
+
+      // ** FUNGSI BARU: speakClean - Gunakan cleanForSpeech sebelum TTS **
+      function speakClean(text) {
+        const cleanText = cleanForSpeech(text);
+        if (cleanText.length === 0) return;
+        
+        // Gunakan fungsi readWithPauses yang sudah ada
+        readWithPauses(cleanText);
+      }
 
       function readWithPauses(text) {
         if (!('speechSynthesis' in window)) {
@@ -2649,33 +2672,20 @@
         const synth = window.speechSynthesis;
         synth.cancel();
 
-        function cleanText(t) {
-          // Hanya hapus karakter yang BUKAN bagian dari kalimat normal
-          return t.replace(/[*"`\-+/:;\\]/g, '').replace(/<i[^>]*>.*?<\/i>/g, '').trim(); 
-        }
-
         function speakNext(index) {
           if (index >= sentences.length) return;
 
-          const cleanSentence = cleanText(sentences[index]).trim();
+          const cleanSentence = sentences[index].trim();
           if (!cleanSentence) return speakNext(index + 1);
 
-          // **PERUBAHAN PENTING: FILTER KARAKTER BERBAHAYA**
-          // Cek jika teks mengandung karakter HTML atau kode berbahaya
-          if (!/[<>\/{}[\]=;]/.test(cleanSentence)) {
-            const utter = new SpeechSynthesisUtterance(cleanSentence);
-            utter.lang = 'id-ID';
-            utter.rate = 1.0;
-            utter.pitch = 1.0;
-            utter.volume = 1.0;
+          const utter = new SpeechSynthesisUtterance(cleanSentence);
+          utter.lang = 'id-ID';
+          utter.rate = 1.0;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
 
-            utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
-            synth.speak(utter);
-          } else {
-            // Lewati kalimat yang mengandung karakter berbahaya
-            console.log("Kalimat mengandung karakter berbahaya, TTS dibatalkan:", cleanSentence);
-            speakNext(index + 1);
-          }
+          utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
+          synth.speak(utter);
         }
 
         speakNext(0);
@@ -2683,4 +2693,4 @@
     })();
   </script>
 </body>
-  </html>
+    </html>
