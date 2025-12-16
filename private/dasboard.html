@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -59,15 +58,11 @@
       color: #4f46e5;
     }
 
-    /* KODE MODIFIKASI DIMULAI DI SINI */
     .sidebar-title span {
-      /* Pastikan teks AbidinAI/Balas AI di sidebar mengikuti gambar di chat-header */
       font-weight: 700; 
-      color: #5A4FF3; /* Mengambil warna ungu dari logo */
-      font-size: 22px; /* Disesuaikan agar lebih menonjol */
+      color: #5A4FF3;
+      font-size: 22px;
     }
-    /* KODE MODIFIKASI BERAKHIR DI SINI */
-
 
     .sidebar-menu {
       flex: 1;
@@ -75,7 +70,6 @@
       padding: 0 10px;
     }
 
-    /* menu digital */
     .menu-badge {
       margin-left: auto;
       background: #4f46e5;
@@ -102,7 +96,6 @@
       color: #4f46e5;
     }
 
-    /* Gaya untuk tombol logout */
     .logout-item {
       background-color: #fef2f2;
       color: #ef4444;
@@ -265,13 +258,15 @@
       color: #718096;
     }
 
+    /* PERBAIKAN UTAMA: Atur tampilan teks kode */
     .message-text {
       line-height: 1.6;
-      white-space: pre-line;
-      position: relative;
+      white-space: pre-wrap; /* Biarkan text wrapping */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
 
-    /* Perubahan di sini untuk .code-container */
     .code-container {
       margin: 15px 0;
       border-radius: 8px;
@@ -280,7 +275,6 @@
       border: 1px solid #374151;
     }
 
-    /* Gaya baru untuk header blok kode */
     .code-header {
       background-color: #374151;
       color: #f8fafc;
@@ -292,7 +286,6 @@
       font-size: 0.85rem;
     }
 
-    /* Gaya baru untuk tombol salin di dalam header kode */
     .code-container .copy-btn {
       position: static;
       background: transparent;
@@ -322,9 +315,32 @@
       overflow-x: auto;
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
-      white-space: pre-wrap;
+      white-space: pre-wrap; /* PERBAIKAN: biarkan text wrapping */
+      word-wrap: break-word;
       text-align: left;
       margin: 0;
+    }
+
+    /* PERBAIKAN: Input textarea untuk kode */
+    #messageInput {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      min-height: 24px;
+      max-height: 200px;
+      line-height: 1.5;
+      font-size: 16px;
+      background: transparent;
+      white-space: pre-wrap; /* Biarkan text wrapping */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      font-family: inherit; /* Gunakan font normal, bukan monospace */
+    }
+
+    /* PERBAIKAN: Textarea saat paste */
+    #messageInput::placeholder {
+      color: #9ca3af;
     }
 
     .typing-indicator {
@@ -367,24 +383,11 @@
       position: relative;
     }
 
-    #messageInput {
-      flex: 1;
-      border: none;
-      outline: none;
-      resize: none;
-      min-height: 24px;
-      max-height: 200px;
-      line-height: 1.5;
-      font-size: 16px;
-      background: transparent;
-    }
-
     .input-buttons {
       display: flex;
       gap: 8px;
     }
 
-    /* Gaya untuk tombol + */
     .plus-btn {
       width: 40px;
       height: 40px;
@@ -403,7 +406,6 @@
       background-color: #e5e7eb;
     }
 
-    /* Gaya untuk menu yang muncul */
     .plus-menu {
       position: absolute;
       bottom: 60px;
@@ -430,7 +432,7 @@
       text-align: left;
       transition: background-color 0.2s;
       border-radius: 6px;
-      color: #4a5568; /* Pastikan warna teks tetap konsisten */
+      color: #4a5568;
     }
 
     .plus-menu .menu-item:hover {
@@ -606,7 +608,6 @@
       font-weight: 500;
     }
 
-    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -636,7 +637,6 @@
       filter: blur(10px) !important;
     }
 
-    /* Hapus kelas no-select dan ganti dengan selectable */
     .selectable {
       -webkit-touch-callout: text;
       -webkit-user-select: text;
@@ -731,7 +731,6 @@
       background-color: #fee2e2;
     }
 
-    /* Gaya untuk tombol aksi pesan */
     .message-actions {
       display: flex;
       justify-content: flex-end;
@@ -760,7 +759,6 @@
       color: #4f46e5;
     }
 
-    /* GAYA UNTUK TOMBOL BAGIKAN (SHARE) */
     .action-btn.share {
       color: #10b981;
     }
@@ -769,7 +767,6 @@
       color: #f59e0b;
     }
 
-    /* GAYA BARU UNTUK PREVIEW 5 GAMBAR (Di dalam Input Box) */
     #multiple-images-preview {
       display: flex;
       flex-wrap: wrap;
@@ -780,7 +777,7 @@
       background-color: #f9fafb;
       margin-bottom: 8px;
       width: 100%;
-      align-items: center; /* Tambahkan ini agar vertikal align rapi */
+      align-items: center;
     }
 
     .image-preview-item {
@@ -817,14 +814,11 @@
       padding: 0;
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
-    /* --- END GAYA BARU PREVIEW GAMBAR --- */
 
-    /* Gaya untuk modal Riset Mendalam */
     .modal-body-research {
         padding: 10px;
     }
 
-    /* Gaya untuk multiple file preview (Di dalam Modal OCR) */
     .multiple-preview-container {
       display: flex;
       flex-wrap: wrap;
@@ -862,9 +856,8 @@
       font-weight: bold;
     }
 
-    /* --- Gaya Tambahan untuk Panel Shortcut Baru --- */
     .title-shortcut {
-        font-size: 20px; /* Disesuaikan agar tidak terlalu besar di header chat */
+        font-size: 20px;
         font-weight: 700;
         margin-bottom: 12px;
         color: #2d3748;
@@ -884,8 +877,8 @@
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
-        width: 100%; /* Lebar penuh dalam chat-header */
-        max-width: 400px; /* Batasi lebar agar tetap rapi */
+        width: 100%;
+        max-width: 400px;
         margin: 0 auto 15px auto;
     }
 
@@ -914,7 +907,6 @@
         min-height: 20px;
     }
 
-    /* Dropdown */
     .dropdown {
         display: none;
         margin: 0 auto 15px auto;
@@ -953,14 +945,12 @@
         min-width: 20px;
         min-height: 20px;
     }
-    /* --- Akhir Gaya Tambahan untuk Panel Shortcut Baru --- */
 
-    /* KODE CSS TAMBAHAN DARI USER UNTUK LOGO BARU */
     .header {
         width: 100%;
         text-align: center;
-        padding: 0; /* Hapus padding yang tumpang tindih */
-        margin-bottom: 10px; /* Jarak antara header logo dan shortcut box */
+        padding: 0;
+        margin-bottom: 10px;
     }
 
     .logo-circle {
@@ -993,11 +983,9 @@
         font-size: 15px;
         color: #666;
     }
-    /* AKHIR KODE CSS TAMBAHAN */
   </style>
 
   <script>
-    // ** MODIFIKASI: Cek token login saat halaman dimuat **
     if (!localStorage.getItem("abidinai_token")) {
       window.location.href = "../index.html";
     }
@@ -1310,7 +1298,17 @@
         <div class="input-box">
           <div id="multiple-images-preview" style="display: none;"></div>
 
-          <textarea id="messageInput" placeholder="Ketik pesan ke AbidinAI..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+          <!-- PERBAIKAN UTAMA: Textarea dengan pengaturan untuk paste -->
+          <textarea 
+            id="messageInput" 
+            placeholder="Ketik pesan ke AbidinAI..." 
+            rows="1" 
+            onkeypress="handleKeyPress(event)"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"
+          ></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
@@ -1355,19 +1353,56 @@
       let db = null;
       let ocrExtractedText = '';
       let ocrImageURL = null;
-      let selectedFiles = []; // Array untuk menyimpan file yang dipilih dari modal
-      let isShortcutMenuOpen = false; // Status untuk menu shortcut baru
-
-      // VARIABLE BARU UNTUK MENYIMPAN GAMBAR YANG DIUPLOAD
-      let uploadedImages = []; // Format: [{ file: File, dataURL: string }]
+      let selectedFiles = [];
+      let isShortcutMenuOpen = false;
+      let uploadedImages = [];
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // --- MODIFIKASI: Izinkan Pilih Teks Hanya di Android ---
+      // PERBAIKAN: Filter paste untuk textarea
+      const messageInput = document.getElementById('messageInput');
+      
+      // Event listener untuk handle paste
+      messageInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        
+        // Ambil teks dari clipboard
+        let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        
+        // Bersihkan teks: hapus karakter yang tidak perlu
+        pastedText = pastedText
+          .replace(/\r\n/g, '\n') // Normalize line endings
+          .replace(/\t/g, '    ')  // Ganti tab dengan 4 spasi
+          .trim(); // Hapus spasi di awal dan akhir
+        
+        // Sisipkan teks yang sudah dibersihkan
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        const textBefore = this.value.substring(0, start);
+        const textAfter = this.value.substring(end, this.value.length);
+        
+        this.value = textBefore + pastedText + textAfter;
+        
+        // Posisikan kursor setelah teks yang ditempel
+        this.selectionStart = this.selectionEnd = start + pastedText.length;
+        
+        // Update tinggi textarea
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        
+        // Trigger input event untuk update UI
+        this.dispatchEvent(new Event('input'));
+      });
+
+      // PERBAIKAN: Event listener untuk input (handle typing)
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+      });
+
       const isAndroid = /android/i.test(navigator.userAgent);
 
-      // Jika BUKAN Android (PC/Laptop), maka terapkan blokir
       if (!isAndroid) {
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('selectstart', e => e.preventDefault());
@@ -1543,7 +1578,6 @@
           const chatbox = document.getElementById("chatbox");
 
           if (messages.length === 0) {
-            // Biarkan chatbox kosong, tidak perlu menambahkan pesan apa pun.
           } else {
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
@@ -1555,12 +1589,6 @@
         } catch (error) {
           console.error('Error initializing database:', error);
         }
-
-        const textarea = document.getElementById('messageInput');
-        textarea.addEventListener('input', function() {
-          this.style.height = 'auto';
-          this.style.height = (this.scrollHeight) + 'px';
-        });
 
         document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
         document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
@@ -1595,14 +1623,12 @@
         return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
 
-      // ** MODIFIKASI: FUNGSI LOGOUT BARU **
       window.logout = function() {
           localStorage.removeItem("abidinai_token");
           clearConversationFromDB();
           window.location.href = "../index.html";
       };
 
-      // ** FUNGSI BARU UNTUK SHORTCUT MENU **
       window.toggleShortcutMenu = function() {
         const menu = document.getElementById("dropdownShortcutMenu");
         if (isShortcutMenuOpen) {
@@ -1613,18 +1639,15 @@
         isShortcutMenuOpen = !isShortcutMenuOpen;
       }
 
-      // Fungsi baru untuk memasukkan teks ke input
       window.setQueryToInput = function(query) {
         const messageInput = document.getElementById('messageInput');
         messageInput.value = query;
         messageInput.focus();
-        // Atur ulang tinggi textarea
         messageInput.style.height = 'auto';
-        messageInput.style.height = (messageInput.scrollHeight) + 'px';
-        toggleShortcutMenu(); // Tutup menu setelah memilih
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+        toggleShortcutMenu();
       }
 
-      // ** FUNGSI BARU: openCreatorModal **
       window.openCreatorModal = function() {
         if (devToolsState.open) {
           showWarning();
@@ -1633,7 +1656,6 @@
         window.location.href = "creator.html";
       }
 
-      // ** MODIFIKASI KUNCI DI SINI **
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
           showWarning();
@@ -1655,7 +1677,7 @@
             textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
 
             textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
 
             event.preventDefault();
             event.stopPropagation();
@@ -1686,7 +1708,6 @@
         }
       };
 
-      // ** FUNGSI BARU: UPDATE PREVIEW GAMBAR DI INPUT CHAT **
       window.updateImagePreview = function() {
         const previewContainer = document.getElementById('multiple-images-preview');
         previewContainer.innerHTML = '';
@@ -1712,9 +1733,7 @@
           removeBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            // Hapus file dari array
             uploadedImages.splice(index, 1);
-            // Jika tidak ada gambar, reset ocrExtractedText
             if (uploadedImages.length === 0) {
               ocrExtractedText = '';
             }
@@ -1727,14 +1746,12 @@
         });
       }
 
-      // ** MODIFIKASI: Fungsi untuk menghapus pratinjau gambar (diperbarui) **
       window.removeImagePreview = function() {
         uploadedImages = [];
-        ocrExtractedText = ''; // Reset extracted text
+        ocrExtractedText = '';
         updateImagePreview();
       }
 
-      // OCR Functions (Updated to support multiple images)
       function initOCRModal() {
         const modal = document.getElementById('ocrModal');
         const closeBtn = document.getElementById('closeModal');
@@ -1783,7 +1800,6 @@
           }
         });
 
-        // Event listener untuk memproses semua gambar
         processBtn.addEventListener('click', processAllImages);
 
         copyResultBtn.addEventListener('click', () => {
@@ -1796,17 +1812,14 @@
         });
 
         function handleFileUpload(files) {
-          // Reset selected files dan preview
           selectedFiles = [];
           multiplePreviewContainer.innerHTML = '';
 
-          // Validasi jumlah file
           if (files.length > 5) {
             alert('Maksimal 5 gambar yang dapat diproses sekaligus! Hanya 5 gambar pertama yang akan digunakan.');
             files = files.slice(0, 5);
           }
 
-          // Validasi tiap file
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
 
@@ -1822,7 +1835,6 @@
 
             selectedFiles.push(file);
 
-            // Buat preview untuk setiap gambar di modal
             const reader = new FileReader();
             reader.onload = (e) => {
               const previewItem = document.createElement('div');
@@ -1841,16 +1853,13 @@
             return;
           }
 
-          // Tampilkan tombol proses
           processBtn.style.display = 'block';
           ocrResult.style.display = 'none';
 
-          // Update teks untuk menunjukkan jumlah file yang dipilih
           document.querySelector('.upload-text').innerHTML =
             `<strong>${selectedFiles.length} gambar dipilih</strong><br>Klik "Proses Semua Gambar" untuk memulai`;
         }
 
-        // Fungsi baru untuk memproses semua gambar satu per satu
         async function processAllImages() {
           if (selectedFiles.length === 0) return;
 
@@ -1860,7 +1869,6 @@
           let allResults = [];
 
           try {
-            // Proses setiap gambar satu per satu
             for (let i = 0; i < selectedFiles.length; i++) {
               const file = selectedFiles[i];
 
@@ -1875,7 +1883,6 @@
               }
             }
 
-            // Tampilkan semua hasil
             displayAllResults(allResults);
 
           } catch (error) {
@@ -1888,18 +1895,15 @@
           }
         }
 
-        // Fungsi untuk memproses satu gambar
         async function processSingleImage(file, index) {
           const formData = new FormData();
           formData.append('image', file);
 
-          // NOTE: Endpoint API /api/ocr harus tersedia di backend Anda.
           const response = await fetch("/api/ocr", {
             method: "POST",
             body: formData
           });
 
-          // Perbaikan utama: Cek apakah respons adalah JSON yang valid
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
             const textResponse = await response.text();
@@ -1931,7 +1935,6 @@
           }
         }
 
-        // FUNGSI KUNCI: Untuk menampilkan semua hasil dan memicu preview di input chat
         function displayAllResults(results) {
           const resultText = results.join('\n\n');
 
@@ -1939,14 +1942,11 @@
           document.getElementById('ocrResult').style.display = 'block';
           document.getElementById('progressContainer').style.display = 'none';
 
-          // Simpan hasil untuk digunakan di chat
           ocrExtractedText = resultText;
 
-          // ** MODIFIKASI: Simpan semua gambar ke uploadedImages **
           uploadedImages = [];
           let loadedCount = 0;
 
-          // Memastikan setiap file dibaca dan disimpan
           selectedFiles.forEach((file) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1956,25 +1956,19 @@
               });
               loadedCount++;
 
-              // Setelah semua gambar selesai dimuat (penting!)
               if (loadedCount === selectedFiles.length) {
-                updateImagePreview(); // Tampilkan preview di input chat
+                updateImagePreview();
               }
             };
             reader.readAsDataURL(file);
           });
 
-          // Tutup modal
           modal.style.display = 'none';
         }
       }
 
-      // ** AWAL KODE TAMBAHAN UNTUK FITUR BARU **
-
-      // Global variable untuk melacak status menu
       let isPlusMenuOpen = false;
 
-      // Fungsi untuk menampilkan/menyembunyikan menu plus
       window.togglePlusMenu = function() {
         const plusMenu = document.getElementById('plusMenu');
         if (isPlusMenuOpen) {
@@ -1985,20 +1979,17 @@
         isPlusMenuOpen = !isPlusMenuOpen;
       }
 
-      // Tambahkan event listener untuk menutup menu saat klik di luar
       document.addEventListener('click', function(event) {
         const plusMenu = document.getElementById('plusMenu');
         const plusBtn = document.querySelector('.plus-btn');
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         const shortcutBtn = document.querySelector('.btn-shortcut:last-child');
 
-        // Tutup Plus Menu
         if (plusMenu && plusBtn && !plusMenu.contains(event.target) && !plusBtn.contains(event.target)) {
           plusMenu.style.display = 'none';
           isPlusMenuOpen = false;
         }
 
-        // Tutup Shortcut Menu
         if (dropdownShortcutMenu && shortcutBtn && !dropdownShortcutMenu.contains(event.target) && !shortcutBtn.contains(event.target)) {
             dropdownShortcutMenu.classList.remove("show");
             isShortcutMenuOpen = false;
@@ -2025,21 +2016,19 @@
         });
       }
 
-      // Fungsi untuk membuka modal Riset Mendalam
       window.openDeepResearchModal = function() {
         const modal = document.getElementById('deepResearchModal');
         const input = document.getElementById('researchQueryInput');
         const sendBtn = document.getElementById('startResearchBtn');
 
-        // Ambil teks dari input utama sebagai query default
         const messageInput = document.getElementById('messageInput');
         input.value = messageInput.value.trim();
 
         modal.style.display = 'flex';
-        togglePlusMenu(); // Tutup Plus Menu
+        togglePlusMenu();
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
-             dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
+             dropdownShortcutMenu.classList.remove('show');
              isShortcutMenuOpen = false;
         }
 
@@ -2053,7 +2042,6 @@
             }
         };
 
-        // Tambahkan event listener untuk tombol "Enter" di dalam modal
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -2072,16 +2060,13 @@
         });
       }
 
-      // Fungsi untuk mengirim pesan dengan perintah
       async function sendMessageWithCommand(command) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
         const messageInput = document.getElementById("messageInput");
 
-        // Tambahkan pesan pengguna ke chatbox
         addMessage('Anda', command, 'user-message');
 
-        // Tampilkan indikator mengetik
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
         typingDiv.innerHTML = `
@@ -2100,7 +2085,6 @@
         messageInput.value = '';
 
         try {
-          // Panggil endpoint chat di server dengan perintah riset
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2128,9 +2112,7 @@
           sendButton.disabled = false;
         }
       }
-      // ** AKHIR KODE TAMBAHAN **
 
-      // ** FUNGSI BARU UNTUK BERBAGI PESAN **
       window.shareMessageText = function(messageId) {
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
@@ -2169,17 +2151,16 @@
           showWarning();
           return false;
         }
-        togglePlusMenu(); // Tutup Plus Menu
+        togglePlusMenu();
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
-             dropdownShortcutMenu.classList.remove('show'); // Tutup Shortcut Menu jika terbuka
+             dropdownShortcutMenu.classList.remove('show');
              isShortcutMenuOpen = false;
         }
 
         const modal = document.getElementById('ocrModal');
         modal.style.display = 'flex';
 
-        // Reset state
         document.getElementById('multiplePreviewContainer').innerHTML = '';
         document.getElementById('processBtn').style.display = 'none';
         document.getElementById('progressContainer').style.display = 'none';
@@ -2188,12 +2169,11 @@
         document.querySelector('.upload-text').innerHTML =
           '<strong>Klik untuk mengunggah gambar</strong><br>Maksimal 5 gambar (JPG/PNG, 5MB)';
 
-        // Reset variabel dan hapus preview di input chat
         uploadedImages = [];
         ocrExtractedText = '';
         updateImagePreview();
 
-        selectedFiles = []; // Reset file yang dipilih di modal
+        selectedFiles = [];
       };
 
       window.startVoiceRecognition = function() {
@@ -2322,7 +2302,6 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (!messageTextElement) return;
 
-        // Cari pesan pengguna sebelumnya yang terkait
         const messageDiv = messageTextElement.closest('.message');
         const prevMessageDiv = messageDiv.previousElementSibling;
         if (!prevMessageDiv || !prevMessageDiv.classList.contains('user-message')) {
@@ -2338,13 +2317,11 @@
           regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
           regenerateButton.disabled = true;
 
-          // Nonaktifkan tombol lain saat memproses
           const copyButton = document.querySelector(`button[onclick="copyMessageText('${messageId}')"]`);
           const shareButton = document.querySelector(`button[onclick="shareMessageText('${messageId}')"]`);
           if (copyButton) copyButton.disabled = true;
           if (shareButton) shareButton.disabled = true;
 
-          // Hapus konten pesan AI yang lama dan ganti dengan indikator mengetik
           messageTextElement.innerHTML = `<div class="typing-indicator">
               <div class="loading"></div>
               Balas AI sedang mengetik ulang...
@@ -2353,7 +2330,6 @@
           messageDiv.classList.add('user-message');
 
           try {
-            // Panggil API chat dengan pesan pengguna yang relevan
             const response = await fetch("/api/chat", {
               method: "POST",
               headers: {
@@ -2369,12 +2345,10 @@
             const data = await response.json();
             const aiReply = data.reply;
 
-            // Hapus indikator mengetik
             messageTextElement.innerHTML = '';
             messageDiv.classList.remove('user-message');
             messageDiv.classList.add('ai-message');
 
-            // Tampilkan respons baru
             if (!aiReply || aiReply.trim() === "") {
                 displayMaintenanceMessage();
             } else {
@@ -2417,7 +2391,6 @@
           return false;
         }
 
-        // Tutup Shortcut Menu jika terbuka
         const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
         if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
              dropdownShortcutMenu.classList.remove('show');
@@ -2427,10 +2400,8 @@
         const input = document.getElementById("messageInput");
         const userText = input.value.trim();
 
-        // ** MODIFIKASI: Tambahkan informasi gambar ke teks lengkap **
         let fullMessageText = userText;
         if (uploadedImages.length > 0) {
-            // Gabungkan hasil OCR dan teks pengguna
             const imageInfo = `[Hasil Analisis ${uploadedImages.length} Gambar: ${ocrExtractedText}]`;
             fullMessageText = `${imageInfo}\n\n${userText}`;
         }
@@ -2440,9 +2411,7 @@
 
         let displayMessage = userText;
         if (!displayMessage && uploadedImages.length > 0) {
-            // Tampilkan hanya informasi gambar di chat jika teks kosong
             displayMessage = `[${uploadedImages.length} Gambar terunggah untuk dianalisis]`;
-            // Jika ada extracted text, tambahkan ke display message
             if (ocrExtractedText) {
                  displayMessage += `\n\n<i>(Hasil Analisis: ${ocrExtractedText.substring(0, 100)}...)</i>`;
             }
@@ -2470,9 +2439,8 @@
         input.value = '';
         input.style.height = 'auto';
 
-        // ** MODIFIKASI: Reset uploadedImages setelah dikirim **
         uploadedImages = [];
-        ocrExtractedText = ''; // Reset extracted text
+        ocrExtractedText = '';
         updateImagePreview();
 
         try {
@@ -2506,7 +2474,6 @@
         }
       };
 
-      // *** PERBAIKAN FUNGSI DISPLAY MAINTENANCE MESSAGE ***
       function displayMaintenanceMessage() {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
@@ -2533,9 +2500,7 @@
         }
         isVoiceMode = false;
       }
-      // *** AKHIR PERBAIKAN FUNGSI DISPLAY MAINTENANCE MESSAGE ***
 
-      // *** PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
       function displayAIResponse(aiReply, targetElement = null) {
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
@@ -2579,7 +2544,7 @@
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
-        let textToRead = ""; // Teks bersih untuk TTS
+        let textToRead = "";
 
         messageTextContainer.innerHTML = '';
 
@@ -2589,7 +2554,6 @@
             const span = document.createElement("span");
             span.innerHTML = formatBoldText(textPart);
             
-            // Tambahkan teks biasa ke textToRead
             textToRead += textPart.replace(/\*\*/g, '') + " "; 
             
             messageTextContainer.appendChild(span);
@@ -2619,8 +2583,6 @@
             codeContainer.appendChild(codeHeader);
             codeContainer.appendChild(pre);
             messageTextContainer.appendChild(codeContainer);
-            
-            // Kode blok tidak perlu dibaca oleh TTS
           }
         }
 
@@ -2632,20 +2594,12 @@
         }
         isVoiceMode = false;
       }
-      // *** AKHIR PERBAIKAN FUNGSI DISPLAY AI RESPONSE ***
 
-      // ** FUNGSI BARU: cleanForSpeech - HANYA untuk membersihkan teks HTML/Kode **
       function cleanForSpeech(text) {
-        // HAPUS SEMUA TAG HTML
         text = text.replace(/<[^>]*>/g, '');
-        
-        // HAPUS TANDA <> SAJA (sesuai permintaan)
         text = text.replace(/[<>]/g, '');
-        
-        // HAPUS SIMBOL KODE (tambahan opsional)
         text = text.replace(/[{}[\]\/=;]/g, '');
         
-        // HAPUS BARIS KODE jika mengandung kata kunci pemrograman
         if (/function|const|let|var|if\s*\(|=>/.test(text)) {
           return '';
         }
@@ -2653,12 +2607,10 @@
         return text.trim();
       }
 
-      // ** FUNGSI BARU: speakClean - Gunakan cleanForSpeech sebelum TTS **
       function speakClean(text) {
         const cleanText = cleanForSpeech(text);
         if (cleanText.length === 0) return;
         
-        // Gunakan fungsi readWithPauses yang sudah ada
         readWithPauses(cleanText);
       }
 
@@ -2693,4 +2645,4 @@
     })();
   </script>
 </body>
-    </html>
+              </html>
