@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -305,6 +306,8 @@
       margin: 15px 0;
       border-radius: 8px;
       overflow: hidden;
+      background: rgba(0, 17, 34, 0.8);
+      border: 1px solid rgba(0, 255, 255, 0.2);
     }
     
     .copy-btn {
@@ -331,7 +334,7 @@
     }
     
     pre {
-      background: rgba(0, 17, 34, 0.8);
+      background: transparent;
       color: #0ff;
       padding: 20px 15px 15px;
       border-radius: 8px;
@@ -339,8 +342,8 @@
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
       white-space: pre-wrap;
-      border: 1px solid rgba(0, 255, 255, 0.2);
       text-align: left;
+      margin: 0;
     }
     
     .status {
@@ -433,7 +436,6 @@
         <i class="fas fa-play"></i>
         <span>Putar Musik</span>
       </button>
-  
     </div>
     
     <div class="chat-container">
@@ -529,7 +531,7 @@
         // Remove typing indicator
         document.getElementById("typingIndicator").remove();
         
-        // Display AI response
+        // Display AI response dengan pembersihan teks
         displayAIResponse(aiReply);
       } catch (error) {
         document.getElementById("typingIndicator").remove();
@@ -553,50 +555,84 @@
         listeningIndicator = null;
       }
       
-      // Pisahkan teks dan kode
-      const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
+      // Bersihkan teks dari karakter yang tidak diinginkan
+      let cleanedReply = aiReply
+        .replace(/#/g, '')          // Hapus semua hashtag
+        .replace(/```(?:\w+)?\n?([\s\S]*?)```/g, '$1') // Hapus formatting code block
+        .replace(/\*\*/g, '')       // Hapus bold markers
+        .replace(/`/g, '')          // Hapus backticks
+        .replace(/\[.*?\]/g, '')    // Hapus teks dalam kurung siku
+        .replace(/\(.*?\)/g, ' ')   // Hapus teks dalam kurung biasa
+        .replace(/\s+/g, ' ')       // Normalize spasi
+        .trim();
+
+      // Pisahkan teks dan kode (jika masih ada)
+      const parts = cleanedReply.split(/(?:```|`)/);
       const container = document.createElement("div");
       container.className = "message ai-message";
-      container.innerHTML = `<strong>Dokter AI:</strong><br>`;
+      
+      let contentHTML = `<strong>Dokter AI:</strong><br>`;
       let textToRead = "";
 
       for (let i = 0; i < parts.length; i++) {
-        if (i % 2 === 0) {
-          const span = document.createElement("span");
-          span.textContent = parts[i];
-          textToRead += parts[i] + " ";
-          container.appendChild(span);
+        const part = parts[i].trim();
+        if (!part) continue;
+        
+        // Periksa jika ini kode (berdasarkan pola tertentu)
+        if (part.includes('{') || part.includes('function') || part.includes('const') || 
+            part.includes('var') || part.includes('let') || /^\s*[\w\s]+\s*=\s*.+/.test(part)) {
+          
+          contentHTML += `
+            <div class="code-container">
+              <button class="copy-btn" onclick="copyToClipboard(this)">
+                <i class="fas fa-copy"></i> Salin
+              </button>
+              <pre>${part}</pre>
+            </div>
+          `;
         } else {
-          const codeContainer = document.createElement("div");
-          codeContainer.className = "code-container";
-
-          const copyButton = document.createElement("button");
-          copyButton.className = "copy-btn";
-          copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
-          copyButton.onclick = () => {
-            navigator.clipboard.writeText(parts[i]).then(() => {
-              copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-              setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
-            });
-          };
-
-          const pre = document.createElement("pre");
-          pre.textContent = parts[i];
-          codeContainer.appendChild(copyButton);
-          codeContainer.appendChild(pre);
-          container.appendChild(codeContainer);
+          // Teks biasa
+          contentHTML += `<span>${part}</span><br>`;
+          textToRead += part + " ";
         }
       }
 
+      container.innerHTML = contentHTML;
       chatbox.appendChild(container);
       chatbox.scrollTop = chatbox.scrollHeight;
       sendButton.disabled = false;
+
+      // Tambahkan event listener untuk tombol salin
+      container.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.onclick = function() {
+          const codeText = this.nextElementSibling.textContent;
+          navigator.clipboard.writeText(codeText).then(() => {
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+            setTimeout(() => {
+              this.innerHTML = originalHTML;
+            }, 1500);
+          });
+        };
+      });
 
       // Baca dengan suara jika input berasal dari suara
       if (isVoiceInput) {
         readWithPauses(textToRead);
       }
       isVoiceInput = false;
+    }
+
+    // Fungsi bantu untuk menyalin teks
+    function copyToClipboard(button) {
+      const codeText = button.nextElementSibling.textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+        }, 1500);
+      });
     }
 
     function readWithPauses(text) {
