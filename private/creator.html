@@ -3,21 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ABIDINAI Kreator</title>
+  <title>Dokter AbidinAI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Gaya Dasar dari AbidinAI */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); /* Latar Belakang Gelap Khas Kreator */
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: white;
       min-height: 100vh;
       display: flex;
@@ -87,6 +85,81 @@
       color: cyan;
     }
     
+    .logo {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      border-radius: 15px;
+      border: 2px solid cyan;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      margin: 0 auto 15px;
+      display: block;
+    }
+    
+    .audio-control {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 25px;
+      align-items: center;
+    }
+    
+    .audio-btn {
+      background: rgba(0, 20, 40, 0.8);
+      color: cyan;
+      border: 2px solid rgba(0, 255, 255, 0.4);
+      padding: 14px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+      text-decoration: none;
+      min-height: 48px;
+      backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .audio-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .audio-btn:hover::before {
+      left: 100%;
+    }
+    
+    .audio-btn:hover {
+      background: rgba(0, 255, 255, 0.15);
+      color: white;
+      border-color: cyan;
+      box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    
+    .audio-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
+    }
+    
+    .audio-btn i {
+      font-size: 16px;
+      min-width: 16px;
+    }
+    
     .chat-container {
       background: rgba(0, 10, 20, 0.7);
       border-radius: 15px;
@@ -126,7 +199,6 @@
       padding: 10px;
       border-radius: 10px;
       animation: fadeIn 0.3s ease;
-      font-size: 14px;
     }
     
     .user-message {
@@ -189,6 +261,27 @@
       box-shadow: none;
     }
     
+    .voice-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 30px;
+      background: linear-gradient(45deg, #ff00cc, #cc00ff);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .voice-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 0, 204, 0.4);
+    }
+    
     .loading {
       display: inline-block;
       width: 20px;
@@ -249,7 +342,17 @@
       border: 1px solid rgba(0, 255, 255, 0.2);
       text-align: left;
     }
-
+    
+    .status {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -257,6 +360,16 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
     }
     
     @media (max-width: 600px) {
@@ -276,14 +389,51 @@
       .input-group {
         flex-direction: column;
       }
+      
+      .audio-control {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      
+      .audio-btn {
+        padding: 12px 16px;
+        font-size: 13px;
+        min-height: 44px;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .audio-control {
+        grid-template-columns: 1fr;
+      }
+      
+      .audio-btn {
+        padding: 10px 12px;
+        font-size: 12px;
+        min-height: 40px;
+      }
+      
+      .audio-btn i {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1 class="title"><i class="fas fa-video"></i> ABIDINAI Kreator</h1>
-      <p class="developer"><b>Spesialis:</b> Konten Kreator & Viralitas</p>
+      <h1 class="title"><i class="fas fa-user-md"></i> Dokter Abidin</h1>
+      <p class="developer"><b>Spesialis:</b> Kesehatan Umum</p>
+      <img src="https://i.imgur.com/ODpJVSL.jpeg" alt="Dokter AI" class="logo">
+    </div>
+    
+    <div class="audio-control">
+      <button id="playBtn" class="audio-btn" onclick="toggleAudio()">
+        <i class="fas fa-play"></i>
+        <span>Putar Musik</span>
+      </button>
+  
     </div>
     
     <div class="chat-container">
@@ -291,32 +441,43 @@
     </div>
     
     <div class="input-group">
-      <input type="text" id="messageInput" placeholder="Tanya tentang konten, viral, atau medsos..." onkeypress="handleKeyPress(event)">
+      <input type="text" id="messageInput" placeholder="Tanyakan masalah kesehatan Anda..." onkeypress="handleKeyPress(event)">
       <button onclick="sendMessage()" id="sendButton">
         <i class="fas fa-paper-plane"></i> Kirim
       </button>
     </div>
     
-    <div style="margin-top: 15px; font-size: 14px; color: #00ffaa;">
+    <button onclick="startVoiceRecognition()" class="voice-btn">
+      <i class="fas fa-microphone-alt"></i> Konsultasi Suara
+    </button>
+    
+    <div class="status">
       <i class="fas fa-plug"></i>
-      <span>Terhubung ke Server ABIDINAI</span>
+      <span>Terhubung ke Server AbidinAI</span>
     </div>
   </div>
 
+  <audio id="audioPlayer" loop>
+    <source src="https://d.top4top.io/m_33403we8x0.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
+    let isVoiceInput = false;
+    let audioEnabled = false;
+    let listeningIndicator = null; 
+    
     document.addEventListener('DOMContentLoaded', function() {
       const chatbox = document.getElementById("chatbox");
       const welcomeMsg = document.createElement("div");
       welcomeMsg.className = "message ai-message";
       welcomeMsg.innerHTML = `
-        <strong>ABIDINAI Kreator:</strong>  Hai gaes! 👋 Aku ABIDINAI, asisten keren yang siap bantu kamu bikin konten pecah! 
-        Tanya aja tips viral, ide konten, atau gimana cara naikkin followers. 
-        Gaspol! 🚀
+        <strong>Dokter AI:</strong>  Selamat datang! Saya adalah Dokter Abidin, asisten kesehatan digital yang dikembangkan oleh Abidin. 
+        Saya khusus membantu memberikan informasi dan saran mengenai masalah kesehatan. 
+        Silakan tanyakan keluhan kesehatan Anda atau konsultasi medis yang diperlukan.
         <br><br>
-        <i>Note: Aku cuma bisa jawab soal dunia perkontenan ya 🤙</i>
+        <i>Catatan: Saya tidak bisa menjawab pertanyaan di luar topik kesehatan.</i>
       `;
       chatbox.appendChild(welcomeMsg);
-      chatbox.scrollTop = chatbox.scrollHeight;
     });
 
     function handleKeyPress(event) {
@@ -330,39 +491,31 @@
       const chatbox = document.getElementById("chatbox");
       const sendButton = document.getElementById("sendButton");
 
-      // 1. Tambah pesan user
+      // Add user message to chat
       const userMsgDiv = document.createElement("div");
       userMsgDiv.className = "message user-message";
-      userMsgDiv.innerHTML = `<strong>Kamu:</strong> ${userMessage}`;
+      userMsgDiv.innerHTML = `<strong>Anda:</strong> ${userMessage}`;
       chatbox.appendChild(userMsgDiv);
       document.getElementById("messageInput").value = "";
 
-      // 2. Tambah indikator mengetik
+      // Add typing indicator
       const typingIndicator = document.createElement("div");
       typingIndicator.className = "message ai-message typing-indicator";
       typingIndicator.id = "typingIndicator";
-      typingIndicator.innerHTML = `<strong>ABIDINAI Kreator:</strong> <span class="loading"></span> Lagi mikir ide viral...`;
+      typingIndicator.innerHTML = `<strong>Dokter AI:</strong> <span class="loading"></span> Menganalisis...`;
       chatbox.appendChild(typingIndicator);
       chatbox.scrollTop = chatbox.scrollHeight;
       
       sendButton.disabled = true;
 
-      // System Prompt KHUSUS untuk persona Kreator
-      const systemPrompt = `Anda adalah chatbot dengan persona konten kreator yang sangat informal, menggunakan bahasa gaul, emoji (seperti 🚀, 🔥, 😎, dll.), dan hashtag seperti #fyp, #viral, #kreator, #gaspol. Jawablah pertanyaan seolah-olah Anda adalah seorang influencer yang ramah dan energetik. Fokus pada tips konten, media sosial, dan strategi viral. Jika pertanyaan tidak terkait konten atau media sosial, jawab dengan sopan bahwa Anda hanya bisa membantu masalah tersebut dan tambahkan emoji kebingungan.`;
-      
       try {
-        // Panggil API chat, MENGIRIM system_prompt SEBAGAI BAGIAN DARI MESSAGE UTAMA
-        // Ini adalah perubahan utama agar sesuai dengan implementasi dokter.html
-        const finalMessage = `${systemPrompt} Pertanyaan: ${userMessage}`;
-
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ 
-            message: finalMessage // Menggabungkan System Prompt dengan Pesan User
-            // system_prompt: systemPrompt (Dihapus karena digabungkan ke message)
+            message: `Anda adalah dokter AI yang hanya menjawab pertanyaan kesehatan. Jika pertanyaan tidak terkait kesehatan, jawab dengan sopan bahwa Anda hanya bisa membantu masalah kesehatan. Pertanyaan: ${userMessage}` 
           })
         });
 
@@ -371,21 +524,19 @@
         }
 
         const data = await response.json();
-        let aiReply = data.reply || "Maaf, lagi error nih gaes. Coba lagi ya! 🙏";
+        let aiReply = data.reply || "Maaf, saya tidak bisa menjawab pertanyaan itu saat ini.";
         
-        // Hapus indikator mengetik
+        // Remove typing indicator
         document.getElementById("typingIndicator").remove();
         
-        // Tampilkan respons AI
+        // Display AI response
         displayAIResponse(aiReply);
       } catch (error) {
-        if(document.getElementById("typingIndicator")) {
-             document.getElementById("typingIndicator").remove();
-        }
+        document.getElementById("typingIndicator").remove();
 
         const errorDiv = document.createElement("div");
         errorDiv.className = "message ai-message";
-        errorDiv.innerHTML = `<strong>ABIDINAI Kreator:</strong> Waduh, server lagi rehat nih. Coba refresh lagi ya, gaes! #gagal #error 😵‍💫`;
+        errorDiv.innerHTML = `<strong>Dokter AI:</strong> Maaf, terjadi kesalahan: ${error.message}`;
         chatbox.appendChild(errorDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
           
@@ -396,43 +547,172 @@
     function displayAIResponse(aiReply) {
       const chatbox = document.getElementById("chatbox");
       const sendButton = document.getElementById("sendButton");
+
+      if (listeningIndicator) {
+        listeningIndicator.remove();
+        listeningIndicator = null;
+      }
       
       // Pisahkan teks dan kode
       const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
       const container = document.createElement("div");
       container.className = "message ai-message";
-      container.innerHTML = `<strong>ABIDINAI Kreator:</strong><br>`;
-
+      
+      // Hanya tambahkan teks untuk dibaca oleh AI
+      let textToRead = "";
+      
+      // Untuk menampilkan di chatbox
+      let displayContent = `<strong>Dokter AI:</strong><br>`;
+      
       for (let i = 0; i < parts.length; i++) {
         if (i % 2 === 0) {
-          const span = document.createElement("span");
-          span.innerHTML = parts[i].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Handle Markdown Bold
-          container.appendChild(span);
+          // Ini adalah teks biasa (bukan kode)
+          displayContent += parts[i];
+          textToRead += parts[i] + " ";
         } else {
-          const codeContainer = document.createElement("div");
-          codeContainer.className = "code-container";
-
-          const copyButton = document.createElement("button");
-          copyButton.className = "copy-btn";
-          copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
-          copyButton.onclick = () => {
-            navigator.clipboard.writeText(parts[i]).then(() => {
-              copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-              setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
-            });
-          };
-
-          const pre = document.createElement("pre");
-          pre.textContent = parts[i];
-          codeContainer.appendChild(copyButton);
-          codeContainer.appendChild(pre);
-          container.appendChild(codeContainer);
+          // Ini adalah kode dalam blok ```
+          displayContent += `<div class="code-container">
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${parts[i].replace(/'/g, "\\'")}').then(() => { 
+              const btn = event.target; 
+              btn.innerHTML = '<i class=\"fas fa-check\"></i> Tersalin!'; 
+              setTimeout(() => btn.innerHTML = '<i class=\"fas fa-copy\"></i> Salin', 1500); 
+            })">
+              <i class="fas fa-copy"></i> Salin
+            </button>
+            <pre>${parts[i].replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+          </div>`;
+          // Kode tidak ditambahkan ke textToRead agar tidak dibaca oleh AI
         }
       }
-
+      
+      container.innerHTML = displayContent;
       chatbox.appendChild(container);
       chatbox.scrollTop = chatbox.scrollHeight;
       sendButton.disabled = false;
+
+      // Baca dengan suara jika input berasal dari suara
+      if (isVoiceInput) {
+        // Bersihkan teks dari kode HTML sebelum dibaca
+        const cleanText = cleanTextForSpeech(textToRead);
+        readWithPauses(cleanText);
+      }
+      isVoiceInput = false;
+    }
+
+    function cleanTextForSpeech(text) {
+      // Hapus semua tag HTML dan entity HTML
+      return text
+        .replace(/<[^>]*>/g, ' ') // Hapus tag HTML
+        .replace(/&lt;/g, ' ') // Hapus &lt;
+        .replace(/&gt;/g, ' ') // Hapus &gt;
+        .replace(/&amp;/g, ' ') // Hapus &amp;
+        .replace(/&quot;/g, ' ') // Hapus &quot;
+        .replace(/&#39;/g, ' ') // Hapus &#39;
+        .replace(/```[\s\S]*?```/g, ' ') // Hapus blok kode
+        .replace(/`[^`]*`/g, ' ') // Hapus inline code
+        .replace(/\s+/g, ' ') // Normalisasi spasi
+        .trim();
+    }
+
+    function readWithPauses(text) {
+      if (!('speechSynthesis' in window)) {
+        console.log("Text-to-speech tidak didukung di browser ini");
+        return;
+      }
+      
+      // Bersihkan teks sebelum dibaca
+      const cleanText = cleanTextForSpeech(text);
+      const sentences = cleanText.split(/(?<=[.!?])\s+/);
+      const synth = window.speechSynthesis;
+      synth.cancel(); 
+
+      function speakNext(index) {
+        if (index >= sentences.length) return;
+        
+        const sentence = sentences[index].trim();
+        if (!sentence || sentence.length < 3) return speakNext(index + 1);
+        
+        const utter = new SpeechSynthesisUtterance(sentence);
+        utter.lang = 'id-ID';
+        utter.rate = 1.0;
+        utter.pitch = 1.0;
+        utter.volume = 1.0;
+        
+        utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
+        synth.speak(utter);
+      }
+
+      speakNext(0);
+    }
+
+    function toggleAudio() {
+      const audio = document.getElementById("audioPlayer");
+      const playBtn = document.getElementById("playBtn");
+      
+      if (audio.paused) {
+        audio.play().catch(e => console.log("Autoplay blocked:", e));
+        playBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause Musik</span>';
+        playBtn.classList.add("pulse");
+      } else {
+        audio.pause();
+        playBtn.innerHTML = '<i class="fas fa-play"></i><span>Putar Musik</span>';
+        playBtn.classList.remove("pulse");
+      }
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        const voiceText = event.results[0][0].transcript;
+        document.getElementById("messageInput").value = voiceText;
+        isVoiceInput = true;
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        alert('Gagal mengenali suara: ' + event.error);
+        
+        if (listeningIndicator) {
+          listeningIndicator.remove();
+          listeningIndicator = null;
+        }
+      };
+      
+      recognition.onend = () => {
+        // Nothing to do here
+      };
+    } else {
+      alert("Browser tidak mendukung pengenalan suara.");
+    }
+
+    function startVoiceRecognition() {
+      if (recognition) {
+        try {
+          recognition.start();
+  
+          const chatbox = document.getElementById("chatbox");
+          
+          if (listeningIndicator) {
+            listeningIndicator.remove();
+          }
+          
+          listeningIndicator = document.createElement("div");
+          listeningIndicator.className = "message user-message";
+          listeningIndicator.innerHTML = `<strong>Sistem:</strong> Mendengarkan keluhan kesehatan Anda...`;
+          chatbox.appendChild(listeningIndicator);
+          chatbox.scrollTop = chatbox.scrollHeight;
+        } catch (e) {
+          console.error("Error starting recognition:", e);
+        }
+      }
     }
   </script>
 </body>
