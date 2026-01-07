@@ -3,9 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/jpg" href="https://iili.io/FvxcSaa.jpg"/>
   <title>Dokter AbidinAI</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7086399222908016"
+     crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
+    /* CSS DOKTER AI TIDAK DIUBAH - TAMPILAN ASLI */
     * {
       margin: 0;
       padding: 0;
@@ -305,6 +310,8 @@
       margin: 15px 0;
       border-radius: 8px;
       overflow: hidden;
+      background: rgba(0, 17, 34, 0.8);
+      border: 1px solid rgba(0, 255, 255, 0.2);
     }
     
     .copy-btn {
@@ -331,7 +338,7 @@
     }
     
     pre {
-      background: rgba(0, 17, 34, 0.8);
+      background: transparent;
       color: #0ff;
       padding: 20px 15px 15px;
       border-radius: 8px;
@@ -339,8 +346,8 @@
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
       white-space: pre-wrap;
-      border: 1px solid rgba(0, 255, 255, 0.2);
       text-align: left;
+      margin: 0;
     }
     
     .status {
@@ -418,6 +425,15 @@
         font-size: 14px;
       }
     }
+
+    /* PERBAIKAN: Textarea untuk mencegah AI baca kode HTML */
+    .clean-text {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
   </style>
 </head>
 <body>
@@ -433,7 +449,6 @@
         <i class="fas fa-play"></i>
         <span>Putar Musik</span>
       </button>
-  
     </div>
     
     <div class="chat-container">
@@ -509,13 +524,23 @@
       sendButton.disabled = true;
 
       try {
+        // PERBAIKAN: Prompt khusus untuk mencegah AI mengeluarkan kode HTML
+        const prompt = `Anda adalah dokter AI yang hanya menjawab pertanyaan kesehatan. 
+        JANGAN GUNAKAN format markdown seperti **bold**, \`code\`, atau # hashtag.
+        JANGAN GUNAKAN tag HTML seperti <b>, <i>, <br>, dll.
+        JANGAN GUNAKAN kode programming atau struktur data.
+        Jawablah dengan teks biasa yang bersih dan mudah dibaca.
+        Jika pertanyaan tidak terkait kesehatan, jawab dengan sopan bahwa Anda hanya bisa membantu masalah kesehatan.
+        
+        Pertanyaan: ${userMessage}`;
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ 
-            message: `Anda adalah dokter AI yang hanya menjawab pertanyaan kesehatan. Jika pertanyaan tidak terkait kesehatan, jawab dengan sopan bahwa Anda hanya bisa membantu masalah kesehatan. Pertanyaan: ${userMessage}` 
+            message: prompt
           })
         });
 
@@ -529,7 +554,7 @@
         // Remove typing indicator
         document.getElementById("typingIndicator").remove();
         
-        // Display AI response
+        // PERBAIKAN: Bersihkan teks sebelum ditampilkan
         displayAIResponse(aiReply);
       } catch (error) {
         document.getElementById("typingIndicator").remove();
@@ -544,6 +569,54 @@
       }
     }
 
+    // PERBAIKAN UTAMA: Fungsi untuk membersihkan teks dari HTML, markdown, dan kode
+    function cleanTextForDisplay(text) {
+      if (!text) return "";
+      
+      let cleaned = text;
+      
+      // 1. Hapus semua tag HTML
+      cleaned = cleaned.replace(/<[^>]*>/g, '');
+      
+      // 2. Hapus markdown formatting
+      cleaned = cleaned.replace(/\*\*/g, '');
+      cleaned = cleaned.replace(/\*/g, '');
+      cleaned = cleaned.replace(/`/g, '');
+      cleaned = cleaned.replace(/#/g, '');
+      cleaned = cleaned.replace(/\[.*?\]/g, '');
+      cleaned = cleaned.replace(/\(.*?\)/g, '');
+      
+      // 3. Hapus code blocks
+      cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+      
+      // 4. Hapus karakter khusus programming
+      cleaned = cleaned.replace(/[{}\[\]\/\\]/g, '');
+      
+      // 5. Normalize spasi
+      cleaned = cleaned.replace(/\s+/g, ' ').trim();
+      
+      // 6. Hapus baris yang mengandung kode programming
+      const lines = cleaned.split('\n');
+      const filteredLines = lines.filter(line => {
+        const lowerLine = line.toLowerCase();
+        return !(
+          lowerLine.includes('function') ||
+          lowerLine.includes('const') ||
+          lowerLine.includes('let') ||
+          lowerLine.includes('var') ||
+          lowerLine.includes('if (') ||
+          lowerLine.includes('=>') ||
+          lowerLine.includes('{') ||
+          lowerLine.includes('}') ||
+          /^\s*[\w\s]+\s*=\s*.+/.test(line)
+        );
+      });
+      
+      cleaned = filteredLines.join('\n');
+      
+      return cleaned;
+    }
+
     function displayAIResponse(aiReply) {
       const chatbox = document.getElementById("chatbox");
       const sendButton = document.getElementById("sendButton");
@@ -553,77 +626,33 @@
         listeningIndicator = null;
       }
       
-      // PERBAIKAN UTAMA: Pisahkan teks dan kode dengan benar
-      const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
+      // PERBAIKAN: Gunakan fungsi pembersihan teks
+      let cleanedReply = cleanTextForDisplay(aiReply);
+      
+      // Jika setelah dibersihkan kosong, gunakan pesan default
+      if (!cleanedReply || cleanedReply.trim() === "") {
+        cleanedReply = "Maaf, saya mengalami kesalahan dalam memproses jawaban. Silakan coba lagi dengan pertanyaan yang lebih spesifik tentang kesehatan Anda.";
+      }
+      
       const container = document.createElement("div");
       container.className = "message ai-message";
       
-      // Hanya teks biasa untuk dibaca AI (text-to-speech)
-      let textToRead = "";
-      
-      // Buat elemen konten untuk chatbox
-      container.innerHTML = `<strong>Dokter AI:</strong><br>`;
-      
-      for (let i = 0; i < parts.length; i++) {
-        if (i % 2 === 0) {
-          // Ini adalah teks biasa (bukan kode)
-          const textPart = parts[i];
-          
-          // Tambahkan teks biasa ke textToRead
-          textToRead += textPart + " ";
-          
-          // Tambahkan ke tampilan chatbox
-          const span = document.createElement("span");
-          span.textContent = textPart;
-          container.appendChild(span);
-        } else {
-          // Ini adalah kode dalam blok ``` - TIDAK ditambahkan ke textToRead
-          const codeContainer = document.createElement("div");
-          codeContainer.className = "code-container";
+      // PERBAIKAN: Gunakan class clean-text untuk styling
+      const contentHTML = `
+        <strong>Dokter AI:</strong><br>
+        <span class="clean-text">${cleanedReply}</span>
+      `;
 
-          const copyButton = document.createElement("button");
-          copyButton.className = "copy-btn";
-          copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
-          copyButton.onclick = () => {
-            navigator.clipboard.writeText(parts[i]).then(() => {
-              copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-              setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
-            });
-          };
-
-          const pre = document.createElement("pre");
-          pre.textContent = parts[i];
-          codeContainer.appendChild(copyButton);
-          codeContainer.appendChild(pre);
-          container.appendChild(codeContainer);
-          
-          // Blok kode TIDAK ditambahkan ke textToRead
-        }
-      }
-      
+      container.innerHTML = contentHTML;
       chatbox.appendChild(container);
       chatbox.scrollTop = chatbox.scrollHeight;
       sendButton.disabled = false;
 
       // Baca dengan suara jika input berasal dari suara
       if (isVoiceInput) {
-        // Bersihkan teks sebelum dibaca
-        const cleanText = cleanTextForSpeech(textToRead);
-        readWithPauses(cleanText);
+        readWithPauses(cleanedReply);
       }
       isVoiceInput = false;
-    }
-
-    // PERBAIKAN: Fungsi pembersihan teks untuk speech
-    function cleanTextForSpeech(text) {
-      // Hapus semua karakter yang tidak perlu untuk speech
-      return text
-        .replace(/<[^>]*>/g, ' ') // Hapus semua tag HTML
-        .replace(/&[a-z0-9#]+;/gi, ' ') // Hapus semua entity HTML
-        .replace(/[\[\]{}()<>]/g, ' ') // Hapus tanda kurung
-        .replace(/[\/\\|*#~`^]/g, ' ') // Hapus karakter khusus
-        .replace(/\s+/g, ' ') // Normalisasi spasi
-        .trim();
     }
 
     function readWithPauses(text) {
@@ -632,19 +661,21 @@
         return;
       }
       
-      // Bersihkan teks sekali lagi sebelum dibaca
-      const cleanText = cleanTextForSpeech(text);
-      const sentences = cleanText.split(/(?<=[.!?])\s+/);
+      const sentences = text.split(/(?<=[.!?])\s+/);
       const synth = window.speechSynthesis;
       synth.cancel(); 
+
+      function cleanText(t) {
+        return t.replace(/[*"`\-+/:;\\]/g, '');
+      }
 
       function speakNext(index) {
         if (index >= sentences.length) return;
         
-        const sentence = sentences[index].trim();
-        if (!sentence || sentence.length < 3) return speakNext(index + 1);
+        const cleanSentence = cleanText(sentences[index]).trim();
+        if (!cleanSentence) return speakNext(index + 1);
         
-        const utter = new SpeechSynthesisUtterance(sentence);
+        const utter = new SpeechSynthesisUtterance(cleanSentence);
         utter.lang = 'id-ID';
         utter.rate = 1.0;
         utter.pitch = 1.0;
