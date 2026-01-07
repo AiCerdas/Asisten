@@ -462,39 +462,111 @@
   </audio>
 
   <script>
-    // ✅ FUNGSI FILTER TTS YANG 100% AMAN
+    // ==================== 🔥 FILTER TTS YANG PALING KETAT ====================
     function sanitizeForTTS(text) {
-        // 1️⃣ HAPUS TAG HTML TOTAL
+        if (!text || typeof text !== 'string') return '';
+        
+        // 1️⃣ HAPUS SEMUA TAG HTML DAN MARKDOWN CODE BLOCK
         text = text.replace(/<[^>]+>/g, '');
+        text = text.replace(/```[\s\S]*?```/g, '');
+        text = text.replace(/`[^`]*`/g, '');
         
         // 2️⃣ HAPUS ENTITY HTML
         text = text.replace(/&[a-z]+;/gi, '');
         
-        // 3️⃣ JIKA TERDETEK KODE → DIAM
-        if (/[<>\/{}[\]=;]/.test(text)) return '';
-        
-        // 4️⃣ JIKA TERDETEK POLA KODE PROGRAM
-        if (/(function|const|let|var|=>|if\s*\(|for\s*\()/i.test(text)) {
-            return '';
-        }
-        
-        // 5️⃣ MODE PALING KEBAL: deteksi tag HTML lagi untuk memastikan
+        // 3️⃣ MODE PALING KEBAL: JIKA ADA SATU TAG SAJA → DIAM TOTAL
         if (/<[^>]+>/.test(text)) return '';
         
-        return text.trim();
+        // 4️⃣ DETEKSI KODE PROGRAM (SEMUA SIMBOL KODE)
+        const codePatterns = [
+            /[<>\/{}[\]=;]/,
+            /(function|const|let|var|=>|if\s*\(|for\s*\(|console\.|document\.|window\.)/i,
+            /<\/?\w+.*?>/,
+            /&[a-z]+;/i
+        ];
+        
+        for (const pattern of codePatterns) {
+            if (pattern.test(text)) return '';
+        }
+        
+        // 5️⃣ HAPUS SEMUA SIMBOL KHUSUS YANG MENCOCOK
+        text = text.replace(/[*\-+=\[\]{}();:,.<>\/\\]/g, ' ');
+        
+        // 6️⃣ TRIM DAN HAPUS SPASI BERLEBIHAN
+        text = text.trim().replace(/\s+/g, ' ');
+        
+        return text;
     }
 
-    // ✅ FUNGSI SPEAK YANG AMAN
+    // ==================== ✅ SATU-SATUNYA FUNGSI SPEAK YANG BOLEH DIPAKAI ====================
     function speak(text) {
+        // JANGAN PERNAH PANGGIL speechSynthesis.speak() DI MANA PUN SELAIN DI SINI!
         const clean = sanitizeForTTS(text);
-        if (!clean) return; // JIKA KOSONG → DIAM
+        if (!clean) {
+            console.log('TTS DIAM: Terdeteksi kode/tag HTML');
+            return;
+        }
         
         const msg = new SpeechSynthesisUtterance(clean);
         msg.lang = 'id-ID';
-        speechSynthesis.cancel(); // STOP semua suara sebelumnya
+        msg.rate = 1.0;
+        msg.pitch = 1.0;
+        msg.volume = 1.0;
+        
+        // BATALKAN SEMUA SUARA SEBELUMNYA
+        speechSynthesis.cancel();
+        
+        // HANYA INI YANG BOLEH PANGGIL speechSynthesis.speak()
         speechSynthesis.speak(msg);
+        
+        console.log('TTS berbicara:', clean);
     }
 
+    // ==================== VERSI readWithPauses YANG DIBAHAS ====================
+    function readWithPauses(text) {
+        if (!('speechSynthesis' in window)) {
+            console.log("Text-to-speech tidak didukung di browser ini");
+            return;
+        }
+        
+        // GUNAKAN FILTER SANITIZE DI SINI JUGA
+        const cleanText = sanitizeForTTS(text);
+        if (!cleanText) {
+            console.log('readWithPauses DIAM: Teks mengandung kode');
+            return;
+        }
+        
+        const sentences = cleanText.split(/(?<=[.!?])\s+/);
+        
+        // GUNAKAN FUNGSI speak() UNTUK SETIAP KALIMAT
+        let currentIndex = 0;
+        
+        function speakNext() {
+            if (currentIndex >= sentences.length) return;
+            
+            const sentence = sentences[currentIndex].trim();
+            if (!sentence) {
+                currentIndex++;
+                setTimeout(speakNext, 100);
+                return;
+            }
+            
+            // GUNAKAN FUNGSI speak() YANG AMAN
+            speak(sentence);
+            
+            currentIndex++;
+            
+            // JANGAN ATUR onend DI SpeechSynthesisUtterance!
+            // Gunakan setTimeout untuk kalimat berikutnya
+            if (currentIndex < sentences.length) {
+                setTimeout(speakNext, 800); // Jeda 800ms antar kalimat
+            }
+        }
+        
+        speakNext();
+    }
+
+    // ==================== VARIABEL GLOBAL ====================
     let isVoiceInput = false;
     let audioEnabled = false;
     let listeningIndicator = null; 
@@ -625,46 +697,15 @@
       chatbox.scrollTop = chatbox.scrollHeight;
       sendButton.disabled = false;
 
-      // ✅ BACA DENGAN SUARA MENGGUNAKAN FUNGSI speak() YANG AMAN
+      // ✅ GUNAKAN speak() UNTUK MEMBACA (BUKAN readWithPauses)
       if (isVoiceInput) {
-        // Gunakan fungsi speak() yang sudah dilindungi filter
-        speak(textToRead);
+        // FILTER LANGSUNG DI SINI JUGA
+        const cleanText = sanitizeForTTS(textToRead);
+        if (cleanText) {
+            speak(cleanText);
+        }
       }
       isVoiceInput = false;
-    }
-
-    function readWithPauses(text) {
-      if (!('speechSynthesis' in window)) {
-        console.log("Text-to-speech tidak didukung di browser ini");
-        return;
-      }
-      
-      // ✅ GUNAKAN sanitizeForTTS() SEBELUM MEMBACA
-      const cleanText = sanitizeForTTS(text);
-      if (!cleanText) return; // Jika kosong, diam
-      
-      const sentences = cleanText.split(/(?<=[.!?])\s+/);
-      const synth = window.speechSynthesis;
-      synth.cancel(); 
-
-      function speakNext(index) {
-        if (index >= sentences.length) return;
-        
-        const cleanSentence = sentences[index].trim();
-        if (!cleanSentence) return speakNext(index + 1);
-        
-        // ✅ GUNAKAN speak() YANG AMAN
-        const utter = new SpeechSynthesisUtterance(cleanSentence);
-        utter.lang = 'id-ID';
-        utter.rate = 1.0;
-        utter.pitch = 1.0;
-        utter.volume = 1.0;
-        
-        utter.onend = () => setTimeout(() => speakNext(index + 1), 300);
-        synth.speak(utter);
-      }
-
-      speakNext(0);
     }
 
     function toggleAudio() {
@@ -737,8 +778,15 @@
       }
     }
     
-    // ✅ PERINGATAN: JANGAN GUNAKAN speechSynthesis.speak() LANGSUNG
-    console.warn("PERINGATAN: Gunakan hanya fungsi speak() untuk TTS. JANGAN gunakan speechSynthesis.speak() langsung di mana pun!");
+    // ==================== 🔒 PENGAMANAN EKSTRA ====================
+    // OVERRIDE speechSynthesis.speak() agar tidak bisa dipanggil langsung
+    const originalSpeak = speechSynthesis.speak;
+    speechSynthesis.speak = function(utterance) {
+        console.warn('🚫 DIBLOKIR: Jangan panggil speechSynthesis.speak() langsung! Gunakan fungsi speak() saja.');
+        return false;
+    };
+    
+    console.log('✅ Sistem TTS telah diamankan 100%');
   </script>
 </body>
 </html>
