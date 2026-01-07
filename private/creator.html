@@ -553,63 +553,75 @@
         listeningIndicator = null;
       }
       
-      // Pisahkan teks dan kode
+      // PERBAIKAN UTAMA: Pisahkan teks dan kode dengan benar
       const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
       const container = document.createElement("div");
       container.className = "message ai-message";
       
-      // Hanya tambahkan teks untuk dibaca oleh AI
+      // Hanya teks biasa untuk dibaca AI (text-to-speech)
       let textToRead = "";
       
-      // Untuk menampilkan di chatbox
-      let displayContent = `<strong>Dokter AI:</strong><br>`;
+      // Buat elemen konten untuk chatbox
+      container.innerHTML = `<strong>Dokter AI:</strong><br>`;
       
       for (let i = 0; i < parts.length; i++) {
         if (i % 2 === 0) {
           // Ini adalah teks biasa (bukan kode)
-          displayContent += parts[i];
-          textToRead += parts[i] + " ";
+          const textPart = parts[i];
+          
+          // Tambahkan teks biasa ke textToRead
+          textToRead += textPart + " ";
+          
+          // Tambahkan ke tampilan chatbox
+          const span = document.createElement("span");
+          span.textContent = textPart;
+          container.appendChild(span);
         } else {
-          // Ini adalah kode dalam blok ```
-          displayContent += `<div class="code-container">
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('${parts[i].replace(/'/g, "\\'")}').then(() => { 
-              const btn = event.target; 
-              btn.innerHTML = '<i class=\"fas fa-check\"></i> Tersalin!'; 
-              setTimeout(() => btn.innerHTML = '<i class=\"fas fa-copy\"></i> Salin', 1500); 
-            })">
-              <i class="fas fa-copy"></i> Salin
-            </button>
-            <pre>${parts[i].replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-          </div>`;
-          // Kode tidak ditambahkan ke textToRead agar tidak dibaca oleh AI
+          // Ini adalah kode dalam blok ``` - TIDAK ditambahkan ke textToRead
+          const codeContainer = document.createElement("div");
+          codeContainer.className = "code-container";
+
+          const copyButton = document.createElement("button");
+          copyButton.className = "copy-btn";
+          copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin';
+          copyButton.onclick = () => {
+            navigator.clipboard.writeText(parts[i]).then(() => {
+              copyButton.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+              setTimeout(() => copyButton.innerHTML = '<i class="fas fa-copy"></i> Salin', 1500);
+            });
+          };
+
+          const pre = document.createElement("pre");
+          pre.textContent = parts[i];
+          codeContainer.appendChild(copyButton);
+          codeContainer.appendChild(pre);
+          container.appendChild(codeContainer);
+          
+          // Blok kode TIDAK ditambahkan ke textToRead
         }
       }
       
-      container.innerHTML = displayContent;
       chatbox.appendChild(container);
       chatbox.scrollTop = chatbox.scrollHeight;
       sendButton.disabled = false;
 
       // Baca dengan suara jika input berasal dari suara
       if (isVoiceInput) {
-        // Bersihkan teks dari kode HTML sebelum dibaca
+        // Bersihkan teks sebelum dibaca
         const cleanText = cleanTextForSpeech(textToRead);
         readWithPauses(cleanText);
       }
       isVoiceInput = false;
     }
 
+    // PERBAIKAN: Fungsi pembersihan teks untuk speech
     function cleanTextForSpeech(text) {
-      // Hapus semua tag HTML dan entity HTML
+      // Hapus semua karakter yang tidak perlu untuk speech
       return text
-        .replace(/<[^>]*>/g, ' ') // Hapus tag HTML
-        .replace(/&lt;/g, ' ') // Hapus &lt;
-        .replace(/&gt;/g, ' ') // Hapus &gt;
-        .replace(/&amp;/g, ' ') // Hapus &amp;
-        .replace(/&quot;/g, ' ') // Hapus &quot;
-        .replace(/&#39;/g, ' ') // Hapus &#39;
-        .replace(/```[\s\S]*?```/g, ' ') // Hapus blok kode
-        .replace(/`[^`]*`/g, ' ') // Hapus inline code
+        .replace(/<[^>]*>/g, ' ') // Hapus semua tag HTML
+        .replace(/&[a-z0-9#]+;/gi, ' ') // Hapus semua entity HTML
+        .replace(/[\[\]{}()<>]/g, ' ') // Hapus tanda kurung
+        .replace(/[\/\\|*#~`^]/g, ' ') // Hapus karakter khusus
         .replace(/\s+/g, ' ') // Normalisasi spasi
         .trim();
     }
@@ -620,7 +632,7 @@
         return;
       }
       
-      // Bersihkan teks sebelum dibaca
+      // Bersihkan teks sekali lagi sebelum dibaca
       const cleanText = cleanTextForSpeech(text);
       const sentences = cleanText.split(/(?<=[.!?])\s+/);
       const synth = window.speechSynthesis;
