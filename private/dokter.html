@@ -139,6 +139,50 @@
     .chat-area {
       width: 100%;
       margin-bottom: 25px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    /* Scrollbar styling */
+    .chat-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-area::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 15px;
+      animation: fadeIn 0.3s ease;
+      text-align: left;
+    }
+
+    .user-message {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      margin-left: 30px;
+      margin-right: 10px;
+    }
+
+    .ai-message {
+      background: #f8f9fa;
+      border-left: 4px solid #5A4FF3;
+      margin-right: 30px;
+      margin-left: 10px;
     }
 
     .welcome-message {
@@ -160,6 +204,7 @@
     .message-text {
       color: #555;
       font-size: 14.5px;
+      line-height: 1.6;
     }
 
     .note {
@@ -171,6 +216,15 @@
       border-radius: 6px;
       font-size: 13px;
       color: #856404;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      font-style: italic;
     }
 
     /* Input Area */
@@ -220,6 +274,12 @@
     .send-btn:hover {
       background: #4a3fd3;
       transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
     }
 
     /* Voice Button */
@@ -277,6 +337,11 @@
       to { transform: rotate(360deg); }
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .creator-container {
@@ -300,6 +365,11 @@
       
       #messageInput {
         padding: 12px 16px;
+      }
+      
+      .message {
+        margin-left: 10px !important;
+        margin-right: 10px !important;
       }
     }
   </style>
@@ -336,7 +406,7 @@
     </div>
 
     <!-- Chat Area -->
-    <div class="chat-area">
+    <div class="chat-area" id="chatArea">
       <div class="welcome-message">
         <span class="doctor-name">Dokter AI:</span>
         <span class="message-text">
@@ -360,7 +430,7 @@
           placeholder="Tanyakan masalah kesehatan Anda..."
           onkeypress="handleKeyPress(event)"
         >
-        <button class="send-btn" onclick="sendMessage()">
+        <button class="send-btn" onclick="sendMessage()" id="sendButton">
           <i class="fas fa-paper-plane"></i>
         </button>
       </div>
@@ -387,6 +457,7 @@
     let isVoiceMode = false;
     let isMusicPlaying = false;
     let listeningElement = null;
+    let recognition = null;
 
     // Audio Control
     function toggleAudio() {
@@ -411,98 +482,135 @@
       }
     }
 
-    // Send Message
+    // Add message to chat
+    function addMessage(sender, text, isAI = false) {
+      const chatArea = document.getElementById("chatArea");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${isAI ? 'ai-message' : 'user-message'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-text">${text}</div>
+      `;
+      
+      chatArea.appendChild(messageDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      
+      return messageDiv;
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+      const chatArea = document.getElementById("chatArea");
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "message ai-message";
+      typingDiv.innerHTML = `
+        <div class="typing-indicator">
+          <div class="loading"></div>
+          Dokter AI sedang menganalisis...
+        </div>
+      `;
+      typingDiv.id = "typingIndicator";
+      chatArea.appendChild(typingDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      
+      return typingDiv;
+    }
+
+    // Remove typing indicator
+    function removeTypingIndicator() {
+      const typingDiv = document.getElementById("typingIndicator");
+      if (typingDiv) {
+        typingDiv.remove();
+      }
+    }
+
+    // Send Message to AI API
     async function sendMessage() {
       const input = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
       const message = input.value.trim();
       
       if (!message) return;
       
-      // Clear input
+      // Add user message
+      addMessage("Anda", message, false);
+      
+      // Clear input and disable button
       input.value = "";
+      sendButton.disabled = true;
       
-      // In a real implementation, you would send this to your API
-      console.log("Mengirim pesan:", message);
+      // Show typing indicator
+      showTypingIndicator();
       
-      // For demo purposes, show a response
-      setTimeout(() => {
-        showTypingIndicator();
-      }, 500);
-    }
+      try {
+        // Send request to AI API
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("abidinai_token")}`
+          },
+          body: JSON.stringify({ 
+            message: `Anda adalah Dokter Abidin, asisten kesehatan AI. Hanya jawab pertanyaan kesehatan. Jika pertanyaan tidak terkait kesehatan, jawab dengan sopan bahwa Anda hanya bisa membantu masalah kesehatan. Pertanyaan pengguna: ${message}` 
+          })
+        });
 
-    // Show typing indicator (demo)
-    function showTypingIndicator() {
-      const chatArea = document.querySelector(".chat-area");
-      const typingDiv = document.createElement("div");
-      typingDiv.className = "welcome-message";
-      typingDiv.innerHTML = `
-        <span class="doctor-name">Dokter AI:</span>
-        <span class="message-text">
-          <div class="typing-indicator" style="display: flex; align-items: center; gap: 8px;">
-            <div class="loading"></div>
-            Menganalisis pertanyaan Anda...
-          </div>
-        </span>
-      `;
-      chatArea.appendChild(typingDiv);
-      
-      // Simulate AI response after delay
-      setTimeout(() => {
-        typingDiv.remove();
-        showResponse();
-      }, 2000);
-    }
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
 
-    // Show AI response (demo)
-    function showResponse() {
-      const chatArea = document.querySelector(".chat-area");
-      const responseDiv = document.createElement("div");
-      responseDiv.className = "welcome-message";
-      responseDiv.innerHTML = `
-        <span class="doctor-name">Dokter AI:</span>
-        <span class="message-text">
-          Terima kasih atas pertanyaan Anda. Sebagai asisten kesehatan AI, saya merekomendasikan untuk:
-          <br><br>
-          1. Konsultasi langsung dengan dokter untuk diagnosis yang akurat
-          <br>
-          2. Menjaga pola hidup sehat dan istirahat yang cukup
-          <br>
-          3. Menghindari self-diagnosis dari informasi online
-          <br><br>
-          Informasi yang saya berikan bersifat edukatif dan tidak menggantikan konsultasi medis profesional.
-        </span>
-      `;
-      chatArea.appendChild(responseDiv);
-      chatArea.scrollTop = chatArea.scrollHeight;
+        const data = await response.json();
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Add AI response
+        if (data.reply) {
+          addMessage("Dokter AI", data.reply, true);
+        } else {
+          addMessage("Dokter AI", "Maaf, saya tidak bisa menjawab pertanyaan itu saat ini. Silakan coba lagi.", true);
+        }
+        
+      } catch (error) {
+        console.error("Error:", error);
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Show error message
+        addMessage("Dokter AI", "Maaf, terjadi kesalahan saat menghubungi server. Silakan coba lagi.", true);
+      } finally {
+        // Re-enable send button
+        sendButton.disabled = false;
+      }
     }
 
     // Voice Recognition
     function startVoiceRecognition() {
-      if (!('webkitSpeechRecognition' in window)) {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         alert('Browser Anda tidak mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.');
         return;
       }
 
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
       recognition.lang = 'id-ID';
-      recognition.start();
-
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
       // Show listening indicator
-      const chatArea = document.querySelector(".chat-area");
+      const chatArea = document.getElementById("chatArea");
       if (listeningElement) {
         listeningElement.remove();
       }
 
       listeningElement = document.createElement("div");
-      listeningElement.className = "welcome-message";
+      listeningElement.className = "message ai-message";
       listeningElement.innerHTML = `
-        <span class="doctor-name">Sistem:</span>
-        <span class="message-text">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="loading"></div>
-            Mendengarkan keluhan kesehatan Anda...
-          </div>
-        </span>
+        <div class="typing-indicator">
+          <div class="loading"></div>
+          Mendengarkan keluhan kesehatan Anda...
+        </div>
       `;
       chatArea.appendChild(listeningElement);
       chatArea.scrollTop = chatArea.scrollHeight;
@@ -528,10 +636,40 @@
           listeningElement = null;
         }
         
-        if (event.error !== 'no-speech') {
-          alert('Gagal mengenali suara: ' + event.error);
+        if (event.error === 'no-speech') {
+          addMessage("Sistem", "Tidak ada suara yang terdeteksi. Silakan coba lagi.", true);
+        } else if (event.error === 'audio-capture') {
+          addMessage("Sistem", "Tidak ada mikrofon yang terdeteksi. Silakan periksa perangkat Anda.", true);
+        } else if (event.error !== 'aborted') {
+          addMessage("Sistem", `Error pengenalan suara: ${event.error}`, true);
         }
       };
+      
+      recognition.onend = function() {
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
+        }
+      };
+
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error("Error starting recognition:", error);
+        addMessage("Sistem", "Gagal memulai pengenalan suara.", true);
+      }
+    }
+
+    // Stop voice recognition if needed
+    function stopVoiceRecognition() {
+      if (recognition) {
+        try {
+          recognition.stop();
+        } catch (error) {
+          console.error("Error stopping recognition:", error);
+        }
+        recognition = null;
+      }
     }
 
     // Logout function
@@ -580,6 +718,9 @@
       
       const inputArea = document.querySelector('.input-area');
       inputArea.parentNode.insertBefore(statusWrapper, inputArea.nextSibling);
+      
+      // Focus on input field
+      document.getElementById("messageInput").focus();
     });
   </script>
 </body>
