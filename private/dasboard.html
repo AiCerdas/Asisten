@@ -335,12 +335,13 @@
       white-space: pre-wrap; /* Biarkan text wrapping */
       word-wrap: break-word;
       overflow-wrap: break-word;
-      font-family: inherit; /* Gunakan font normal, bukan monospace */
+      font-family: 'Courier New', monospace; /* Gunakan font monospace untuk kode */
     }
 
     /* PERBAIKAN: Textarea saat paste */
     #messageInput::placeholder {
       color: #9ca3af;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .typing-indicator {
@@ -983,6 +984,14 @@
         font-size: 15px;
         color: #666;
     }
+
+    /* PERBAIKAN: Style untuk textarea dengan font monospace */
+    .monospace-textarea {
+      font-family: 'Courier New', monospace !important;
+      white-space: pre !important;
+      word-wrap: normal !important;
+      overflow-x: auto !important;
+    }
   </style>
 
   <script>
@@ -1288,7 +1297,8 @@
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
-            style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"
+            class="monospace-textarea"
+            style="white-space: pre; word-wrap: normal; overflow-x: auto; font-family: 'Courier New', monospace;"
           ></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
@@ -1341,21 +1351,32 @@
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // PERBAIKAN: Filter paste untuk textarea
+      // PERBAIKAN: Filter paste untuk textarea - SOLUSI PALING AMAN
       const messageInput = document.getElementById('messageInput');
       
-      // Event listener untuk handle paste
+      // Event listener untuk handle paste - VERSI TERBAIK
       messageInput.addEventListener('paste', function(e) {
         e.preventDefault();
         
         // Ambil teks dari clipboard
-        let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        let pastedText = '';
+        try {
+          pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        } catch (error) {
+          console.error('Error getting clipboard data:', error);
+          return;
+        }
         
-        // Bersihkan teks: hapus karakter yang tidak perlu
+        // Bersihkan teks: normalisasi spasi dan karakter khusus
         pastedText = pastedText
-          .replace(/\r\n/g, '\n') // Normalize line endings
-          .replace(/\t/g, '    ')  // Ganti tab dengan 4 spasi
-          .trim(); // Hapus spasi di awal dan akhir
+          .replace(/\r\n/g, '\n')     // Normalize Windows line endings
+          .replace(/\r/g, '\n')       // Normalize Mac line endings
+          .replace(/\t/g, '    ')     // Ganti tab dengan 4 spasi
+          .replace(/[ \t]+$/gm, '')   // Hapus spasi di akhir baris
+          .replace(/^[ \t]+/gm, '')   // Hapus spasi di awal baris
+          .replace(/\u00A0/g, ' ')    // Ganti non-breaking space dengan spasi biasa
+          .replace(/\u200B/g, '')     // Hapus zero-width space
+          .replace(/\uFEFF/g, '');    // Hapus BOM
         
         // Sisipkan teks yang sudah dibersihkan
         const start = this.selectionStart;
@@ -1370,16 +1391,27 @@
         
         // Update tinggi textarea
         this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
+        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         
         // Trigger input event untuk update UI
         this.dispatchEvent(new Event('input'));
+        
+        // Fokus kembali ke textarea
+        this.focus();
       });
 
-      // PERBAIKAN: Event listener untuk input (handle typing)
+      // Event listener untuk input (handle typing)
       messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+      });
+
+      // Event listener untuk enter
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
       });
 
       const isAndroid = /android/i.test(navigator.userAgent);
