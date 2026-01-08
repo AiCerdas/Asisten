@@ -582,6 +582,8 @@
       } finally {
         // Re-enable send button
         sendButton.disabled = false;
+        // Focus kembali ke input
+        document.getElementById("messageInput").focus();
       }
     }
 
@@ -678,47 +680,8 @@
       window.location.href = "../index.html";
     }
 
-    // Add logout button event listener
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Add logout functionality
-      const statusDiv = document.querySelector('.status');
-      const logoutBtn = document.createElement('div');
-      logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Keluar';
-      logoutBtn.style.cssText = `
-        margin-top: 15px;
-        padding: 8px 16px;
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
-        border-radius: 20px;
-        font-size: 14px;
-        color: #666;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-      `;
-      logoutBtn.onmouseenter = function() {
-        this.style.background = '#ffebee';
-        this.style.color = '#d32f2f';
-        this.style.borderColor = '#ffcdd2';
-      };
-      logoutBtn.onmouseleave = function() {
-        this.style.background = '#f8f9fa';
-        this.style.color = '#666';
-        this.style.borderColor = '#e0e0e0';
-      };
-      logoutBtn.onclick = logout;
-      
-      const statusWrapper = document.createElement('div');
-      statusWrapper.style.textAlign = 'center';
-      statusWrapper.style.width = '100%';
-      statusWrapper.appendChild(statusDiv);
-      statusWrapper.appendChild(logoutBtn);
-      
-      const inputArea = document.querySelector('.input-area');
-      inputArea.parentNode.insertBefore(statusWrapper, inputArea.nextSibling);
-      
       // Focus on input field
       document.getElementById("messageInput").focus();
     });
