@@ -109,19 +109,19 @@
 
     .audio-btn {
       width: 100%;
-      padding: 16px;
+      padding: 14px;
       border-radius: 15px;
       background: #5A4FF3;
       color: white;
       border: none;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       box-shadow: 0 4px 15px rgba(90,79,243,0.2);
     }
 
@@ -256,10 +256,10 @@
       box-shadow: 0 0 0 3px rgba(90,79,243,0.1);
     }
 
-    /* Send Button - Diperkecil ukurannya */
+    /* Send Button - Ukuran pas */
     .send-btn {
-      width: 45px;
-      height: 45px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: #5A4FF3;
       color: white;
@@ -270,36 +270,42 @@
       justify-content: center;
       transition: all 0.3s ease;
       flex-shrink: 0;
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .send-btn:hover {
       background: #4a3fd3;
       transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(90,79,243,0.3);
+    }
+
+    .send-btn:active {
+      transform: scale(0.98);
     }
 
     .send-btn:disabled {
       background: #cccccc;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
 
     /* Voice Button */
     .voice-btn {
       width: 100%;
-      padding: 16px;
+      padding: 14px;
       border-radius: 15px;
       background: #28a745;
       color: white;
       border: none;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       box-shadow: 0 4px 15px rgba(40,167,69,0.2);
     }
 
@@ -307,6 +313,10 @@
       background: #218838;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(40,167,69,0.3);
+    }
+
+    .voice-btn:active {
+      transform: translateY(0);
     }
 
     /* Status */
@@ -361,19 +371,20 @@
       }
       
       .audio-btn, .voice-btn {
-        padding: 14px;
-        font-size: 15px;
+        padding: 12px;
+        font-size: 14px;
       }
       
       #messageInput {
         padding: 12px 16px;
+        font-size: 15px;
       }
       
       /* Ukuran button kirim di mobile */
       .send-btn {
-        width: 42px;
-        height: 42px;
-        font-size: 15px;
+        width: 46px;
+        height: 46px;
+        font-size: 17px;
       }
       
       .message {
