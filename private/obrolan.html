@@ -445,6 +445,37 @@
       };
     }
 
+    // FUNGSI BARU: Ekstrak teks murni dari HTML
+    function extractTextOnly(input) {
+      if (typeof input !== 'string') return input;
+      
+      // Buat elemen sementara untuk ekstrak teks
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = input;
+      
+      // Gunakan innerText (lebih baik karena menghiraukan hidden elements)
+      return tempDiv.innerText || tempDiv.textContent || input;
+    }
+
+    // FUNGSI BARU: Hapus semua tag HTML dari string
+    function stripHTML(html) {
+      if (typeof html !== 'string') return html;
+      
+      // Hapus semua tag HTML
+      let cleanText = html.replace(/<[^>]*>/g, '');
+      
+      // Decode HTML entities
+      cleanText = cleanText
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+      
+      return cleanText;
+    }
+
     function toggleVoiceChat() {
       if (isListening) {
         stopListening();
@@ -490,15 +521,16 @@
       conversationHistory.push({ role: 'user', content: message });
 
       try {
-        // NOTE: Gunakan riwayat percakapan untuk konteks, jika server.js mendukung
-        const fullMessage = conversationHistory.map(h => `${h.role}: ${h.content}`).join('\n');
+        // PERBAIKAN PENTING: Bersihkan pesan dari HTML sebelum dikirim ke AI
+        const cleanMessage = extractTextOnly(message);
 
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: message }) // Kirim pesan terakhir saja
+          // PERBAIKAN: Kirim TEKS BERSIH (tanpa HTML) ke AI
+          body: JSON.stringify({ message: cleanMessage })
         });
 
         if (!response.ok) {
@@ -507,6 +539,9 @@
 
         const data = await response.json();
         let aiReply = data.reply || "Maaf, saya tidak bisa menjawab itu saat ini.";
+        
+        // PERBAIKAN: Bersihkan juga respons dari AI (jika ada HTML)
+        aiReply = stripHTML(aiReply);
         
         // Simpan respons ke riwayat
         conversationHistory.push({ role: 'assistant', content: aiReply });
