@@ -77,7 +77,7 @@
     
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
       text-transform: uppercase;
     }
     
@@ -105,12 +105,35 @@
       margin-top: 5px;
     }
     
+    /* Informasi Fitur Suara */
+    .voice-info {
+      background: rgba(0, 31, 63, 0.8);
+      border: 1px solid var(--jarvis-cyan);
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin: 10px 0 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #b0f0ff;
+      max-width: 400px;
+      width: 100%;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      letter-spacing: 1px;
+      z-index: 3;
+    }
+    
+    .voice-info i {
+      color: var(--jarvis-cyan);
+      margin-right: 10px;
+    }
+    
     /* Orb Energi */
     .voice-orb {
       width: 220px;
       height: 220px;
       position: relative;
-      margin: 40px 0;
+      margin: 20px 0 30px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -220,7 +243,7 @@
       color: var(--jarvis-text);
       letter-spacing: 1px;
       text-shadow: 0 0 5px var(--jarvis-cyan);
-      animation: typing-effect 4s steps(40, end); /* Diperbaiki: Durasi 4 detik */
+      animation: typing-effect 4s steps(40, end);
       overflow: hidden;
       white-space: nowrap;
     }
@@ -372,6 +395,12 @@
       <p class="subtitle">Sistem Operasi Kecerdasan Buatan</p>
     </div>
     
+    <!-- INFORMASI FITUR SUARA -->
+    <div class="voice-info">
+      <i class="fas fa-info-circle"></i>
+      Fitur suara tersedia di versi web. Pastikan mikrofon diizinkan.
+    </div>
+    
     <div class="voice-orb" id="voiceOrb" onclick="toggleVoiceChat()">
       <div class="orb-glow"></div>
       <div class="orb-lines"></div>
@@ -460,6 +489,37 @@
       };
     }
 
+    // FUNGSI BARU: Hapus HTML tags dari teks
+    function stripHTML(html) {
+      if (typeof html !== 'string') return html;
+      
+      // Hapus semua tag HTML
+      let cleanText = html.replace(/<[^>]*>/g, '');
+      
+      // Decode HTML entities
+      cleanText = cleanText
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+      
+      return cleanText.trim();
+    }
+
+    // FUNGSI BARU: Ekstrak teks murni (jika ada HTML)
+    function extractTextOnly(input) {
+      if (typeof input !== 'string') return input;
+      
+      // Buat elemen sementara untuk ekstrak teks murni
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = input;
+      
+      // Gunakan textContent untuk mendapatkan teks tanpa HTML
+      return tempDiv.textContent || tempDiv.innerText || input;
+    }
+
     function toggleVoiceChat() {
       if (isListening) {
         stopListening();
@@ -508,12 +568,16 @@
       conversationHistory.push({ role: 'user', content: message });
 
       try {
+        // PERBAIKAN PENTING: Bersihkan HTML sebelum dikirim ke AI
+        const cleanMessage = stripHTML(extractTextOnly(message));
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: message })
+          // PERBAIKAN: Kirim TEKS BERSIH (tanpa HTML) ke AI
+          body: JSON.stringify({ message: cleanMessage })
         });
 
         if (!response.ok) {
@@ -522,6 +586,9 @@
 
         const data = await response.json();
         let aiReply = data.reply || "Maaf, saya tidak bisa menjawab itu saat ini.";
+        
+        // PERBAIKAN: Bersihkan juga respons dari AI
+        aiReply = stripHTML(aiReply);
         
         // Simpan respons ke riwayat
         conversationHistory.push({ role: 'assistant', content: aiReply });
@@ -543,7 +610,7 @@
 
       if ('speechSynthesis' in window) {
         // Bersihkan teks dari markdown dan karakter khusus
-        const cleanText = text.replace(/[*`#\-+_~]/g, '').replace(/\n/g, ' ');
+        const cleanText = stripHTML(text).replace(/[*`#\-+_~]/g, '').replace(/\n/g, ' ');
         
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.lang = 'id-ID';
@@ -575,7 +642,8 @@
 
         window.speechSynthesis.speak(utterance);
       } else {
-        updateStatusMessage(text);
+        // Tampilkan teks yang sudah dibersihkan dari HTML
+        updateStatusMessage(stripHTML(text));
         setTimeout(() => {
           isSpeaking = false;
           resetOrbState();
@@ -622,7 +690,9 @@
     }
 
     function updateStatusMessage(message) {
-      document.getElementById('statusMessage').textContent = message;
+      // Bersihkan HTML sebelum menampilkan pesan status
+      const cleanMessage = stripHTML(message);
+      document.getElementById('statusMessage').textContent = cleanMessage;
     }
 
     function addWaveAnimation() {
@@ -690,6 +760,11 @@
     document.addEventListener('DOMContentLoaded', function() {
       if (!SpeechRecognition) {
         updateStatusMessage('Perangkat tidak mendukung pengenalan suara');
+        document.querySelector('.voice-info').innerHTML = 
+          '<i class="fas fa-exclamation-triangle"></i> ' +
+          'Browser tidak mendukung fitur suara. Gunakan Chrome/Edge.';
+        document.querySelector('.voice-info').style.borderColor = '#ff5555';
+        document.querySelector('.voice-info').style.color = '#ffaaaa';
       }
     });
 
