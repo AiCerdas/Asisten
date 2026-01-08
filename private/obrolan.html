@@ -91,6 +91,27 @@
       letter-spacing: 1px;
     }
     
+    /* Informasi fitur suara */
+    .voice-info {
+      background: rgba(0, 255, 242, 0.1);
+      border: 1px solid rgba(0, 255, 242, 0.3);
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin: 15px 0 25px;
+      text-align: center;
+      font-size: 12px;
+      color: #b0f0ff;
+      max-width: 400px;
+      width: 100%;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 10px rgba(0, 255, 242, 0.2);
+    }
+    
+    .voice-info i {
+      color: var(--neon-blue);
+      margin-right: 8px;
+    }
+    
     /* Voice Orb - Inti Tampilan Jarvis */
     .voice-orb {
       width: 220px;
@@ -102,7 +123,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      margin: 40px 0;
+      margin: 20px 0 30px;
       cursor: pointer;
       transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
       /* Efek Kaca */
@@ -347,6 +368,10 @@
       .status-message {
         font-size: 14px;
       }
+      .voice-info {
+        font-size: 11px;
+        padding: 8px 12px;
+      }
     }
     /* ------------------------------------------------------------------ */
     /* END JARVIS / NEON UI STYLES */
@@ -358,6 +383,12 @@
     <div class="header">
       <h1 class="title">AbidinAI</h1>
       <p class="subtitle">Asisten Cerdas Dengan Suara</p>
+    </div>
+    
+    <!-- Informasi Fitur Suara -->
+    <div class="voice-info">
+      <i class="fas fa-info-circle"></i>
+      Fitur suara tersedia di versi web. Pastikan mikrofon Anda diizinkan.
     </div>
     
     <div class="voice-orb" id="voiceOrb" onclick="toggleVoiceChat()">
@@ -443,6 +474,13 @@
           resetOrbState();
         }
       };
+    } else {
+      // Jika browser tidak mendukung Web Speech API
+      document.querySelector('.voice-info').innerHTML = 
+        '<i class="fas fa-exclamation-triangle"></i> ' +
+        'Fitur suara hanya tersedia di versi web Chrome/Edge. Browser Anda tidak mendukung.';
+      document.querySelector('.voice-info').style.borderColor = '#ff5555';
+      document.querySelector('.voice-info').style.color = '#ffaaaa';
     }
 
     // FUNGSI BARU: Ekstrak teks murni dari HTML
@@ -477,6 +515,12 @@
     }
 
     function toggleVoiceChat() {
+      // Periksa apakah browser mendukung
+      if (!SpeechRecognition) {
+        updateStatusMessage('Browser tidak mendukung fitur suara. Gunakan Chrome/Edge versi web.');
+        return;
+      }
+      
       if (isListening) {
         stopListening();
       } else if (isSpeaking) {
@@ -492,7 +536,7 @@
           recognition.start();
         } catch (error) {
           console.error('Error starting recognition:', error);
-          updateStatusMessage('Gagal memulai pengenalan suara');
+          updateStatusMessage('Gagal memulai pengenalan suara. Periksa izin mikrofon.');
         }
       }
     }
@@ -690,7 +734,10 @@
       const musicBtn = document.getElementById("musicBtn");
       
       if (audio.paused) {
-        audio.play().catch(e => console.log("Autoplay blocked:", e));
+        audio.play().catch(e => {
+          console.log("Autoplay blocked:", e);
+          updateStatusMessage('Klik lagi untuk memutar musik');
+        });
         musicBtn.innerHTML = '<i class="fas fa-pause"></i>';
         musicBtn.style.color = '#7aff00';
       } else {
@@ -718,7 +765,7 @@
     // Inisialisasi
     document.addEventListener('DOMContentLoaded', function() {
       if (!SpeechRecognition) {
-        updateStatusMessage('Perangkat tidak mendukung pengenalan suara');
+        updateStatusMessage('Browser tidak mendukung pengenalan suara');
       }
       resetOrbState(); // Pastikan tampilan awal bersih
     });
