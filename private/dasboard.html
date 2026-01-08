@@ -983,17 +983,6 @@
         font-size: 15px;
         color: #666;
     }
-
-    /* PERBAIKAN: Style khusus untuk kode di textarea */
-    .code-textarea {
-      font-family: 'Fira Code', 'Courier New', monospace !important;
-      white-space: pre !important;
-      word-wrap: normal !important;
-      overflow-x: auto !important;
-      tab-size: 4 !important;
-      font-size: 14px !important;
-      line-height: 1.4 !important;
-    }
   </style>
 
   <script>
@@ -1299,7 +1288,7 @@
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
-            style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; font-family: inherit;"
+            style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"
           ></textarea>
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
@@ -1352,39 +1341,21 @@
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // PERBAIKAN UTAMA: Paste handler yang benar-benar menjaga format
+      // PERBAIKAN: Filter paste untuk textarea
       const messageInput = document.getElementById('messageInput');
       
-      // Event listener untuk handle paste - SOLUSI PALING TEPAT
+      // Event listener untuk handle paste
       messageInput.addEventListener('paste', function(e) {
         e.preventDefault();
         
-        // Ambil teks dari clipboard sebagai plain text
-        let pastedText = '';
-        try {
-          pastedText = (e.clipboardData || window.clipboardData).getData('text/plain');
-        } catch (error) {
-          console.error('Error getting clipboard data:', error);
-          return;
-        }
+        // Ambil teks dari clipboard
+        let pastedText = (e.clipboardData || window.clipboardData).getData('text');
         
-        // NORMALISASI TEKS: Pertahankan semua spasi dan indentasi asli
-        // Jangan ubah apa pun kecuali karakter khusus HTML
+        // Bersihkan teks: hapus karakter yang tidak perlu
         pastedText = pastedText
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-        
-        // Konversi kembali ke teks normal untuk display
-        // Tapi pertahankan semua whitespace asli
-        pastedText = pastedText
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'");
+          .replace(/\r\n/g, '\n') // Normalize line endings
+          .replace(/\t/g, '    ')  // Ganti tab dengan 4 spasi
+          .trim(); // Hapus spasi di awal dan akhir
         
         // Sisipkan teks yang sudah dibersihkan
         const start = this.selectionStart;
@@ -1399,54 +1370,16 @@
         
         // Update tinggi textarea
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        this.style.height = (this.scrollHeight) + 'px';
         
         // Trigger input event untuk update UI
         this.dispatchEvent(new Event('input'));
-        
-        // Fokus kembali ke textarea
-        this.focus();
       });
 
-      // Event listener untuk input (handle typing)
+      // PERBAIKAN: Event listener untuk input (handle typing)
       messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
-        
-        // Deteksi jika teks mengandung kode (ada indentasi, kurung kurawal, dll)
-        const text = this.value;
-        const hasCodeStructure = text.includes('{') || text.includes('}') || text.includes(';') || 
-                               text.includes('function') || text.includes('const') || text.includes('let') ||
-                               text.includes('var') || text.includes('class') || text.includes('import') ||
-                               text.includes('export') || text.match(/^\s{2,}/m);
-        
-        if (hasCodeStructure) {
-          this.classList.add('code-textarea');
-          this.style.fontFamily = "'Fira Code', 'Courier New', monospace";
-          this.style.whiteSpace = 'pre';
-          this.style.wordWrap = 'normal';
-          this.style.overflowX = 'auto';
-          this.style.tabSize = '4';
-          this.style.fontSize = '14px';
-          this.style.lineHeight = '1.4';
-        } else {
-          this.classList.remove('code-textarea');
-          this.style.fontFamily = 'inherit';
-          this.style.whiteSpace = 'pre-wrap';
-          this.style.wordWrap = 'break-word';
-          this.style.overflowX = 'visible';
-          this.style.tabSize = '';
-          this.style.fontSize = '';
-          this.style.lineHeight = '';
-        }
-      });
-
-      // Event listener untuk enter
-      messageInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
       });
 
       const isAndroid = /android/i.test(navigator.userAgent);
