@@ -102,64 +102,6 @@
       font-size: 18px;
     }
     
-    .loading-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-    
-    .spinner {
-      border: 5px solid rgba(0, 255, 255, 0.3);
-      border-top: 5px solid cyan;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .loading-text {
-      color: cyan;
-      font-size: 18px;
-      text-align: center;
-    }
-    
-    .loading-dots:after {
-      content: '';
-      animation: dots 1.5s steps(4, end) infinite;
-    }
-    
-    @keyframes dots {
-      0%, 20% { content: ''; }
-      40% { content: '.'; }
-      60% { content: '..'; }
-      80%, 100% { content: '...'; }
-    }
-    
-    .error-message {
-      display: none;
-      background: rgba(255, 0, 0, 0.2);
-      border: 1px solid rgba(255, 0, 0, 0.5);
-      color: #ff6666;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    
     @media (max-width: 600px) {
       .container {
         padding: 20px;
@@ -188,66 +130,17 @@
         <i class="fas fa-sign-in-alt"></i> Masuk Dashboard
       </button>
     </div>
-    
-    <div id="errorMessage" class="error-message"></div>
-    
-    <!-- Auto redirect setelah 5 detik (opsional) -->
-    <p style="margin-top: 20px; font-size: 14px; color: rgba(255, 255, 255, 0.6);">
-      <i class="fas fa-clock"></i> Akan mengarahkan otomatis dalam <span id="countdown">5</span> detik
-    </p>
-  </div>
-  
-  <!-- Loading overlay -->
-  <div id="loadingOverlay" class="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text">
-      Mengarahkan ke Dashboard<span class="loading-dots"></span>
-    </div>
   </div>
 
   <script>
-    // Fungsi utama untuk redirect ke dashboard
+    // Fungsi langsung redirect ke dashboard
     function goToDashboard() {
-      // Tampilkan loading
-      const loadingOverlay = document.getElementById('loadingOverlay');
-      const errorMessage = document.getElementById('errorMessage');
-      
-      loadingOverlay.style.display = 'flex';
-      errorMessage.style.display = 'none';
-      
-      // Simpan token autentikasi (sesuai dengan yang diharapkan dasboard.html)
+      // Simpan token autentikasi
       localStorage.setItem("abidinai_token", "authenticated_" + Date.now());
       
-      // Redirect setelah delay kecil untuk efek UI
-      setTimeout(() => {
-        try {
-          window.location.href = "dasboard.html";
-        } catch (error) {
-          // Jika ada error, tampilkan pesan
-          loadingOverlay.style.display = 'none';
-          errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
-          errorMessage.style.display = 'block';
-          
-          // Coba alternatif
-          setTimeout(() => {
-            window.location.replace("dasboard.html");
-          }, 1000);
-        }
-      }, 800);
+      // Redirect langsung ke dasboard.html
+      window.location.href = "dasboard.html";
     }
-    
-    // Auto redirect setelah 5 detik
-    let countdown = 5;
-    const countdownElement = document.getElementById('countdown');
-    const countdownInterval = setInterval(() => {
-      countdown--;
-      countdownElement.textContent = countdown;
-      
-      if (countdown <= 0) {
-        clearInterval(countdownInterval);
-        goToDashboard();
-      }
-    }, 1000);
     
     // Tambahkan event listener untuk Enter key
     document.addEventListener('keydown', function(e) {
@@ -256,41 +149,10 @@
       }
     });
     
-    // Tambahkan klik ke seluruh container untuk akses mudah
-    document.querySelector('.container').addEventListener('click', function(e) {
-      if (e.target.classList.contains('container')) {
-        goToDashboard();
-      }
-    });
-    
-    // Cek jika sudah login sebelumnya
-    window.addEventListener('load', function() {
-      if (localStorage.getItem("abidinai_token")) {
-        // Jika sudah punya token, auto redirect lebih cepat
-        setTimeout(() => {
-          window.location.href = "dasboard.html";
-        }, 500);
-      }
-    });
-    
-    // Backup: Jika user klik 2x atau ada masalah
-    let redirectAttempted = false;
-    const originalGoToDashboard = goToDashboard;
-    
-    goToDashboard = function() {
-      if (!redirectAttempted) {
-        redirectAttempted = true;
-        originalGoToDashboard();
-        
-        // Backup redirect setelah 3 detik
-        setTimeout(() => {
-          if (!window.location.href.includes('dasboard.html')) {
-            console.log('Menggunakan backup redirect...');
-            window.location.assign("dasboard.html");
-          }
-        }, 3000);
-      }
-    };
+    // Jika sudah login sebelumnya, langsung redirect
+    if (localStorage.getItem("abidinai_token")) {
+      window.location.href = "dasboard.html";
+    }
   </script>
 </body>
 </html>
