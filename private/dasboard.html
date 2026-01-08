@@ -1057,7 +1057,7 @@
         <button class="close-btn" id="closeDeepResearchModal">&times;</button>
       </div>
       <div class="modal-body-research">
-        <p>Masukkan pertanyaan Anda. Balas AI akan mengumpulkan informasi mendalam dari basis pengetahuan global dan riset ilmiah terbaru..</p>
+        <p>Masukkan pertanyaan Anda. AbidinAI akan mengumpulkan informasi mendalam dari basis pengetahuan global dan riset ilmiah terbaru..</p>
         <div style="margin-top: 15px;">
           <input type="text" id="researchQueryInput" placeholder="Contoh: Efek rumah kaca..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px;">
         </div>
@@ -1065,18 +1065,6 @@
           <i class="fas fa-paper-plane"></i> Mulai Riset
         </button>
       </div>
-    </div>
-  </div>
-
-  <div class="modal" id="audioSpectrumModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-chart-bar"></i> Fitur Analisis Audio
-        </div>
-        <button class="close-btn" id="closeAudioModal">&times;</button>
-      </div>
-      <p style="text-align: center;">Fitur ini masih dalam tahap pengembangan. Nantikan pembaruan selanjutnya!</p>
     </div>
   </div>
 
@@ -1088,7 +1076,7 @@
     <div class="sidebar-header">
       <div class="sidebar-title">
         <i class="fas fa-robot"></i>
-        <span>Balas AI</span>
+        <span>ABIDINAI</span>
         </div>
     </div>
 
@@ -1240,14 +1228,6 @@
             Terjemahan
         </div>
 
-        <a href="https://lynk.id/abidinai" target="_blank" class="item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
-                <circle cx="12" cy="7" r="4"/>
-                <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
-            </svg>
-            Produk
-        </a>
-
         <a href="alarm.html" class="item">
             <svg viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
                 <circle cx="12" cy="13" r="8"/>
@@ -1264,7 +1244,7 @@
             Dokter AI
         </a>
 
-        <div class="item" onclick="setQueryToInput('Apa itu Balas AI?')">
+        <div class="item" onclick="setQueryToInput('Apa itu AbidinAI?')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
                 <path d="M4 5h16v10H7l-3 3V5z" stroke-linejoin="round"/>
                 <path d="M9 10h6M9 7h8" stroke-linecap="round"/>
@@ -2063,7 +2043,7 @@
           <div class="message-content">
             <div class="typing-indicator">
               <div class="loading"></div>
-              Balas AI sedang melakukan riset...
+              AbidinAI sedang melakukan riset...
             </div>
           </div>
         `;
@@ -2106,11 +2086,11 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
           const rawText = messageTextElement.textContent || messageTextElement.innerText;
-          const shareText = `*⚙️ Balasan Otomatis oleh Balas AI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi Balas AI._`;
+          const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI:*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
 
           if (navigator.share) {
             navigator.share({
-              title: 'Balasan Balas AI',
+              title: 'Balasan AbidinAI',
               text: shareText
             }).catch(error => {
               if (error.name !== 'AbortError') {
@@ -2197,7 +2177,7 @@
             <div class="message-text">
               <div class="typing-indicator">
                 <div class="loading"></div>
-                Mendengarkan...
+                AbidinAI Mendengarkan...
               </div>
             </div>
           </div>
@@ -2313,7 +2293,7 @@
 
           messageTextElement.innerHTML = `<div class="typing-indicator">
               <div class="loading"></div>
-              Balas AI sedang mengetik ulang...
+              AbidinAI sedang mengetik ulang...
           </div>`;
           messageDiv.classList.remove('ai-message');
           messageDiv.classList.add('user-message');
@@ -2417,7 +2397,7 @@
           <div class="message-content">
             <div class="typing-indicator">
               <div class="loading"></div>
-              Balas AI sedang ${uploadedImages.length > 0 ? 'menganalisis gambar dan mengetik...' : 'mengetik...'}
+              AbidinAI sedang ${uploadedImages.length > 0 ? 'menganalisis gambar dan mengetik...' : 'mengetik...'}
             </div>
           </div>
         `;
@@ -2472,7 +2452,7 @@
           listeningElement = null;
         }
 
-        const rawMessage = 'Maaf, server Balas AI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya!';
+        const rawMessage = 'Maaf, server AbidinAI sedang dalam proses perbaikan dan pemeliharaan. Silakan coba lagi dalam beberapa saat. Terima kasih atas pengertiannya!';
 
         const formattedMessage = formatBoldText('<i class="fas fa-tools"></i> ' + rawMessage);
 
@@ -2510,7 +2490,7 @@
               <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
               <div class="message-content">
                 <div class="message-header">
-                  <span class="message-sender">Balas AI</span>
+                  <span class="message-sender">AbidinAI</span>
                   <span class="message-time">${getCurrentTime()}</span>
                 </div>
                 <div class="message-text" id="${messageId}-text"></div>
@@ -2529,7 +2509,7 @@
             `;
             chatbox.appendChild(container);
             messageTextContainer = container.querySelector('.message-text');
-            saveMessageToDB('Balas AI', aiReply);
+            saveMessageToDB('AbidinAI', aiReply);
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
