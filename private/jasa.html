@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Video Generator</title>
+
+<style>
+
+body{
+ margin:0;
+ font-family:Arial, sans-serif;
+ background:#020617;
+ overflow:hidden;
+ color:white;
+}
+
+.bg{
+ position:fixed;
+ width:100%;
+ height:100%;
+ background:
+ radial-gradient(circle at 20% 30%, #0ea5e9 0%, transparent 30%),
+ radial-gradient(circle at 80% 70%, #22c55e 0%, transparent 30%);
+ animation:moveBg 10s infinite alternate;
+}
+
+@keyframes moveBg{
+ 0%{transform:translate(0,0);}
+ 100%{transform:translate(-50px,-50px);}
+}
+
+.container{
+ position:relative;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ height:100vh;
+}
+
+.card{
+ background:rgba(255,255,255,0.05);
+ backdrop-filter:blur(25px);
+ border-radius:20px;
+ padding:30px;
+ width:360px;
+ box-shadow:0 0 50px rgba(0,255,255,0.2);
+ animation:float 3s ease-in-out infinite;
+}
+
+@keyframes float{
+ 0%,100%{transform:translateY(0);}
+ 50%{transform:translateY(-10px);}
+}
+
+h2{
+ text-align:center;
+ color:#38bdf8;
+}
+
+.desc{
+ text-align:center;
+ font-size:14px;
+ line-height:1.6;
+ margin-top:10px;
+ opacity:0.9;
+}
+
+textarea{
+ width:100%;
+ height:100px;
+ border:none;
+ border-radius:10px;
+ background:#020617;
+ color:white;
+ padding:10px;
+ outline:none;
+ margin-top:15px;
+}
+
+.price{
+ text-align:center;
+ margin-top:10px;
+ color:#22c55e;
+ font-weight:bold;
+}
+
+button{
+ width:100%;
+ margin-top:20px;
+ padding:14px;
+ border:none;
+ border-radius:12px;
+ background:linear-gradient(90deg,#06b6d4,#22c55e);
+ color:white;
+ font-weight:bold;
+ cursor:pointer;
+ transition:0.3s;
+}
+
+button:hover{
+ transform:scale(1.05);
+ box-shadow:0 0 25px cyan;
+}
+
+.particle{
+ position:absolute;
+ width:2px;
+ height:2px;
+ background:#38bdf8;
+ animation:particleMove 10s linear infinite;
+}
+
+@keyframes particleMove{
+ from{transform:translateY(100vh);}
+ to{transform:translateY(-10vh);}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+
+<script>
+for(let i=0;i<40;i++){
+ let p=document.createElement("div");
+ p.className="particle";
+ p.style.left=Math.random()*100+"%";
+ p.style.animationDuration=(5+Math.random()*10)+"s";
+ document.body.appendChild(p);
+}
+</script>
+
+<div class="container">
+
+<div class="card">
+
+<h2>🤖 AI Video Generator</h2>
+
+<p class="desc">
+🚀 Ubah ide kamu jadi video AI futuristik!<br><br>
+Kami menerima jasa pembuatan video berbasis Artificial Intelligence dengan proses cepat, amanah, dan harga super hemat.<br><br>
+
+🔥 Hasil cinematic & modern<br>
+⚡ Proses cepat tanpa ribet<br>
+🔒 Aman & terpercaya<br>
+🎬 Cocok untuk konten TikTok, Reels, Story, dll
+</p>
+
+<textarea id="prompt" placeholder="Tulis prompt video kamu..."></textarea>
+
+<div class="price">
+🔥 Promo: Rp2.000 untuk 2 Video AI
+</div>
+
+<button onclick="kirimWA()">🚀 Order via WhatsApp</button>
+
+</div>
+
+</div>
+
+<script>
+
+function kirimWA(){
+
+ const prompt = document.getElementById("prompt").value;
+
+ if(!prompt){
+   alert("Isi prompt dulu bro 😎");
+   return;
+ }
+
+ const orderID = "AI"+Math.floor(Math.random()*999999);
+
+ const pesan = `Halo Admin 🤖
+
+Order Video AI
+
+ID: ${orderID}
+
+Prompt:
+${prompt}
+
+Promo:
+Rp2000 = 2 Video AI`;
+
+ const nomor="6283169364879"; // GANTI nomor WA admin
+
+ window.open("https://wa.me/"+nomor+"?text="+encodeURIComponent(pesan));
+
+}
+
+</script>
+
+</body>
+</html>

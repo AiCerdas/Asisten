@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/jpg" href="https://iili.io/FvxcSaa.jpg"/>
+  <title>Mentor AbidinAI - Analisis Trading Investasi</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7086399222908016"
+     crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f7f7f8;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Container Styles */
+    .creator-container {
+      width: 100%;
+      max-width: 500px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 25px;
+      border: 1px solid #e5e5e6;
+    }
+
+    .header {
+      width: 100%;
+      text-align: center;
+      padding: 0;
+      margin-bottom: 10px;
+    }
+
+    .logo-circle {
+      width: 90px;
+      height: 90px;
+      background: #FF8C00;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(255,140,0,0.3);
+    }
+
+    .logo-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: #666;
+    }
+
+    .specialist {
+      background: #fff2e0;
+      color: #FF8C00;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 8px;
+      display: inline-block;
+      border: 1px solid #ffd7b3;
+    }
+
+    /* Separator */
+    .separator {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+      margin: 20px 0;
+    }
+
+    /* Audio Control */
+    .audio-control {
+      width: 100%;
+      margin-bottom: 25px;
+    }
+
+    .audio-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 15px;
+      background: #FF8C00;
+      color: white;
+      border: none;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(255,140,0,0.2);
+    }
+
+    .audio-btn:hover {
+      background: #e67e00;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,140,0,0.3);
+    }
+
+    .audio-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Chat Area */
+    .chat-area {
+      width: 100%;
+      margin-bottom: 25px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    /* Scrollbar styling */
+    .chat-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-area::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 15px;
+      animation: fadeIn 0.3s ease;
+      text-align: left;
+    }
+
+    .user-message {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      margin-left: 30px;
+      margin-right: 10px;
+    }
+
+    .ai-message {
+      background: #f8f9fa;
+      border-left: 4px solid #FF8C00;
+      margin-right: 30px;
+      margin-left: 10px;
+    }
+
+    .welcome-message {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid #e9ecef;
+      text-align: left;
+      line-height: 1.6;
+    }
+
+    .mentor-name {
+      font-weight: bold;
+      color: #FF8C00;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .message-text {
+      color: #555;
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+
+    .note {
+      display: block;
+      margin-top: 15px;
+      padding: 10px;
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #856404;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      font-style: italic;
+    }
+
+    /* Input Area */
+    .input-area {
+      width: 100%;
+    }
+
+    .input-box {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 30px;
+      border: 1px solid #e0e0e0;
+      background: #fafafa;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    #messageInput:focus {
+      border-color: #FF8C00;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,140,0,0.1);
+    }
+
+    /* Send Button - Ukuran pas */
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #FF8C00;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .send-btn:hover {
+      background: #e67e00;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255,140,0,0.3);
+    }
+
+    .send-btn:active {
+      transform: scale(0.98);
+    }
+
+    .send-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Voice Button */
+    .voice-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 15px;
+      background: #28a745;
+      color: white;
+      border: none;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(40,167,69,0.2);
+    }
+
+    .voice-btn:hover {
+      background: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40,167,69,0.3);
+    }
+
+    .voice-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Status */
+    .status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status i {
+      color: #FF8C00;
+    }
+
+    /* Loading Animation */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,140,0,0.3);
+      border-radius: 50%;
+      border-top-color: #FF8C00;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .creator-container {
+        padding: 20px 15px;
+        border-radius: 15px;
+      }
+      
+      .logo-circle {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .title {
+        font-size: 22px;
+      }
+      
+      .audio-btn, .voice-btn {
+        padding: 12px;
+        font-size: 14px;
+      }
+      
+      #messageInput {
+        padding: 12px 16px;
+        font-size: 15px;
+      }
+      
+      /* Ukuran button kirim di mobile */
+      .send-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 17px;
+      }
+      
+      .message {
+        margin-left: 10px !important;
+        margin-right: 10px !important;
+      }
+    }
+  </style>
+
+  <script>
+    if (!localStorage.getItem("abidinai_token")) {
+      window.location.href = "../index.html";
+    }
+  </script>
+
+</head>
+<body>
+  <div class="creator-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-circle">
+        <img src="https://i.imgur.com/ODpJVSL.jpeg" alt="Mentor Investasi" />
+      </div>
+      <div class="title">Mentor Abidin</div>
+      <div class="subtitle">Analisis Trading & Investasi Profesional</div>
+      <div class="specialist">
+        <i class="fas fa-chart-line"></i> Spesialis: Saham • Crypto • Emas • Forex
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <!-- Audio Control -->
+    <div class="audio-control">
+      <button class="audio-btn" onclick="toggleAudio()">
+        <i class="fas fa-play"></i>
+        Putar Musik
+      </button>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area" id="chatArea">
+      <div class="welcome-message">
+        <span class="mentor-name">Mentor Investasi AI:</span>
+        <span class="message-text">
+          📈 Selamat datang di platform analisis investasi! Saya adalah Mentor Abidin, asisten AI khusus untuk analisis saham, crypto, emas, forex, dan strategi trading.
+
+          🔍 Saya dapat membantu Anda:
+          • Analisis teknikal dan fundamental saham
+          • Prediksi pergerakan crypto (Bitcoin, Ethereum, dll)
+          • Trend harga emas dan logam mulia
+          • Analisis pair forex dan komoditas
+          • Strategi entry/exit points
+          • Manajemen risiko dan diversifikasi portofolio
+          • Berita dan sentimen pasar terkini
+
+          💡 Tips: Semakin detail pertanyaan Anda, semakin akurat analisis yang saya berikan!
+        </span>
+        <span class="note">
+          <i class="fas fa-exclamation-circle"></i>
+          ⚠️ CATATAN PENTING: Saya adalah AI yang dikhususkan untuk analisis INVESTASI & KEUANGAN saja. Saya tidak dapat menjawab pertanyaan di luar topik saham, crypto, emas, forex, trading, dan keuangan.
+        </span>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-box">
+        <input 
+          type="text" 
+          id="messageInput" 
+          placeholder="Contoh: Analisis teknikal Bitcoin, Rekomendasi saham LQ45, Prediksi harga emas..."
+          onkeypress="handleKeyPress(event)"
+        >
+        <button class="send-btn" onclick="sendMessage()" id="sendButton">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      
+      <button class="voice-btn" onclick="startVoiceRecognition()">
+        <i class="fas fa-microphone-alt"></i>
+        Konsultasi Suara
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div class="status">
+      <i class="fas fa-plug"></i>
+      <span>Terhubung ke Server AbidinAI • Mode: Analisis Investasi</span>
+    </div>
+  </div>
+
+  <!-- Audio Player -->
+  <audio id="audioPlayer" loop>
+    <source src="https://d.top4top.io/m_33403we8x0.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    let isVoiceMode = false;
+    let isMusicPlaying = false;
+    let listeningElement = null;
+    let recognition = null;
+
+    // Daftar kata kunci investasi/keuangan untuk filter
+    const investmentKeywords = [
+      'saham', 'crypto', 'bitcoin', 'ethereum', 'bnb', 'altcoin', 'forex', 'emas', 'gold',
+      'investasi', 'trading', 'chart', 'analisis', 'teknikal', 'fundamental', 'candlestick',
+      'support', 'resistance', 'trend', 'breakout', 'divergence', 'rsi', 'macd', 'moving average',
+      'ema', 'sma', 'bollinger', 'fibonacci', 'elliot wave', 'volume', 'likuiditas',
+      'kapitalisasi pasar', 'market cap', 'dominasi', 'halving', 'fear and greed',
+      'sentimen pasar', 'berita', 'fomo', 'fud', 'bullish', 'bearish', 'sideways',
+      'konsolidasi', 'akumulasi', 'distribusi', 'entry', 'exit', 'cut loss', 'take profit',
+      'stop loss', 'risk reward', 'manajemen risiko', 'diversifikasi', 'portofolio',
+      'lq45', 'idx', 'bei', 'bursa efek', 'ipo', 'right issue', 'dividen', 'crypto exchange',
+      'binance', 'indodax', 'tokocrypto', 'reksadana', 'obligasi', 'sukuk', 'deposito',
+      'inflasi', 'suku bunga', 'the fed', 'bank sentral', 'neraca perdagangan', 'tenaga kerja',
+      'non-farm payroll', 'cpi', 'inflasi inti', 'ppb', 'gdp', 'pdb', 'ekonomi makro',
+      'wall street', 'dow jones', 's&p 500', 'nasdaq', 'komoditas', 'minyak', 'perak',
+      'palladium', 'tembaga', 'nikel', 'timah', 'cpO', 'sawit', 'batubara'
+    ];
+
+    // Audio Control
+    function toggleAudio() {
+      const audio = document.getElementById("audioPlayer");
+      const audioBtn = document.querySelector(".audio-btn");
+      
+      if (audio.paused) {
+        audio.play().catch(e => console.log("Autoplay blocked:", e));
+        audioBtn.innerHTML = '<i class="fas fa-pause"></i> Jeda Musik';
+        isMusicPlaying = true;
+      } else {
+        audio.pause();
+        audioBtn.innerHTML = '<i class="fas fa-play"></i> Putar Musik';
+        isMusicPlaying = false;
+      }
+    }
+
+    // Handle Enter Key
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    // Add message to chat
+    function addMessage(sender, text, isAI = false) {
+      const chatArea = document.getElementById("chatArea");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${isAI ? 'ai-message' : 'user-message'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-text">${text}</div>
+      `;
+      
+      chatArea.appendChild(messageDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      
+      return messageDiv;
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+      const chatArea = document.getElementById("chatArea");
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "message ai-message";
+      typingDiv.innerHTML = `
+        <div class="typing-indicator">
+          <div class="loading"></div>
+          🔍 Mentor Investasi sedang menganalisis data pasar...
+        </div>
+      `;
+      typingDiv.id = "typingIndicator";
+      chatArea.appendChild(typingDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      
+      return typingDiv;
+    }
+
+    // Remove typing indicator
+    function removeTypingIndicator() {
+      const typingDiv = document.getElementById("typingIndicator");
+      if (typingDiv) {
+        typingDiv.remove();
+      }
+    }
+
+    // Fungsi untuk memeriksa apakah pertanyaan terkait investasi
+    function isInvestmentRelated(message) {
+      const lowerMessage = message.toLowerCase();
+      
+      // Periksa apakah mengandung kata kunci investasi
+      for (const keyword of investmentKeywords) {
+        if (lowerMessage.includes(keyword.toLowerCase())) {
+          return true;
+        }
+      }
+      
+      // Periksa pola umum pertanyaan investasi
+      const investmentPatterns = [
+        /harga (bitcoin|ethereum|emas|saham|forex)/i,
+        /analisis (teknikal|fundamental)/i,
+        /prediksi (harga|trend|market)/i,
+        /rekomendasi (saham|crypto|investasi)/i,
+        /strategi (trading|investasi)/i,
+        /masuk (buy|sell|entry|exit)/i,
+        /keuntungan (investasi|trading)/i,
+        /risiko (investasi|trading)/i,
+        /portofolio (saham|crypto)/i,
+        /market (cap|sentiment|news)/i,
+        /berita (ekonomi|pasar|keuangan)/i,
+        /chart (pattern|analysis)/i,
+        /indicator (rsi|macd|moving average)/i,
+        /divident (yield|stock)/i,
+        /crypto (market|trend|analysis)/i,
+        /forex (pair|trading|analysis)/i,
+        /emas (harga|prediksi|analisis)/i,
+        /perak (harga|investasi)/i,
+        /minyak (harga|komoditas)/i,
+        /cpO (harga|sawit)/i,
+        /lq45 (saham|index)/i,
+        /bei (saham|index)/i,
+        /idx (composite|saham)/i
+      ];
+      
+      for (const pattern of investmentPatterns) {
+        if (pattern.test(lowerMessage)) {
+          return true;
+        }
+      }
+      
+      return false;
+    }
+
+    // Fungsi untuk mendapatkan respons default jika bukan pertanyaan investasi
+    function getNonInvestmentResponse() {
+      const responses = [
+        "⚠️ Maaf, saya adalah Mentor Investasi yang khusus membantu analisis saham, crypto, emas, forex, dan topik keuangan lainnya. Pertanyaan Anda di luar spesialisasi saya. Silakan tanyakan seputar investasi dan trading! 📊",
+        
+        "📉 Mohon maaf, saya hanya dapat menjawab pertanyaan terkait investasi dan keuangan. Coba tanyakan tentang analisis teknikal saham, prediksi crypto, atau strategi trading! 💹",
+        
+        "💼 Saya adalah asisten AI khusus bidang investasi. Untuk pertanyaan non-investasi, saya tidak dapat membantu. Silakan ajukan pertanyaan seputar saham, crypto, emas, atau forex! 📈",
+        
+        "🔍 Sebagai Mentor Investasi, saya hanya fokus pada analisis pasar keuangan. Silakan tanyakan tentang trading, investasi, atau analisis ekonomi makro! 💰",
+        
+        "⚠️ Mohon maaf, saya tidak dapat menjawab pertanyaan di luar topik keuangan & investasi. Silakan tanyakan hal lain seperti:\n• Analisis teknikal Bitcoin/Ethereum\n• Rekomendasi saham LQ45\n• Prediksi harga emas\n• Strategi entry/exit points\n• Manajemen risiko trading"
+      ];
+      
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    // Send Message to AI API
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // Add user message
+      addMessage("Anda", message, false);
+      
+      // Clear input and disable button
+      input.value = "";
+      sendButton.disabled = true;
+      
+      // Periksa apakah pertanyaan terkait investasi
+      if (!isInvestmentRelated(message)) {
+        // Jika bukan pertanyaan investasi, beri respons langsung tanpa API
+        setTimeout(() => {
+          removeTypingIndicator();
+          addMessage("Mentor Investasi", getNonInvestmentResponse(), true);
+          sendButton.disabled = false;
+          document.getElementById("messageInput").focus();
+        }, 1500);
+        
+        // Tampilkan typing indicator
+        showTypingIndicator();
+        return;
+      }
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      try {
+        // Send request to AI API dengan prompt khusus untuk analisis investasi
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("abidinai_token")}`
+          },
+          body: JSON.stringify({ 
+            message: `Anda adalah Mentor Abidin, seorang analis investasi dan trading profesional dengan pengalaman lebih dari 15 tahun di pasar saham, crypto, forex, dan komoditas. Tugas Anda adalah memberikan analisis mendalam, akurat, dan edukatif tentang investasi.
+
+KEPRIBADIAN DAN GAYA:
+- Profesional, percaya diri, dan berwawasan luas
+- Menggunakan istilah teknis yang tepat (support/resistance, RSI, MACD, Fibonacci, dll)
+- Memberikan analisis berdasarkan data dan logika, bukan spekulasi liar
+- Selalu menekankan pentingnya manajemen risiko
+- Edukatif - menjelaskan konsep dengan jelas
+- Ramah namun tetap formal
+
+ATURAN PENTING:
+1. HANYA jawab pertanyaan tentang SAHAM, CRYPTO, EMAS, FOREX, TRADING, dan KEUANGAN
+2. Jika pertanyaan di luar topik tersebut, tolak dengan sopan
+3. Berikan analisis teknikal dan fundamental jika relevan
+4. Sebutkan level support/resistance, trend, dan indikator teknis
+5. Jelaskan sentimen pasar dan faktor-faktor yang mempengaruhi
+6. Berikan saran entry/exit points dengan disclaimer risiko
+7. Tekankan bahwa ini bukan saran investasi mutlak (DYOR - Do Your Own Research)
+8. Gunakan data dan logic, hindari janji keuntungan pasti
+9. Jika ditanya prediksi harga, berikan range analisis bukan angka pasti
+
+CONTOH ANALISIS BAIK:
+"Berdasarkan analisis teknikal Bitcoin pada timeframe harian, saat ini harga berada di atas moving average 200 hari yang mengindikasikan tren bullish jangka panjang. RSI berada di level 62 menunjukkan momentum positif namun belum overbought. Support terdekat di $45,000 dan resistance di $52,000. Untuk entry, bisa pertimbangkan buy on dip di area support dengan stop loss di bawah $43,000. Namun perlu diingat, crypto sangat volatil, selalu gunakan manajemen risiko yang ketat."
+
+Pertanyaan pengguna: ${message}`
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Add AI response
+        if (data.reply) {
+          addMessage("Mentor Investasi", data.reply, true);
+        } else {
+          addMessage("Mentor Investasi", "Maaf, terjadi kesalahan dalam analisis. Silakan coba lagi dengan pertanyaan yang lebih spesifik.", true);
+        }
+        
+      } catch (error) {
+        console.error("Error:", error);
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Show error message
+        addMessage("Mentor Investasi", "⚠️ Maaf, terjadi kesalahan koneksi. Silakan coba lagi nanti. Pastikan koneksi internet Anda stabil.", true);
+      } finally {
+        // Re-enable send button
+        sendButton.disabled = false;
+        // Focus kembali ke input
+        document.getElementById("messageInput").focus();
+      }
+    }
+
+    // Voice Recognition
+    function startVoiceRecognition() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Browser Anda tidak mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      // Show listening indicator
+      const chatArea = document.getElementById("chatArea");
+      if (listeningElement) {
+        listeningElement.remove();
+      }
+
+      listeningElement = document.createElement("div");
+      listeningElement.className = "message ai-message";
+      listeningElement.innerHTML = `
+        <div class="typing-indicator">
+          <div class="loading"></div>
+          🎤 Mendengarkan pertanyaan investasi Anda...
+        </div>
+      `;
+      chatArea.appendChild(listeningElement);
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("messageInput").value = transcript;
+        isVoiceMode = true;
+        
+        // Remove listening indicator
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
+        }
+        
+        // Send the voice message
+        sendMessage();
+      };
+
+      recognition.onerror = function(event) {
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
+        }
+        
+        if (event.error === 'no-speech') {
+          addMessage("Sistem", "Tidak ada suara yang terdeteksi. Silakan coba lagi.", true);
+        } else if (event.error === 'audio-capture') {
+          addMessage("Sistem", "Tidak ada mikrofon yang terdeteksi. Silakan periksa perangkat Anda.", true);
+        } else if (event.error !== 'aborted') {
+          addMessage("Sistem", `Error pengenalan suara: ${event.error}`, true);
+        }
+      };
+      
+      recognition.onend = function() {
+        if (listeningElement) {
+          listeningElement.remove();
+          listeningElement = null;
+        }
+      };
+
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error("Error starting recognition:", error);
+        addMessage("Sistem", "Gagal memulai pengenalan suara.", true);
+      }
+    }
+
+    // Stop voice recognition if needed
+    function stopVoiceRecognition() {
+      if (recognition) {
+        try {
+          recognition.stop();
+        } catch (error) {
+          console.error("Error stopping recognition:", error);
+        }
+        recognition = null;
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Focus on input field
+      document.getElementById("messageInput").focus();
+    });
+  </script>
+</body>
+</html>
