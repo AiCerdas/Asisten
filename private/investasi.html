@@ -8,9 +8,6 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7086399222908016"
      crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Tesseract.js untuk OCR -->
-  <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
 
   <style>
     * {
@@ -294,8 +291,8 @@
       box-shadow: none;
     }
 
-    /* OCR Button */
-    .ocr-btn {
+    /* Upload Image Button */
+    .upload-btn {
       width: 48px;
       height: 48px;
       border-radius: 50%;
@@ -311,13 +308,13 @@
       font-size: 18px;
     }
 
-    .ocr-btn:hover {
+    .upload-btn:hover {
       background: #4338ca;
       transform: scale(1.05);
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
-    .ocr-btn:active {
+    .upload-btn:active {
       transform: scale(0.98);
     }
 
@@ -416,6 +413,11 @@
       transform: scale(1.1);
     }
 
+    /* Hidden file input */
+    #imageUpload {
+      display: none;
+    }
+
     /* Loading Animation */
     .loading {
       display: inline-block;
@@ -434,231 +436,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Modal Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background-color: white;
-      padding: 20px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .modal-title i {
-      color: #FF8C00;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #666;
-      transition: color 0.2s ease;
-    }
-
-    .close-btn:hover {
-      color: #333;
-    }
-
-    .upload-area {
-      border: 2px dashed #ccc;
-      border-radius: 10px;
-      padding: 30px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 20px;
-    }
-
-    .upload-area:hover {
-      border-color: #FF8C00;
-      background-color: #fff9f0;
-    }
-
-    .upload-icon {
-      font-size: 48px;
-      color: #FF8C00;
-      margin-bottom: 10px;
-    }
-
-    .upload-text {
-      color: #666;
-      margin-bottom: 5px;
-    }
-
-    .upload-hint {
-      font-size: 12px;
-      color: #999;
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .preview-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .preview-item {
-      position: relative;
-      aspect-ratio: 1;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 2px solid #FF8C00;
-    }
-
-    .preview-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .preview-number {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: #FF8C00;
-      color: white;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .process-btn {
-      width: 100%;
-      padding: 12px;
-      background: #FF8C00;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: none;
-    }
-
-    .process-btn:hover:not(:disabled) {
-      background: #e67e00;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255,140,0,0.2);
-    }
-
-    .process-btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    .ocr-result {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border-left: 4px solid #FF8C00;
-      display: none;
-    }
-
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .result-header strong {
-      color: #333;
-    }
-
-    .copy-result-btn {
-      padding: 5px 10px;
-      background: none;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .copy-result-btn:hover {
-      background: #e9ecef;
-    }
-
-    .result-text {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #555;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .ocr-progress {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 15px 0;
-      color: #FF8C00;
-      font-weight: 500;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: #f0f0f0;
-      border-radius: 2px;
-      margin-top: 10px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: #FF8C00;
-      width: 0%;
-      transition: width 0.3s ease;
     }
 
     /* Responsive */
@@ -687,7 +464,7 @@
         font-size: 15px;
       }
       
-      .send-btn, .ocr-btn {
+      .send-btn, .upload-btn {
         width: 44px;
         height: 44px;
         font-size: 16px;
@@ -696,22 +473,6 @@
       .message {
         margin-left: 10px !important;
         margin-right: 10px !important;
-      }
-      
-      .modal-content {
-        padding: 15px;
-      }
-      
-      .upload-area {
-        padding: 20px;
-      }
-      
-      .upload-icon {
-        font-size: 40px;
-      }
-      
-      .preview-grid {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
       }
     }
   </style>
@@ -747,7 +508,7 @@
       </button>
     </div>
 
-    <!-- Image Preview Container (untuk OCR) -->
+    <!-- Image Preview Container -->
     <div id="imagePreviewContainer" class="image-preview-container" style="display: none;"></div>
 
     <!-- Chat Area -->
@@ -766,7 +527,7 @@
           • Manajemen risiko dan diversifikasi portofolio
           • Berita dan sentimen pasar terkini
 
-          📸 **Fitur OCR AKTIF!** Anda dapat mengunggah gambar grafik, screenshot analisis, atau dokumen trading. Saya akan mengekstrak teks dari gambar tersebut menggunakan teknologi OCR dan menganalisisnya!
+          📸 **Fitur Analisis Gambar Langsung!** Anda dapat mengunggah gambar grafik, screenshot analisis, atau dokumen trading. Saya akan langsung menganalisis gambar tersebut menggunakan teknologi AI canggih (Gemini AI)!
 
           💡 Tips: Semakin detail pertanyaan Anda, semakin akurat analisis yang saya berikan!
         </span>
@@ -786,8 +547,9 @@
           placeholder="Contoh: Analisis teknikal Bitcoin, Rekomendasi saham LQ45, Prediksi harga emas..."
           onkeypress="handleKeyPress(event)"
         >
-        <button class="ocr-btn" onclick="openOCRModal()" title="Upload Gambar untuk Analisis OCR">
-          <i class="fas fa-file-image"></i>
+        <input type="file" id="imageUpload" accept="image/*" multiple onchange="handleImageUpload(event)">
+        <button class="upload-btn" onclick="document.getElementById('imageUpload').click()" title="Upload Gambar untuk Analisis Langsung">
+          <i class="fas fa-camera"></i>
         </button>
         <button class="send-btn" onclick="sendMessage()" id="sendButton">
           <i class="fas fa-paper-plane"></i>
@@ -803,56 +565,7 @@
     <!-- Status -->
     <div class="status">
       <i class="fas fa-plug"></i>
-      <span>Terhubung ke Server AbidinAI • Mode: Analisis Investasi + OCR</span>
-    </div>
-  </div>
-
-  <!-- Modal OCR Upload Gambar -->
-  <div id="ocrModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-file-image"></i> Upload Gambar untuk OCR
-        </div>
-        <button class="close-btn" onclick="closeOCRModal()">&times;</button>
-      </div>
-
-      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">
-          <i class="fas fa-cloud-upload-alt"></i>
-        </div>
-        <div class="upload-text">
-          Klik untuk memilih gambar atau drag & drop
-        </div>
-        <div class="upload-hint">
-          Maksimal 5 gambar (format: JPG, PNG, maks 5MB per gambar)
-        </div>
-        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple onchange="handleFileSelect(event)">
-      </div>
-
-      <div id="previewGrid" class="preview-grid"></div>
-
-      <div id="ocrProgress" class="ocr-progress" style="display: none;">
-        <div class="loading"></div>
-        <span id="ocrProgressText">Memproses gambar...</span>
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-        </div>
-      </div>
-
-      <div id="ocrResult" class="ocr-result">
-        <div class="result-header">
-          <strong><i class="fas fa-check-circle" style="color: #28a745;"></i> Hasil OCR:</strong>
-          <button class="copy-result-btn" onclick="copyOCRResult()">
-            <i class="fas fa-copy"></i> Salin
-          </button>
-        </div>
-        <div id="ocrResultText" class="result-text"></div>
-      </div>
-
-      <button id="processBtn" class="process-btn" onclick="processOCRImages()" disabled>
-        <i class="fas fa-magic"></i> Proses OCR Gambar
-      </button>
+      <span>Terhubung ke Server AbidinAI • Mode: Analisis Investasi + Gemini Vision</span>
     </div>
   </div>
 
@@ -863,83 +576,19 @@
 
   <script>
     // =============================================
-    // FITUR OCR MENGGUNAKAN TESSERACT.JS (REAL OCR)
+    // FITUR ANALISIS GAMBAR LANGSUNG DENGAN GEMINI AI
     // =============================================
     
     let selectedImages = []; // Array untuk menyimpan gambar yang dipilih
-    let ocrResults = []; // Array untuk menyimpan hasil OCR
-    let isProcessingOCR = false;
+    let imageBase64List = []; // Array untuk menyimpan base64 gambar
     
-    // Inisialisasi Tesseract worker
-    let worker = null;
-    
-    async function initTesseract() {
-      if (!worker) {
-        try {
-          worker = await Tesseract.createWorker({
-            logger: m => {
-              console.log(m);
-              if (m.status === 'recognizing text') {
-                const progress = Math.round(m.progress * 100);
-                updateOCRProgress(progress);
-              }
-            }
-          });
-          await worker.loadLanguage('eng+ind');
-          await worker.initialize('eng+ind');
-          console.log('Tesseract worker initialized');
-        } catch (error) {
-          console.error('Error initializing Tesseract:', error);
-          throw new Error('Gagal menginisialisasi OCR engine');
-        }
-      }
-      return worker;
-    }
-    
-    // Buka modal OCR
-    function openOCRModal() {
-      document.getElementById('ocrModal').style.display = 'flex';
-      resetOCRModal();
-    }
-    
-    // Tutup modal OCR
-    function closeOCRModal() {
-      document.getElementById('ocrModal').style.display = 'none';
-      // Bersihkan worker jika tidak digunakan
-      if (worker && !isProcessingOCR) {
-        worker.terminate();
-        worker = null;
-      }
-    }
-    
-    // Reset modal OCR
-    function resetOCRModal() {
-      selectedImages = [];
-      ocrResults = [];
-      document.getElementById('fileInput').value = '';
-      document.getElementById('previewGrid').innerHTML = '';
-      document.getElementById('ocrResult').style.display = 'none';
-      document.getElementById('ocrProgress').style.display = 'none';
-      document.getElementById('processBtn').style.display = 'none';
-      document.getElementById('processBtn').disabled = true;
-      document.getElementById('progressFill').style.width = '0%';
-    }
-    
-    // Update progress bar
-    function updateOCRProgress(percent) {
-      const progressFill = document.getElementById('progressFill');
-      if (progressFill) {
-        progressFill.style.width = percent + '%';
-      }
-    }
-    
-    // Handle file selection
-    function handleFileSelect(event) {
+    // Handle image upload
+    function handleImageUpload(event) {
       const files = Array.from(event.target.files);
       
-      // Batasi maksimal 5 gambar
-      if (files.length > 5) {
-        alert('Maksimal 5 gambar yang dapat diproses!');
+      // Batasi maksimal 3 gambar (karena Gemini punya limit)
+      if (files.length > 3) {
+        alert('Maksimal 3 gambar yang dapat dianalisis sekaligus!');
         return;
       }
       
@@ -949,219 +598,93 @@
           alert(`File ${file.name} bukan gambar!`);
           return false;
         }
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`File ${file.name} terlalu besar! Maksimal 5MB.`);
+        if (file.size > 10 * 1024 * 1024) { // 10MB per gambar
+          alert(`File ${file.name} terlalu besar! Maksimal 10MB.`);
           return false;
         }
         return true;
       });
       
-      selectedImages = validFiles;
-      
-      // Tampilkan preview
-      displayPreviews(validFiles);
-      
-      // Tampilkan tombol proses jika ada gambar
-      if (validFiles.length > 0) {
-        document.getElementById('processBtn').style.display = 'block';
-        document.getElementById('processBtn').disabled = false;
-      } else {
-        document.getElementById('processBtn').style.display = 'none';
-      }
-    }
-    
-    // Tampilkan preview gambar
-    function displayPreviews(files) {
-      const previewGrid = document.getElementById('previewGrid');
-      previewGrid.innerHTML = '';
-      
-      files.forEach((file, index) => {
+      // Konversi ke base64 dan simpan
+      validFiles.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const previewItem = document.createElement('div');
-          previewItem.className = 'preview-item';
-          previewItem.innerHTML = `
-            <img src="${e.target.result}" alt="Preview ${index + 1}">
-            <div class="preview-number">${index + 1}</div>
-          `;
-          previewGrid.appendChild(previewItem);
+          // Simpan base64 tanpa prefix
+          const base64 = e.target.result.split(',')[1];
+          imageBase64List.push({
+            base64: base64,
+            name: file.name,
+            mimeType: file.type
+          });
+          
+          // Tampilkan preview
+          addImagePreview(e.target.result, index);
+          
+          // Jika ini file terakhir, update UI
+          if (index === validFiles.length - 1) {
+            selectedImages = validFiles;
+            document.getElementById('imageUpload').value = '';
+          }
         };
         reader.readAsDataURL(file);
       });
     }
     
-    // Proses OCR untuk semua gambar menggunakan Tesseract
-    async function processOCRImages() {
-      if (selectedImages.length === 0 || isProcessingOCR) return;
-      
-      isProcessingOCR = true;
-      
-      // Tampilkan progress
-      document.getElementById('ocrProgress').style.display = 'block';
-      document.getElementById('processBtn').disabled = true;
-      document.getElementById('ocrResult').style.display = 'none';
-      document.getElementById('progressFill').style.width = '0%';
-      
-      ocrResults = [];
-      
-      try {
-        // Inisialisasi Tesseract
-        document.getElementById('ocrProgressText').textContent = 'Menginisialisasi OCR engine...';
-        const worker = await initTesseract();
-        
-        for (let i = 0; i < selectedImages.length; i++) {
-          const image = selectedImages[i];
-          document.getElementById('ocrProgressText').textContent = 
-            `Memproses gambar ${i + 1} dari ${selectedImages.length}: ${image.name}`;
-          
-          try {
-            // Konversi gambar ke format yang bisa diproses Tesseract
-            const imageUrl = URL.createObjectURL(image);
-            
-            // Proses OCR
-            const { data: { text } } = await worker.recognize(imageUrl);
-            
-            // Bersihkan URL object
-            URL.revokeObjectURL(imageUrl);
-            
-            // Format hasil
-            const result = `=== GAMBAR ${i + 1}: ${image.name} ===\n${text.trim() || 'Tidak ada teks yang terdeteksi'}\n`;
-            ocrResults.push(result);
-            
-          } catch (error) {
-            console.error('Error processing image:', error);
-            ocrResults.push(`=== GAMBAR ${i + 1}: ${image.name} ===\nGagal diproses: ${error.message}\n`);
-          }
-        }
-        
-        // Tampilkan hasil
-        displayOCRResults();
-        
-      } catch (error) {
-        console.error('OCR Error:', error);
-        document.getElementById('ocrResultText').textContent = `Error OCR: ${error.message}`;
-        document.getElementById('ocrResult').style.display = 'block';
-      } finally {
-        // Sembunyikan progress
-        document.getElementById('ocrProgress').style.display = 'none';
-        document.getElementById('processBtn').disabled = false;
-        isProcessingOCR = false;
-      }
-    }
-    
-    // Tampilkan hasil OCR
-    function displayOCRResults() {
-      const resultDiv = document.getElementById('ocrResult');
-      const resultText = document.getElementById('ocrResultText');
-      
-      if (ocrResults.length === 0) {
-        resultText.textContent = 'Tidak ada hasil yang diperoleh.';
-      } else {
-        // Gabungkan semua hasil dengan format yang rapi
-        const combinedResults = ocrResults.join('\n\n');
-        resultText.textContent = combinedResults;
-      }
-      
-      resultDiv.style.display = 'block';
-      
-      // Simpan hasil ke variabel global untuk digunakan saat mengirim pesan
-      window.ocrExtractedText = resultText.textContent;
-      
-      // Tampilkan preview gambar di container utama
-      displayImagePreviewsInMain();
-    }
-    
-    // Tampilkan preview gambar di container utama
-    function displayImagePreviewsInMain() {
+    // Tampilkan preview gambar
+    function addImagePreview(imageUrl, index) {
       const previewContainer = document.getElementById('imagePreviewContainer');
-      previewContainer.innerHTML = '';
       
-      if (selectedImages.length === 0) {
-        previewContainer.style.display = 'none';
-        return;
+      // Hapus pesan "Tidak ada preview" jika ada
+      if (previewContainer.innerHTML === '') {
+        previewContainer.innerHTML = '';
       }
       
-      selectedImages.forEach((image, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const previewItem = document.createElement('div');
-          previewItem.className = 'image-preview-item';
-          previewItem.innerHTML = `
-            <img src="${e.target.result}" alt="Preview ${index + 1}">
-            <button class="remove-image-btn" onclick="removeImage(${index})">
-              <i class="fas fa-times"></i>
-            </button>
-          `;
-          previewContainer.appendChild(previewItem);
-        };
-        reader.readAsDataURL(image);
-      });
+      const previewItem = document.createElement('div');
+      previewItem.className = 'image-preview-item';
+      previewItem.id = `preview-${Date.now()}-${index}`;
+      previewItem.innerHTML = `
+        <img src="${imageUrl}" alt="Preview">
+        <button class="remove-image-btn" onclick="removeImage(${imageBase64List.length - 1})">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
       
+      previewContainer.appendChild(previewItem);
       previewContainer.style.display = 'flex';
     }
     
-    // Hapus gambar dari preview
+    // Hapus gambar dari list
     function removeImage(index) {
-      selectedImages.splice(index, 1);
-      
-      // Update preview container
-      const previewContainer = document.getElementById('imagePreviewContainer');
-      previewContainer.innerHTML = '';
-      
-      selectedImages.forEach((image, i) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+      if (index >= 0 && index < imageBase64List.length) {
+        imageBase64List.splice(index, 1);
+        
+        // Refresh preview container
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = '';
+        
+        // Tampilkan ulang semua preview yang tersisa
+        imageBase64List.forEach((img, i) => {
           const previewItem = document.createElement('div');
           previewItem.className = 'image-preview-item';
+          previewItem.id = `preview-${Date.now()}-${i}`;
           previewItem.innerHTML = `
-            <img src="${e.target.result}" alt="Preview ${i + 1}">
+            <img src="data:${img.mimeType};base64,${img.base64}" alt="Preview">
             <button class="remove-image-btn" onclick="removeImage(${i})">
               <i class="fas fa-times"></i>
             </button>
           `;
           previewContainer.appendChild(previewItem);
-        };
-        reader.readAsDataURL(image);
-      });
-      
-      if (selectedImages.length === 0) {
-        previewContainer.style.display = 'none';
-        window.ocrExtractedText = '';
-      }
-      
-      // Update hasil OCR
-      ocrResults.splice(index, 1);
-      if (ocrResults.length > 0) {
-        const combinedResults = ocrResults.join('\n\n');
-        window.ocrExtractedText = combinedResults;
-      } else {
-        window.ocrExtractedText = '';
-      }
-    }
-    
-    // Copy hasil OCR ke clipboard
-    function copyOCRResult() {
-      const resultText = document.getElementById('ocrResultText').textContent;
-      navigator.clipboard.writeText(resultText).then(() => {
-        const copyBtn = document.querySelector('.copy-result-btn');
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-        setTimeout(() => {
-          copyBtn.innerHTML = originalText;
-        }, 1500);
-      });
-    }
-    
-    // Tutup modal jika klik di luar
-    window.onclick = function(event) {
-      const modal = document.getElementById('ocrModal');
-      if (event.target === modal) {
-        closeOCRModal();
+        });
+        
+        // Sembunyikan container jika tidak ada gambar
+        if (imageBase64List.length === 0) {
+          previewContainer.style.display = 'none';
+        }
       }
     }
 
     // =============================================
-    // KODE ASLI (TIDAK DIUBAH)
+    // KODE ASLI (DIMODIFIKASI UNTUK INTEGRASI GEMINI)
     // =============================================
     
     let isVoiceMode = false;
@@ -1234,7 +757,7 @@
       typingDiv.innerHTML = `
         <div class="typing-indicator">
           <div class="loading"></div>
-          🔍 Mentor Investasi sedang menganalisis data pasar...
+          🔍 Mentor Investasi sedang menganalisis data pasar ${imageBase64List.length > 0 ? 'dan gambar...' : '...'}
         </div>
       `;
       typingDiv.id = "typingIndicator";
@@ -1316,39 +839,41 @@
       return responses[Math.floor(Math.random() * responses.length)];
     }
 
-    // Send Message to AI API
+    // Send Message to AI API dengan dukungan gambar Gemini
     async function sendMessage() {
       const input = document.getElementById("messageInput");
       const sendButton = document.getElementById("sendButton");
       let message = input.value.trim();
       
-      // Jika ada hasil OCR, tambahkan ke pesan
-      if (window.ocrExtractedText && window.ocrExtractedText.trim() !== '') {
-        if (message) {
-          message = `[HASIL OCR DARI GAMBAR]\n${window.ocrExtractedText}\n\nPERTANYAAN: ${message}`;
-        } else {
-          message = `[ANALISIS OCR GAMBAR]\n${window.ocrExtractedText}\n\nTolong berikan analisis mendalam berdasarkan teks dari gambar di atas.`;
-        }
+      // Jika tidak ada pesan dan tidak ada gambar, return
+      if (!message && imageBase64List.length === 0) return;
+      
+      // Buat pesan user untuk ditampilkan
+      let displayMessage = message;
+      if (imageBase64List.length > 0) {
+        displayMessage = `[${imageBase64List.length} Gambar] ${message || 'Analisis gambar ini'}`;
       }
       
-      if (!message) return;
-      
       // Add user message
-      addMessage("Anda", message, false);
+      addMessage("Anda", displayMessage, false);
       
-      // Clear input dan hapus preview gambar
+      // Clear input
       input.value = "";
-      document.getElementById('imagePreviewContainer').style.display = 'none';
-      document.getElementById('imagePreviewContainer').innerHTML = '';
-      selectedImages = [];
-      window.ocrExtractedText = '';
       
       // Disable button
       sendButton.disabled = true;
       
-      // Periksa apakah pertanyaan terkait investasi
-      if (!isInvestmentRelated(message)) {
-        // Jika bukan pertanyaan investasi, beri respons langsung tanpa API
+      // Jika ada gambar, simpan salinannya untuk dikirim
+      const imagesToSend = [...imageBase64List];
+      
+      // Bersihkan preview gambar
+      document.getElementById('imagePreviewContainer').style.display = 'none';
+      document.getElementById('imagePreviewContainer').innerHTML = '';
+      imageBase64List = [];
+      
+      // Periksa apakah pertanyaan terkait investasi (hanya jika ada pesan teks)
+      if (message && !isInvestmentRelated(message) && imagesToSend.length === 0) {
+        // Jika bukan pertanyaan investasi dan tidak ada gambar, beri respons langsung
         setTimeout(() => {
           removeTypingIndicator();
           addMessage("Mentor Investasi", getNonInvestmentResponse(), true);
@@ -1365,44 +890,64 @@
       showTypingIndicator();
       
       try {
-        // Send request to AI API dengan prompt khusus untuk analisis investasi
-        const response = await fetch("/api/chat", {
+        // Siapkan payload untuk API
+        const payload = {
+          message: message || "Analisis gambar ini dari perspektif investasi dan trading"
+        };
+        
+        // Jika ada gambar, tambahkan ke payload
+        if (imagesToSend.length > 0) {
+          payload.images = imagesToSend.map(img => ({
+            base64: img.base64,
+            mimeType: img.mimeType
+          }));
+        }
+        
+        // Send request ke endpoint baru yang mendukung Gemini Vision
+        const response = await fetch("/api/chat-with-images", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("abidinai_token")}`
           },
-          body: JSON.stringify({ 
-            message: `Anda adalah Mentor Abidin, seorang analis investasi dan trading profesional dengan pengalaman lebih dari 15 tahun di pasar saham, crypto, forex, dan komoditas. Tugas Anda adalah memberikan analisis mendalam, akurat, dan edukatif tentang investasi.
-
-KEPRIBADIAN DAN GAYA:
-- Profesional, percaya diri, dan berwawasan luas
-- Menggunakan istilah teknis yang tepat (support/resistance, RSI, MACD, Fibonacci, dll)
-- Memberikan analisis berdasarkan data dan logika, bukan spekulasi liar
-- Selalu menekankan pentingnya manajemen risiko
-- Edukatif - menjelaskan konsep dengan jelas
-- Ramah namun tetap formal
-
-ATURAN PENTING:
-1. HANYA jawab pertanyaan tentang SAHAM, CRYPTO, EMAS, FOREX, TRADING, dan KEUANGAN
-2. Jika pertanyaan di luar topik tersebut, tolak dengan sopan
-3. Berikan analisis teknikal dan fundamental jika relevan
-4. Sebutkan level support/resistance, trend, dan indikator teknis
-5. Jelaskan sentimen pasar dan faktor-faktor yang mempengaruhi
-6. Berikan saran entry/exit points dengan disclaimer risiko
-7. Tekankan bahwa ini bukan saran investasi mutlak (DYOR - Do Your Own Research)
-8. Gunakan data dan logic, hindari janji keuntungan pasti
-9. Jika ditanya prediksi harga, berikan range analisis bukan angka pasti
-
-CONTOH ANALISIS BAIK:
-"Berdasarkan analisis teknikal Bitcoin pada timeframe harian, saat ini harga berada di atas moving average 200 hari yang mengindikasikan tren bullish jangka panjang. RSI berada di level 62 menunjukkan momentum positif namun belum overbought. Support terdekat di $45,000 dan resistance di $52,000. Untuk entry, bisa pertimbangkan buy on dip di area support dengan stop loss di bawah $43,000. Namun perlu diingat, crypto sangat volatil, selalu gunakan manajemen risiko yang ketat."
-
-Pertanyaan pengguna: ${message}`
-          })
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
+          // Coba endpoint lama sebagai fallback
+          const fallbackResponse = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem("abidinai_token")}`
+            },
+            body: JSON.stringify({ 
+              message: message || "Analisis gambar ini dari perspektif investasi dan trading"
+            })
+          });
+          
+          if (!fallbackResponse.ok) {
+            throw new Error(`Error ${fallbackResponse.status}: ${fallbackResponse.statusText}`);
+          }
+          
+          const fallbackData = await fallbackResponse.json();
+          
+          // Remove typing indicator
+          removeTypingIndicator();
+          
+          // Add AI response
+          if (fallbackData.reply) {
+            let responseText = fallbackData.reply;
+            if (imagesToSend.length > 0) {
+              responseText = "📸 *Analisis Gambar*\n\n" + responseText;
+            }
+            addMessage("Mentor Investasi", responseText, true);
+          } else {
+            addMessage("Mentor Investasi", "Maaf, terjadi kesalahan dalam analisis. Silakan coba lagi dengan pertanyaan yang lebih spesifik.", true);
+          }
+          
+          sendButton.disabled = false;
+          return;
         }
 
         const data = await response.json();
@@ -1412,7 +957,11 @@ Pertanyaan pengguna: ${message}`
         
         // Add AI response
         if (data.reply) {
-          addMessage("Mentor Investasi", data.reply, true);
+          let responseText = data.reply;
+          if (imagesToSend.length > 0) {
+            responseText = "📸 *Analisis Gambar dengan Gemini AI*\n\n" + responseText;
+          }
+          addMessage("Mentor Investasi", responseText, true);
         } else {
           addMessage("Mentor Investasi", "Maaf, terjadi kesalahan dalam analisis. Silakan coba lagi dengan pertanyaan yang lebih spesifik.", true);
         }
@@ -1424,7 +973,11 @@ Pertanyaan pengguna: ${message}`
         removeTypingIndicator();
         
         // Show error message
-        addMessage("Mentor Investasi", "⚠️ Maaf, terjadi kesalahan koneksi. Silakan coba lagi nanti. Pastikan koneksi internet Anda stabil.", true);
+        let errorMsg = "⚠️ Maaf, terjadi kesalahan koneksi. Silakan coba lagi nanti. Pastikan koneksi internet Anda stabil.";
+        if (imagesToSend.length > 0) {
+          errorMsg = "⚠️ Maaf, fitur analisis gambar sedang dalam pengembangan. Silakan coba lagi nanti atau gunakan fitur teks saja.";
+        }
+        addMessage("Mentor Investasi", errorMsg, true);
       } finally {
         // Re-enable send button
         sendButton.disabled = false;
@@ -1524,16 +1077,6 @@ Pertanyaan pengguna: ${message}`
     document.addEventListener('DOMContentLoaded', function() {
       // Focus on input field
       document.getElementById("messageInput").focus();
-      
-      // Inisialisasi window.ocrExtractedText
-      window.ocrExtractedText = '';
-      
-      // Bersihkan worker saat page unload
-      window.addEventListener('beforeunload', function() {
-        if (worker) {
-          worker.terminate();
-        }
-      });
     });
   </script>
 </body>
