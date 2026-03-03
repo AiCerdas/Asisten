@@ -258,10 +258,9 @@
       color: #718096;
     }
 
-    /* PERBAIKAN UTAMA: Atur tampilan teks kode */
     .message-text {
       line-height: 1.6;
-      white-space: pre-wrap; /* Biarkan text wrapping */
+      white-space: pre-wrap;
       word-wrap: break-word;
       overflow-wrap: break-word;
       max-width: 100%;
@@ -315,13 +314,12 @@
       overflow-x: auto;
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
-      white-space: pre-wrap; /* PERBAIKAN: biarkan text wrapping */
+      white-space: pre-wrap;
       word-wrap: break-word;
       text-align: left;
       margin: 0;
     }
 
-    /* PERBAIKAN: Input textarea untuk kode */
     #messageInput {
       flex: 1;
       border: none;
@@ -332,13 +330,12 @@
       line-height: 1.5;
       font-size: 16px;
       background: transparent;
-      white-space: pre-wrap; /* Biarkan text wrapping */
+      white-space: pre-wrap;
       word-wrap: break-word;
       overflow-wrap: break-word;
-      font-family: inherit; /* Gunakan font normal, bukan monospace */
+      font-family: inherit;
     }
 
-    /* PERBAIKAN: Textarea saat paste */
     #messageInput::placeholder {
       color: #9ca3af;
     }
@@ -388,7 +385,7 @@
       gap: 8px;
     }
 
-    .plus-btn {
+    .ocr-btn {
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -402,42 +399,8 @@
       transition: all 0.2s;
     }
 
-    .plus-btn:hover {
+    .ocr-btn:hover {
       background-color: #e5e7eb;
-    }
-
-    .plus-menu {
-      position: absolute;
-      bottom: 60px;
-      right: 120px;
-      background: white;
-      border: 1px solid #e5e5e6;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      display: none;
-      flex-direction: column;
-      padding: 8px;
-      z-index: 10;
-    }
-
-    .plus-menu .menu-item {
-      width: 100%;
-      padding: 10px 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      text-align: left;
-      transition: background-color 0.2s;
-      border-radius: 6px;
-      color: #4a5568;
-    }
-
-    .plus-menu .menu-item:hover {
-      background-color: #f3f4f6;
-      color: #4f46e5;
     }
 
     .send-btn {
@@ -449,7 +412,6 @@
       justify-content: center;
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
       background-color: #4f46e5;
       color: white;
     }
@@ -481,8 +443,205 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Hapus modal OCR, audio, research, dll. */
+    /* Modal OCR */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
 
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #718096;
+    }
+
+    .upload-area {
+      border: 2px dashed #e5e5e6;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upload-area:hover {
+      border-color: #4f46e5;
+      background-color: #f9fafb;
+    }
+
+    .upload-icon {
+      font-size: 40px;
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      margin-bottom: 10px;
+      color: #4a5568;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 15px 0;
+      display: none;
+      border-radius: 5px;
+    }
+
+    .process-btn {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      display: none;
+      margin: 10px auto;
+    }
+
+    .process-btn:hover {
+      background-color: #4338ca;
+    }
+
+    .ocr-result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9fafb;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .ocr-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+      color: #4f46e5;
+      font-weight: 500;
+    }
+
+    #multiple-images-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid #e5e5e6;
+      border-radius: 8px;
+      background-color: #f9fafb;
+      margin-bottom: 8px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .image-preview-item {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+    }
+
+    .image-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 2px solid #4f46e5;
+    }
+
+    .remove-image-btn {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #ef4444;
+      color: white;
+      border: 1px solid white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .multiple-preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+      justify-content: center;
+    }
+
+    .multiple-preview-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .multiple-preview-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .multiple-preview-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #4f46e5;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -561,20 +720,7 @@
       }
     }
 
-    @media (max-width: 480px) {
-      .input-buttons {
-        order: 1;
-      }
-
-      .plus-menu {
-        left: 0;
-        right: auto;
-        bottom: 100%;
-        margin-bottom: 10px;
-      }
-    }
-
-    /* New styles for memory controls */
+    /* Memory controls */
     .memory-controls {
       display: flex;
       justify-content: flex-end;
@@ -644,10 +790,10 @@
     }
 
     .title-shortcut {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 12px;
-        color: #2d3748;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #2d3748;
     }
 
     .subtitle-shortcut {
@@ -657,126 +803,126 @@
     }
 
     .shortcut-box {
-        background: #fafafa;
-        padding: 18px;
-        border-radius: 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        width: 100%;
-        max-width: 400px;
-        margin: 0 auto 15px auto;
+      background: #fafafa;
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 15px auto;
     }
 
     .btn-shortcut {
-        background: #ffffff;
-        padding: 10px 14px;
-        border-radius: 14px;
-        border: 1px solid #e6e6e6;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: 0.2s;
+      background: #ffffff;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid #e6e6e6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
     }
 
     .btn-shortcut:hover {
-        background: #f3f4f6;
-        border-color: #4f46e5;
+      background: #f3f4f6;
+      border-color: #4f46e5;
     }
 
     .btn-shortcut svg {
-        width: 20px;
-        height: 20px;
-        min-width: 20px;
-        min-height: 20px;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      min-height: 20px;
     }
 
     .dropdown {
-        display: none;
-        margin: 0 auto 15px auto;
-        background: #fafafa;
-        border-radius: 14px;
-        padding: 14px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        width: 100%;
-        max-width: 400px;
+      display: none;
+      margin: 0 auto 15px auto;
+      background: #fafafa;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 400px;
     }
 
     .dropdown.show {
-        display: block;
+      display: block;
     }
 
     .dropdown .item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: 0.2s;
-        font-size: 14px;
-        color: #4a5568;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 14px;
+      color: #4a5568;
     }
 
     .dropdown .item:hover {
-        background: #f1f1f1;
-        color: #4f46e5;
+      background: #f1f1f1;
+      color: #4f46e5;
     }
 
     .dropdown .item svg {
-        width: 20px;
-        height: 20px;
-        min-width: 20px;
-        min-height: 20px;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      min-height: 20px;
     }
 
     .header {
-        width: 100%;
-        text-align: center;
-        padding: 0;
-        margin-bottom: 10px;
+      width: 100%;
+      text-align: center;
+      padding: 0;
+      margin-bottom: 10px;
     }
 
     .logo-circle {
-        width: 90px;
-        height: 90px;
-        background: #5A4FF3;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(90,79,243,0.3);
+      width: 90px;
+      height: 90px;
+      background: #5A4FF3;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(90,79,243,0.3);
     }
 
     .logo-circle img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .title {
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 5px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
     }
 
     .subtitle {
-        font-size: 15px;
-        color: #666;
+      font-size: 15px;
+      color: #666;
     }
 
-    /* Gaya khusus untuk investasi - hanya untuk tampilan */
     .investment-highlight {
-        border-left: 4px solid #4f46e5;
-        background: #f0f4ff;
-        padding: 10px;
-        margin-top: 10px;
+      border-left: 4px solid #4f46e5;
+      background: #f0f4ff;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 0 8px 8px 0;
     }
   </style>
 
@@ -797,7 +943,55 @@
     </div>
   </div>
 
-  <!-- Semua modal terkait OCR, Riset, Audio telah dihapus -->
+  <!-- Modal OCR untuk Investasi -->
+  <div class="modal" id="ocrModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-chart-line"></i> Analisis Grafik Investasi
+        </div>
+        <button class="close-btn" id="closeModal">&times;</button>
+      </div>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <div class="upload-text">
+          <strong>Klik untuk unggah grafik investasi</strong><br>
+          Maksimal 5 gambar (JPG/PNG, 5MB)
+        </div>
+        <div style="font-size: 12px; color: #718096;">
+          Format yang didukung: Grafik saham, crypto, forex, atau emas
+        </div>
+        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+      </div>
+
+      <div id="multiplePreviewContainer" class="multiple-preview-container"></div>
+
+      <button id="processBtn" class="process-btn">
+        <i class="fas fa-search"></i> Analisis Grafik Investasi
+      </button>
+
+      <div class="ocr-progress" id="progressContainer" style="display: none;">
+        <div class="loading"></div>
+        <span id="progressText">Menganalisis grafik...</span>
+      </div>
+
+      <div class="ocr-result" id="ocrResult">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <strong><i class="fas fa-chart-pie"></i> Hasil Analisis Investasi:</strong>
+          <button class="copy-btn" id="copyResult" style="position: static; padding: 3px 8px;">
+            <i class="fas fa-copy"></i> Salin
+          </button>
+        </div>
+        <div id="resultText" style="white-space: pre-line;"></div>
+        <div class="investment-highlight">
+          <small><i class="fas fa-info-circle"></i> Analisis ini bertujuan edukasi, bukan saran investasi.</small>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
@@ -821,12 +1015,12 @@
         <i class="fas fa-paint-brush"></i>
         <span>AbidinAI CREATOR</span>
       </a>
-      <a href="translate.html" class="menu-item" id="creatorMenuItem">
-  <i class="fas fa-language"></i>
-  <span>Terjemahan Otomatis</span>
-</a>
+      <a href="translate.html" class="menu-item">
+        <i class="fas fa-language"></i>
+        <span>Terjemahan Otomatis</span>
+      </a>
 
-     <a href="alarm.html" class="menu-item">
+      <a href="alarm.html" class="menu-item">
         <i class="fas fa-bell"></i>
         <span>Alarm AI</span>
       </a>
@@ -836,10 +1030,10 @@
         <span>Obrolan AI</span>
       </a>
 
-<a href="obrolanfull.html" class="menu-item">
-  <i class="fas fa-brain"></i>
-  <span>Obrolan AI Full</span>
-</a>
+      <a href="obrolanfull.html" class="menu-item">
+        <i class="fas fa-brain"></i>
+        <span>Obrolan AI Full</span>
+      </a>
 
       <a href="dokter.html" class="menu-item">
         <i class="fas fa-user-md"></i>
@@ -847,29 +1041,30 @@
       </a>
 
       <a href="jasa.html" class="menu-item">
-  <img src="https://png.pngtree.com/png-vector/20250831/ourmid/pngtree-flat-clapperboard-video-icon-black-and-white-striped-top-with-simple-png-image_17345655.webp" alt="Video AI" style="width: 20px; height: 20px; margin-right: 8px;"> <!-- Sesuaikan lebar dengan ikon -->
-  <span>Buat Video AI</span>
+        <img src="https://png.pngtree.com/png-vector/20250831/ourmid/pngtree-flat-clapperboard-video-icon-black-and-white-striped-top-with-simple-png-image_17345655.webp" alt="Video AI" style="width: 20px; height: 20px; margin-right: 8px;">
+        <span>Buat Video AI</span>
       </a>
 
       <a href="investasi.html" class="menu-item">
-  <i class="fas fa-chart-line"></i>
-  <span>Investasi</span>
+        <i class="fas fa-chart-line"></i>
+        <span>Investasi</span>
       </a>
 
-      <!-- Menu OCR dan Musik dihapus -->
+      <div class="menu-item" id="ocrMenuItem">
+        <i class="fas fa-file-image"></i>
+        <span>Analisis Grafik</span>
+      </div>
 
       <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
-  <i class="fas fa-exclamation-triangle"></i>
-  <span>Lapor Masalah</span>
-    </a>
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Lapor Masalah</span>
+      </a>
 
-      <!-- Musik dihapus -->
-      
       <div class="menu-item logout-item" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i>
         <span>Keluar</span>
       </div>
-      </div>
+    </div>
 
     <div class="sidebar-footer">
       <div class="user-profile">
@@ -885,137 +1080,89 @@
   <div class="main-content" id="mainContainer">
     <div class="chat-container">
 
-<div class="chat-header">
-    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 10px;">
-        <div class="header">
+      <div class="chat-header">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 10px;">
+          <div class="header">
             <div class="logo-circle">
-                <img src="https://i.ibb.co.com/PKcC0nF/images-2.jpg" alt="Otak AI" />
+              <img src="https://i.ibb.co.com/PKcC0nF/images-2.jpg" alt="Otak AI" />
             </div>
-            </div>
+          </div>
         </div>
-    <div class="title-shortcut">Hallo, Saya AbidinAI (Mode Investasi)</div>
-    <div class="subtitle-shortcut">Saya khusus membantu pertanyaan seputar emas, saham, reksadana, forex, crypto, dan instrumen investasi lainnya.</div>
+        <div class="title-shortcut">Hallo, Saya AbidinAI (Mode Investasi)</div>
+        <div class="subtitle-shortcut">Saya khusus membantu seputar emas, saham, reksadana, forex, crypto, dan analisis grafik investasi.</div>
 
-    <div class="shortcut-box">
-
-        <!-- Shortcut hanya untuk investasi -->
-        <div class="btn-shortcut" onclick="setQueryToInput('Apa itu emas dan bagaimana cara investasinya?')">
+        <div class="shortcut-box">
+          <div class="btn-shortcut" onclick="setQueryToInput('Apa itu emas dan bagaimana cara investasinya?')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#f1c40f" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
             </svg>
             Emas
-        </div>
-        <div class="btn-shortcut" onclick="setQueryToInput('Jelaskan tentang saham untuk pemula.')">
+          </div>
+          <div class="btn-shortcut" onclick="setQueryToInput('Jelaskan tentang saham untuk pemula.')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
-                <path d="M21 16v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2M7 10l3-3 3 3 4-4" stroke-linecap="round"/>
-                <path d="M17 10V4h-6" stroke-linecap="round"/>
+              <path d="M21 16v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2M7 10l3-3 3 3 4-4" stroke-linecap="round"/>
+              <path d="M17 10V4h-6" stroke-linecap="round"/>
             </svg>
             Saham
-        </div>
-        <div class="btn-shortcut" onclick="setQueryToInput('Apa perbedaan reksadana pasar uang dan reksadana saham?')">
+          </div>
+          <div class="btn-shortcut" onclick="setQueryToInput('Apa perbedaan reksadana pasar uang dan reksadana saham?')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-                <rect x="2" y="7" width="20" height="14" rx="2"/>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
             </svg>
             Reksadana
-        </div>
-        <div class="btn-shortcut" onclick="setQueryToInput('Tips sukses trading forex untuk pemula.')">
+          </div>
+          <div class="btn-shortcut" onclick="setQueryToInput('Tips sukses trading forex untuk pemula.')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
-                <path d="M12 2v20M2 12h20"/>
+              <path d="M12 2v20M2 12h20"/>
             </svg>
             Forex
-        </div>
-        <div class="btn-shortcut" onclick="setQueryToInput('Analisis crypto: Bitcoin dan Ethereum.')">
+          </div>
+          <div class="btn-shortcut" onclick="setQueryToInput('Analisis crypto: Bitcoin dan Ethereum.')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#9b59b6" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
             Crypto
-        </div>
-        <div class="btn-shortcut" onclick="toggleShortcutMenu()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-                <circle cx="5" cy="12" r="1.8"/>
-                <circle cx="12" cy="12" r="1.8"/>
-                <circle cx="19" cy="12" r="1.8"/>
+          </div>
+          <div class="btn-shortcut" onclick="openOCRModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3.2"/>
             </svg>
-            Lainnya
+            Analisis Grafik
+          </div>
         </div>
+      </div>
 
-    </div>
-
-    <div id="dropdownShortcutMenu" class="dropdown">
-
-        <!-- Dropdown item hanya terkait investasi -->
-        <div class="item" onclick="setQueryToInput('Cara memulai investasi emas batangan.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f1c40f" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-            </svg>
-            Emas Batangan
-        </div>
-        <div class="item" onclick="setQueryToInput('Rekomendasi saham LQ45 untuk jangka panjang.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
-                <path d="M21 16v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2M7 10l3-3 3 3 4-4" stroke-linecap="round"/>
-                <path d="M17 10V4h-6" stroke-linecap="round"/>
-            </svg>
-            Saham LQ45
-        </div>
-        <div class="item" onclick="setQueryToInput('Perhitungan return reksadana.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-                <rect x="2" y="7" width="20" height="14" rx="2"/>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-            </svg>
-            Return Reksadana
-        </div>
-        <div class="item" onclick="setQueryToInput('Strategi trading forex untuk pemula.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
-                <path d="M12 2v20M2 12h20"/>
-            </svg>
-            Strategi Forex
-        </div>
-        <div class="item" onclick="setQueryToInput('Analisis teknikal crypto.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#9b59b6" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-            Analisis Crypto
-        </div>
-        <div class="item" onclick="setQueryToInput('Cara diversifikasi portofolio investasi.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#16a085" stroke-width="2">
-                <path d="M3 12h4l3-9 4 18 3-9h4"/>
-            </svg>
-            Diversifikasi
-        </div>
-
-    </div>
-</div>
-<div class="memory-controls">
+      <div class="memory-controls">
         <button class="memory-btn clear" id="clearMemoryBtn">
           <i class="fas fa-trash"></i> Hapus Memori
         </button>
       </div>
 
       <div class="chat-messages" id="chatbox">
-        <!-- Pesan sambutan investasi -->
         <div class="message ai-message">
-            <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-            <div class="message-content">
-                <div class="message-header">
-                    <span class="message-sender">AbidinAI</span>
-                    <span class="message-time">Sekarang</span>
-                </div>
-                <div class="message-text">
-                    Halo! Saya adalah asisten khusus investasi. Saya dapat membantu Anda dengan pertanyaan seputar <strong>emas, saham, reksadana, forex, crypto, dan topik investasi lainnya</strong>. Silakan tanya apa saja!
-                </div>
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">AbidinAI</span>
+              <span class="message-time">Sekarang</span>
             </div>
+            <div class="message-text">
+              Halo! Saya adalah asisten khusus investasi. Saya dapat membantu Anda dengan pertanyaan seputar <strong>emas, saham, reksadana, forex, crypto</strong>, dan juga bisa <strong>menganalisis grafik investasi</strong> melalui fitur unggah gambar. Silakan tanya apa saja!
+            </div>
+          </div>
         </div>
-        </div>
+      </div>
 
       <div class="input-container">
         <div class="input-box">
-          <!-- PERBAIKAN UTAMA: Textarea dengan pengaturan untuk paste, tombol OCR dan voice dihapus -->
+          <div id="multiple-images-preview" style="display: none;"></div>
+
           <textarea 
             id="messageInput" 
-            placeholder="Tanya tentang investasi (emas, saham, reksadana, forex, crypto)..." 
+            placeholder="Tanya tentang investasi atau upload grafik untuk dianalisis..." 
             rows="1" 
             onkeypress="handleKeyPress(event)"
             autocorrect="off"
@@ -1024,30 +1171,9 @@
             style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"
           ></textarea>
           <div class="input-buttons">
-            <!-- Tombol OCR dan Voice dihapus, hanya ada send button dan plus menu untuk opsi investasi -->
-            <div class="input-buttons">
-              <button class="plus-btn" onclick="togglePlusMenu()">
-                <i class="fas fa-plus"></i>
-              </button>
-              <div class="plus-menu" id="plusMenu">
-                <!-- Menu Plus hanya berisi opsi investasi -->
-                <button class="menu-item" onclick="setQueryToInput('Apa itu emas?')">
-                  <i class="fas fa-coins"></i> Emas
-                </button>
-                <button class="menu-item" onclick="setQueryToInput('Apa itu saham?')">
-                  <i class="fas fa-chart-line"></i> Saham
-                </button>
-                <button class="menu-item" onclick="setQueryToInput('Apa itu reksadana?')">
-                  <i class="fas fa-pie-chart"></i> Reksadana
-                </button>
-                <button class="menu-item" onclick="setQueryToInput('Apa itu forex?')">
-                  <i class="fas fa-globe"></i> Forex
-                </button>
-                <button class="menu-item" onclick="setQueryToInput('Apa itu crypto?')">
-                  <i class="fab fa-bitcoin"></i> Crypto
-                </button>
-              </div>
-            </div>
+            <button class="ocr-btn" onclick="openOCRModal()">
+              <i class="fas fa-file-image"></i>
+            </button>
             <button class="send-btn" onclick="sendMessage()" id="sendButton">
               <i class="fas fa-paper-plane"></i>
             </button>
@@ -1057,58 +1183,39 @@
     </div>
   </div>
 
-  <!-- Audio player dihapus karena tidak digunakan -->
-
   <script>
     (function() {
       'use strict';
 
-      let isVoiceMode = false;
       let listeningElement = null;
-      let lastTypingElement = null;
       let db = null;
-      let isPlusMenuOpen = false;
-      let isShortcutMenuOpen = false;
+      let ocrExtractedText = '';
+      let uploadedImages = [];
+      let selectedFiles = [];
 
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // PERBAIKAN: Filter paste untuk textarea
       const messageInput = document.getElementById('messageInput');
-      
-      // Event listener untuk handle paste
+
       messageInput.addEventListener('paste', function(e) {
         e.preventDefault();
-        
-        // Ambil teks dari clipboard
         let pastedText = (e.clipboardData || window.clipboardData).getData('text');
-        
-        // Bersihkan teks: hapus karakter yang tidak perlu
         pastedText = pastedText
-          .replace(/\r\n/g, '\n') // Normalize line endings
-          .replace(/\t/g, '    ')  // Ganti tab dengan 4 spasi
-          .trim(); // Hapus spasi di awal dan akhir
-        
-        // Sisipkan teks yang sudah dibersihkan
+          .replace(/\r\n/g, '\n')
+          .replace(/\t/g, '    ')
+          .trim();
         const start = this.selectionStart;
         const end = this.selectionEnd;
         const textBefore = this.value.substring(0, start);
         const textAfter = this.value.substring(end, this.value.length);
-        
         this.value = textBefore + pastedText + textAfter;
-        
-        // Posisikan kursor setelah teks yang ditempel
         this.selectionStart = this.selectionEnd = start + pastedText.length;
-        
-        // Update tinggi textarea
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
-        
-        // Trigger input event untuk update UI
         this.dispatchEvent(new Event('input'));
       });
 
-      // PERBAIKAN: Event listener untuk input (handle typing)
       messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
@@ -1290,10 +1397,7 @@
           const messages = await loadMessagesFromDB();
           const chatbox = document.getElementById("chatbox");
 
-          if (messages.length === 0) {
-            // Jika tidak ada pesan, biarkan pesan sambutan (yang sudah di-hardcode di HTML)
-          } else {
-            // Kosongkan chatbox dulu (karena ada pesan sambutan statis)
+          if (messages.length > 0) {
             chatbox.innerHTML = '';
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
@@ -1306,34 +1410,28 @@
           console.error('Error initializing database:', error);
         }
 
+        document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
+        initOCRModal();
+
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
             try {
               await clearConversationFromDB();
               const chatbox = document.getElementById("chatbox");
-              // Set ke pesan sambutan default
               chatbox.innerHTML = `
                 <div class="message ai-message">
-                    <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-sender">AbidinAI</span>
-                            <span class="message-time">Sekarang</span>
-                        </div>
-                        <div class="message-text">
-                            Halo! Saya adalah asisten khusus investasi. Saya dapat membantu Anda dengan pertanyaan seputar <strong>emas, saham, reksadana, forex, crypto, dan topik investasi lainnya</strong>. Silakan tanya apa saja!
-                        </div>
+                  <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+                  <div class="message-content">
+                    <div class="message-header">
+                      <span class="message-sender">AbidinAI</span>
+                      <span class="message-time">Sekarang</span>
                     </div>
+                    <div class="message-text">
+                      Halo! Saya adalah asisten khusus investasi. Saya dapat membantu Anda dengan pertanyaan seputar <strong>emas, saham, reksadana, forex, crypto</strong>, dan juga bisa <strong>menganalisis grafik investasi</strong> melalui fitur unggah gambar. Silakan tanya apa saja!
+                    </div>
+                  </div>
                 </div>
               `;
-
-              const confirmationMsg = addMessage('Sistem', 'Riwayat percakapan telah dihapus.', 'ai-message', null, false);
-
-              setTimeout(() => {
-                if (confirmationMsg && confirmationMsg.parentNode) {
-                  confirmationMsg.parentNode.removeChild(confirmationMsg);
-                }
-              }, 3000);
             } catch (error) {
               console.error('Error clearing conversation:', error);
               addMessage('Sistem', 'Gagal menghapus riwayat percakapan.', 'ai-message', null, false);
@@ -1348,20 +1446,10 @@
       }
 
       window.logout = function() {
-          localStorage.removeItem("abidinai_token");
-          clearConversationFromDB();
-          window.location.href = "../index.html";
+        localStorage.removeItem("abidinai_token");
+        clearConversationFromDB();
+        window.location.href = "../index.html";
       };
-
-      window.toggleShortcutMenu = function() {
-        const menu = document.getElementById("dropdownShortcutMenu");
-        if (isShortcutMenuOpen) {
-          menu.classList.remove("show");
-        } else {
-          menu.classList.add("show");
-        }
-        isShortcutMenuOpen = !isShortcutMenuOpen;
-      }
 
       window.setQueryToInput = function(query) {
         const messageInput = document.getElementById('messageInput');
@@ -1369,16 +1457,7 @@
         messageInput.focus();
         messageInput.style.height = 'auto';
         messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
-        toggleShortcutMenu(); // tutup dropdown jika terbuka
-      }
-
-      window.openCreatorModal = function() {
-        if (devToolsState.open) {
-          showWarning();
-          return false;
-        }
-        window.location.href = "creator.html";
-      }
+      };
 
       window.handleKeyPress = function(event) {
         if (devToolsState.open) {
@@ -1386,34 +1465,288 @@
           return false;
         }
 
-        if (event.key === 'Enter') {
-          if (event.shiftKey) {
-            return true;
-          }
-
-          if (isAndroid) {
-            const textarea = document.getElementById("messageInput");
-            const cursorPosition = textarea.selectionStart;
-            const textBefore = textarea.value.substring(0, cursorPosition);
-            const textAfter = textarea.value.substring(cursorPosition, textarea.value.length);
-
-            textarea.value = textBefore + '\n' + textAfter;
-            textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
-
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
-
-            event.preventDefault();
-            event.stopPropagation();
-            return false;
-          } else {
-            event.preventDefault();
-            sendMessage();
-          }
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
         }
       };
 
-      // Hapus fungsi toggleAudio, openOCRModal, dll.
+      window.updateImagePreview = function() {
+        const previewContainer = document.getElementById('multiple-images-preview');
+        previewContainer.innerHTML = '';
+
+        if (uploadedImages.length === 0) {
+          previewContainer.style.display = 'none';
+          return;
+        }
+
+        previewContainer.style.display = 'flex';
+
+        uploadedImages.forEach((imageData, index) => {
+          const previewItem = document.createElement('div');
+          previewItem.className = 'image-preview-item';
+
+          const img = document.createElement('img');
+          img.src = imageData.dataURL;
+          img.alt = `Preview ${index + 1}`;
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-image-btn';
+          removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+          removeBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadedImages.splice(index, 1);
+            if (uploadedImages.length === 0) {
+              ocrExtractedText = '';
+            }
+            updateImagePreview();
+          };
+
+          previewItem.appendChild(img);
+          previewItem.appendChild(removeBtn);
+          previewContainer.appendChild(previewItem);
+        });
+      };
+
+      function initOCRModal() {
+        const modal = document.getElementById('ocrModal');
+        const closeBtn = document.getElementById('closeModal');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const processBtn = document.getElementById('processBtn');
+        const copyResultBtn = document.getElementById('copyResult');
+        const resultText = document.getElementById('resultText');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressText = document.getElementById('progressText');
+        const ocrResult = document.getElementById('ocrResult');
+        const multiplePreviewContainer = document.getElementById('multiplePreviewContainer');
+
+        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          uploadArea.style.borderColor = '#4f46e5';
+          uploadArea.style.backgroundColor = '#f9fafb';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+          uploadArea.style.borderColor = '#e5e5e6';
+          uploadArea.style.backgroundColor = 'transparent';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadArea.style.borderColor = '#e5e5e6';
+          uploadArea.style.backgroundColor = 'transparent';
+
+          if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileUpload(Array.from(fileInput.files));
+          }
+        });
+
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files.length) {
+            handleFileUpload(Array.from(fileInput.files));
+          }
+        });
+
+        processBtn.addEventListener('click', processAllImages);
+
+        copyResultBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(resultText.textContent).then(() => {
+            copyResultBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+            setTimeout(() => {
+              copyResultBtn.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            }, 1500);
+          });
+        });
+
+        function handleFileUpload(files) {
+          selectedFiles = [];
+          multiplePreviewContainer.innerHTML = '';
+
+          if (files.length > 5) {
+            alert('Maksimal 5 gambar yang dapat diproses sekaligus! Hanya 5 gambar pertama yang akan digunakan.');
+            files = files.slice(0, 5);
+          }
+
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            if (!file.type.match('image.*')) {
+              alert(`File "${file.name}" bukan gambar! Hanya file gambar (JPG, PNG) yang didukung!`);
+              continue;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+              alert(`File "${file.name}" terlalu besar! Ukuran file maksimal 5MB!`);
+              continue;
+            }
+
+            selectedFiles.push(file);
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const previewItem = document.createElement('div');
+              previewItem.className = 'multiple-preview-item';
+              previewItem.innerHTML = `
+                <img src="${e.target.result}" class="multiple-preview-image" alt="Preview ${i+1}">
+                <div class="multiple-preview-badge">${i+1}</div>
+              `;
+              multiplePreviewContainer.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+          }
+
+          if (selectedFiles.length === 0) {
+            processBtn.style.display = 'none';
+            return;
+          }
+
+          processBtn.style.display = 'block';
+          ocrResult.style.display = 'none';
+
+          document.querySelector('.upload-text').innerHTML =
+            `<strong>${selectedFiles.length} grafik dipilih</strong><br>Klik "Analisis Grafik Investasi" untuk memulai`;
+        }
+
+        async function processAllImages() {
+          if (selectedFiles.length === 0) return;
+
+          processBtn.style.display = 'none';
+          progressContainer.style.display = 'flex';
+
+          let allResults = [];
+
+          try {
+            for (let i = 0; i < selectedFiles.length; i++) {
+              const file = selectedFiles[i];
+
+              progressText.textContent = `Menganalisis grafik ${i+1} dari ${selectedFiles.length}...`;
+
+              try {
+                const result = await processSingleImage(file, i);
+                allResults.push(result);
+              } catch (error) {
+                console.error(`Error processing image ${i+1}:`, error);
+                allResults.push(`Grafik ${i+1}: Error - ${error.message}`);
+              }
+            }
+
+            displayAllResults(allResults);
+
+          } catch (error) {
+            console.error('Error processing images:', error);
+            progressText.textContent = `Error: ${error.message}`;
+            setTimeout(() => {
+              progressContainer.style.display = 'none';
+              processBtn.style.display = 'block';
+            }, 2000);
+          }
+        }
+
+        async function processSingleImage(file, index) {
+          const formData = new FormData();
+          formData.append('image', file);
+
+          const response = await fetch("/api/ocr", {
+            method: "POST",
+            body: formData
+          });
+
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            const textResponse = await response.text();
+
+            if (textResponse.trim().startsWith('<!DOCTYPE') || textResponse.includes('<html')) {
+              throw new Error('Server tidak mengembalikan JSON yang valid. Mungkin terjadi error di server.');
+            }
+
+            try {
+              const jsonData = JSON.parse(textResponse);
+              return jsonData;
+            } catch (parseError) {
+              throw new Error('Server tidak mengembalikan JSON yang valid: ' + textResponse.substring(0, 50) + '...');
+            }
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error: ${response.status} - ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const aiReply = data.reply;
+
+          if (!aiReply || aiReply.trim() === "") {
+            return `Grafik ${index+1}: Tidak dapat menganalisis grafik ini.`;
+          } else {
+            return `📊 Analisis Grafik ${index+1}:\n${aiReply}`;
+          }
+        }
+
+        function displayAllResults(results) {
+          const resultText = results.join('\n\n');
+
+          document.getElementById('resultText').textContent = resultText;
+          document.getElementById('ocrResult').style.display = 'block';
+          document.getElementById('progressContainer').style.display = 'none';
+
+          ocrExtractedText = resultText;
+
+          uploadedImages = [];
+          let loadedCount = 0;
+
+          selectedFiles.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              uploadedImages.push({
+                file: file,
+                dataURL: e.target.result
+              });
+              loadedCount++;
+
+              if (loadedCount === selectedFiles.length) {
+                updateImagePreview();
+              }
+            };
+            reader.readAsDataURL(file);
+          });
+
+          modal.style.display = 'none';
+        }
+      }
+
+      window.openOCRModal = function() {
+        if (devToolsState.open) {
+          showWarning();
+          return false;
+        }
+
+        const modal = document.getElementById('ocrModal');
+        modal.style.display = 'flex';
+
+        document.getElementById('multiplePreviewContainer').innerHTML = '';
+        document.getElementById('processBtn').style.display = 'none';
+        document.getElementById('progressContainer').style.display = 'none';
+        document.getElementById('ocrResult').style.display = 'none';
+        document.getElementById('fileInput').value = '';
+        document.querySelector('.upload-text').innerHTML =
+          '<strong>Klik untuk unggah grafik investasi</strong><br>Maksimal 5 gambar (JPG/PNG, 5MB)';
+
+        uploadedImages = [];
+        ocrExtractedText = '';
+        updateImagePreview();
+
+        selectedFiles = [];
+      };
 
       function addMessage(sender, text, messageClass, timestamp = null, save = true) {
         const chatbox = document.getElementById("chatbox");
@@ -1482,7 +1815,7 @@
         const messageTextElement = document.getElementById(`${messageId}-text`);
         if (messageTextElement) {
           const rawText = messageTextElement.textContent || messageTextElement.innerText;
-          const shareText = `*⚙️ Balasan Otomatis oleh AbidinAI (Investasi):*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
+          const shareText = `*⚙️ Balasan AbidinAI (Investasi):*\n\n${rawText}\n\n_Dibagikan dari aplikasi AbidinAI._`;
 
           if (navigator.share) {
             navigator.share({
@@ -1518,8 +1851,8 @@
         const messageDiv = messageTextElement.closest('.message');
         const prevMessageDiv = messageDiv.previousElementSibling;
         if (!prevMessageDiv || !prevMessageDiv.classList.contains('user-message')) {
-            addMessage('Sistem', 'Tidak dapat membuat ulang pesan. Pesan asli pengguna tidak ditemukan.', 'ai-message', null, false);
-            return;
+          addMessage('Sistem', 'Tidak dapat membuat ulang pesan. Pesan asli pengguna tidak ditemukan.', 'ai-message', null, false);
+          return;
         }
 
         const userMessageText = prevMessageDiv.querySelector('.message-text').textContent;
@@ -1536,8 +1869,8 @@
           if (shareButton) shareButton.disabled = true;
 
           messageTextElement.innerHTML = `<div class="typing-indicator">
-              <div class="loading"></div>
-              AbidinAI sedang mengetik ulang...
+            <div class="loading"></div>
+            AbidinAI sedang mengetik ulang...
           </div>`;
           messageDiv.classList.remove('ai-message');
           messageDiv.classList.add('user-message');
@@ -1563,9 +1896,9 @@
             messageDiv.classList.add('ai-message');
 
             if (!aiReply || aiReply.trim() === "") {
-                displayMaintenanceMessage();
+              displayMaintenanceMessage();
             } else {
-                displayAIResponse(aiReply, messageTextElement);
+              displayAIResponse(aiReply, messageTextElement);
             }
 
             regenerateButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
@@ -1598,54 +1931,33 @@
         }
       };
 
-      window.togglePlusMenu = function() {
-        const plusMenu = document.getElementById('plusMenu');
-        if (isPlusMenuOpen) {
-          plusMenu.style.display = 'none';
-        } else {
-          plusMenu.style.display = 'flex';
-        }
-        isPlusMenuOpen = !isPlusMenuOpen;
-      }
-
-      document.addEventListener('click', function(event) {
-        const plusMenu = document.getElementById('plusMenu');
-        const plusBtn = document.querySelector('.plus-btn');
-        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
-        const shortcutBtn = document.querySelector('.btn-shortcut:last-child');
-
-        if (plusMenu && plusBtn && !plusMenu.contains(event.target) && !plusBtn.contains(event.target)) {
-          plusMenu.style.display = 'none';
-          isPlusMenuOpen = false;
-        }
-
-        if (dropdownShortcutMenu && shortcutBtn && !dropdownShortcutMenu.contains(event.target) && !shortcutBtn.contains(event.target)) {
-            dropdownShortcutMenu.classList.remove("show");
-            isShortcutMenuOpen = false;
-        }
-      });
-
       window.sendMessage = async function() {
         if (devToolsState.open) {
           showWarning();
           return false;
         }
 
-        const dropdownShortcutMenu = document.getElementById('dropdownShortcutMenu');
-        if (dropdownShortcutMenu && dropdownShortcutMenu.classList.contains('show')) {
-             dropdownShortcutMenu.classList.remove('show');
-             isShortcutMenuOpen = false;
-        }
-
         const input = document.getElementById("messageInput");
         const userText = input.value.trim();
 
-        if (!userText) return;
+        let fullMessageText = userText;
+        if (uploadedImages.length > 0 && ocrExtractedText) {
+          fullMessageText = `[Hasil Analisis Grafik Investasi ${uploadedImages.length} Gambar:\n${ocrExtractedText}]\n\n${userText}`;
+        } else if (uploadedImages.length > 0) {
+          fullMessageText = `[${uploadedImages.length} Grafik Investasi terunggah untuk dianalisis]\n\n${userText}`;
+        }
+
+        let displayMessage = userText;
+        if (!displayMessage && uploadedImages.length > 0) {
+          displayMessage = `[${uploadedImages.length} Grafik Investasi terunggah untuk dianalisis]`;
+        }
+
+        if (!displayMessage) return;
 
         const chatbox = document.getElementById("chatbox");
         const sendButton = document.getElementById("sendButton");
 
-        addMessage('Anda', userText, 'user-message');
+        addMessage('Anda', displayMessage, 'user-message');
 
         const typingDiv = document.createElement("div");
         typingDiv.className = "message ai-message";
@@ -1654,7 +1966,7 @@
           <div class="message-content">
             <div class="typing-indicator">
               <div class="loading"></div>
-              AbidinAI sedang mengetik...
+              AbidinAI sedang ${uploadedImages.length > 0 ? 'menganalisis grafik dan mengetik...' : 'mengetik...'}
             </div>
           </div>
         `;
@@ -1665,13 +1977,17 @@
         input.value = '';
         input.style.height = 'auto';
 
+        uploadedImages = [];
+        ocrExtractedText = '';
+        updateImagePreview();
+
         try {
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ message: userText })
+            body: JSON.stringify({ message: fullMessageText })
           });
 
           if (!response.ok) {
@@ -1709,18 +2025,9 @@
 
         const formattedMessage = formatBoldText('<i class="fas fa-tools"></i> ' + rawMessage);
 
-        const maintenanceDiv = addMessage(
-          'AbidinAI',
-          formattedMessage,
-          'ai-message'
-        );
+        addMessage('AbidinAI', formattedMessage, 'ai-message');
 
         sendButton.disabled = false;
-
-        if (isVoiceMode) {
-          // voice dihapus, abaikan
-        }
-        isVoiceMode = false;
       }
 
       function displayAIResponse(aiReply, targetElement = null) {
@@ -1734,39 +2041,38 @@
 
         let messageTextContainer;
         if (targetElement) {
-            messageTextContainer = targetElement;
+          messageTextContainer = targetElement;
         } else {
-            const container = document.createElement("div");
-            container.className = "message ai-message";
-            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            container.innerHTML = `
-              <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
-              <div class="message-content">
-                <div class="message-header">
-                  <span class="message-sender">AbidinAI</span>
-                  <span class="message-time">${getCurrentTime()}</span>
-                </div>
-                <div class="message-text" id="${messageId}-text"></div>
-                <div class="message-actions">
-                  <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
-                    <i class="fas fa-copy"></i> Salin
-                  </button>
-                  <button class="action-btn share" onclick="shareMessageText('${messageId}')">
-                    <i class="fas fa-share-alt"></i> Bagikan
-                  </button>
-                  <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
-                    <i class="fas fa-redo"></i> Buat Ulang
-                  </button>
-                </div>
+          const container = document.createElement("div");
+          container.className = "message ai-message";
+          const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+          container.innerHTML = `
+            <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-sender">AbidinAI</span>
+                <span class="message-time">${getCurrentTime()}</span>
               </div>
-            `;
-            chatbox.appendChild(container);
-            messageTextContainer = container.querySelector('.message-text');
-            saveMessageToDB('AbidinAI', aiReply);
+              <div class="message-text" id="${messageId}-text"></div>
+              <div class="message-actions">
+                <button class="action-btn copy" onclick="copyMessageText('${messageId}')">
+                  <i class="fas fa-copy"></i> Salin
+                </button>
+                <button class="action-btn share" onclick="shareMessageText('${messageId}')">
+                  <i class="fas fa-share-alt"></i> Bagikan
+                </button>
+                <button class="action-btn regenerate" onclick="regenerateMessage('${messageId}')">
+                  <i class="fas fa-redo"></i> Buat Ulang
+                </button>
+              </div>
+            </div>
+          `;
+          chatbox.appendChild(container);
+          messageTextContainer = container.querySelector('.message-text');
+          saveMessageToDB('AbidinAI', aiReply);
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
-        let textToRead = "";
 
         messageTextContainer.innerHTML = '';
 
@@ -1775,9 +2081,6 @@
             const textPart = parts[i];
             const span = document.createElement("span");
             span.innerHTML = formatBoldText(textPart);
-            
-            textToRead += textPart.replace(/\*\*/g, '') + " "; 
-            
             messageTextContainer.appendChild(span);
           } else {
             const codeContent = parts[i];
@@ -1810,14 +2113,7 @@
 
         chatbox.scrollTop = chatbox.scrollHeight;
         sendButton.disabled = false;
-
-        if (isVoiceMode) {
-          // voice dihapus
-        }
-        isVoiceMode = false;
       }
-
-      // Semua fungsi terkait OCR, riset, audio, voice recognition dihapus
 
     })();
   </script>
