@@ -258,10 +258,9 @@
       color: #718096;
     }
 
-    /* PERBAIKAN UTAMA: Atur tampilan teks kode */
     .message-text {
       line-height: 1.6;
-      white-space: pre-wrap; /* Biarkan text wrapping */
+      white-space: pre-wrap;
       word-wrap: break-word;
       overflow-wrap: break-word;
       max-width: 100%;
@@ -315,13 +314,12 @@
       overflow-x: auto;
       font-family: 'Fira Code', 'Courier New', monospace;
       font-size: 14px;
-      white-space: pre-wrap; /* PERBAIKAN: biarkan text wrapping */
+      white-space: pre-wrap;
       word-wrap: break-word;
       text-align: left;
       margin: 0;
     }
 
-    /* PERBAIKAN: Input textarea untuk kode */
     #messageInput {
       flex: 1;
       border: none;
@@ -332,13 +330,12 @@
       line-height: 1.5;
       font-size: 16px;
       background: transparent;
-      white-space: pre-wrap; /* Biarkan text wrapping */
+      white-space: pre-wrap;
       word-wrap: break-word;
       overflow-wrap: break-word;
-      font-family: inherit; /* Gunakan font normal, bukan monospace */
+      font-family: inherit;
     }
 
-    /* PERBAIKAN: Textarea saat paste */
     #messageInput::placeholder {
       color: #9ca3af;
     }
@@ -418,6 +415,8 @@
       flex-direction: column;
       padding: 8px;
       z-index: 10;
+      max-height: 400px;
+      overflow-y: auto;
     }
 
     .plus-menu .menu-item {
@@ -493,7 +492,6 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Modal OCR */
     .modal {
       display: none;
       position: fixed;
@@ -617,7 +615,6 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Warning Overlay */
     .warning-overlay {
       position: fixed;
       top: 0;
@@ -646,7 +643,6 @@
       user-select: text;
     }
 
-    /* Responsive Styles */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
@@ -683,22 +679,16 @@
       .input-buttons {
         justify-content: flex-end;
       }
-    }
-
-    @media (max-width: 480px) {
-      .input-buttons {
-        order: 1;
-      }
 
       .plus-menu {
         left: 0;
         right: auto;
         bottom: 100%;
         margin-bottom: 10px;
+        width: 250px;
       }
     }
 
-    /* New styles for memory controls */
     .memory-controls {
       display: flex;
       justify-content: flex-end;
@@ -1089,74 +1079,21 @@
       <div class="sidebar-title">
         <i class="fas fa-robot"></i>
         <span>ABIDINAI</span>
-        </div>
+      </div>
     </div>
 
     <div class="sidebar-menu">
-      <a href="#" class="menu-item active" id="chatMenuItem">
-        <i class="fas fa-comment-dots"></i>
-        <span>Obrolan AI</span>
-      </a>
-
-      <a href="creator.html" class="menu-item" id="creatorMenuItem">
-        <i class="fas fa-paint-brush"></i>
-        <span>AbidinAI CREATOR</span>
-      </a>
-      <a href="translate.html" class="menu-item" id="creatorMenuItem">
-  <i class="fas fa-language"></i>
-  <span>Terjemahan Otomatis</span>
-</a>
-
-     <a href="alarm.html" class="menu-item">
-        <i class="fas fa-bell"></i>
-        <span>Alarm AI</span>
-      </a>
-
-      <a href="obrolan.html" class="menu-item">
-        <i class="fas fa-comments"></i>
-        <span>Obrolan AI</span>
-      </a>
-
-<a href="obrolanfull.html" class="menu-item">
-  <i class="fas fa-brain"></i>
-  <span>Obrolan AI Full</span>
-</a>
-
-      <a href="dokter.html" class="menu-item">
-        <i class="fas fa-user-md"></i>
-        <span>Dokter Kesehatan</span>
-      </a>
-
-      <a href="jasa.html" class="menu-item">
-  <img src="https://png.pngtree.com/png-vector/20250831/ourmid/pngtree-flat-clapperboard-video-icon-black-and-white-striped-top-with-simple-png-image_17345655.webp" alt="Video AI" style="width: 20px; height: 20px; margin-right: 8px;">
-  <span>Buat Video AI</span>
-      </a>
-
-      <a href="investasi.html" class="menu-item">
-  <i class="fas fa-chart-line"></i>
-  <span>Investasi</span>
-      </a>
-
-      <div class="menu-item" id="ocrMenuItem">
-        <i class="fas fa-file-alt"></i>
-        <span>Unggah Gambar Pintar</span>
-      </div>
-
-      <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
-  <i class="fas fa-exclamation-triangle"></i>
-  <span>Lapor Masalah</span>
-    </a>
-
-      <div class="menu-item" id="musicMenuItem">
-        <i class="fas fa-music"></i>
-        <span>Putar Musik</span>
+      <!-- SIDEBAR SEKARANG HANYA BERISI RIWAYAT CHAT -->
+      <div class="menu-item active" id="chatHistoryMenuItem" onclick="openChatHistory()">
+        <i class="fas fa-history"></i>
+        <span>Riwayat Chat</span>
       </div>
       
       <div class="menu-item logout-item" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i>
         <span>Keluar</span>
       </div>
-      </div>
+    </div>
 
     <div class="sidebar-footer">
       <div class="user-profile">
@@ -1172,124 +1109,89 @@
   <div class="main-content" id="mainContainer">
     <div class="chat-container">
 
-<div class="chat-header">
-    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 10px;">
-        <div class="header">
+      <div class="chat-header">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 10px;">
+          <div class="header">
             <div class="logo-circle">
-                <img src="https://i.ibb.co.com/PKcC0nF/images-2.jpg" alt="Otak AI" />
+              <img src="https://i.ibb.co.com/PKcC0nF/images-2.jpg" alt="Otak AI" />
             </div>
-            </div>
+          </div>
         </div>
-    <div class="title-shortcut">Hallo Saya AbidinAI</div>
-    <div class="subtitle-shortcut">Apa yang bisa saya bantu?</div>
+        <div class="title-shortcut">Hallo Saya AbidinAI</div>
+        <div class="subtitle-shortcut">Apa yang bisa saya bantu?</div>
 
-    <div class="shortcut-box">
-
-<div class="btn-shortcut" onclick="openCreatorModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
-
-        <rect x="4" y="7" width="16" height="12" rx="2" stroke-linejoin="round"/>
-        <circle cx="12" cy="13" r="3" />
-
-        <path d="M18 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" stroke-linejoin="round" stroke-linecap="round"/>
-    </svg>
-    Creator
-</div>
-<div class="btn-shortcut" onclick="openOCRModal()">
+        <div class="shortcut-box">
+          <div class="btn-shortcut" onclick="openCreatorModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2">
+              <rect x="4" y="7" width="16" height="12" rx="2" stroke-linejoin="round"/>
+              <circle cx="12" cy="13" r="3" />
+              <path d="M18 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+            Creator
+          </div>
+          <div class="btn-shortcut" onclick="openOCRModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-                <circle cx="12" cy="12" r="3.2"/>
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3.2"/>
             </svg>
             Analisis gambar
-        </div>
-
-        <div class="btn-shortcut" onclick="setQueryToInput('Rangkum teks ini: ')">
+          </div>
+          <div class="btn-shortcut" onclick="setQueryToInput('Rangkum teks ini: ')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="2">
-                <rect x="4" y="4" width="16" height="16" rx="2"/>
-                <path d="M7 9h10M7 13h6"/>
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+              <path d="M7 9h10M7 13h6"/>
             </svg>
             Rangkum teks
-        </div>
-
-        <div class="btn-shortcut" onclick="toggleShortcutMenu()">
+          </div>
+          <div class="btn-shortcut" onclick="toggleShortcutMenu()">
             <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
-                <circle cx="5" cy="12" r="1.8"/>
-                <circle cx="12" cy="12" r="1.8"/>
-                <circle cx="19" cy="12" r="1.8"/>
+              <circle cx="5" cy="12" r="1.8"/>
+              <circle cx="12" cy="12" r="1.8"/>
+              <circle cx="19" cy="12" r="1.8"/>
             </svg>
             Lainnya
+          </div>
         </div>
 
-    </div>
-
-    <div id="dropdownShortcutMenu" class="dropdown">
-
-        <div class="item" onclick="setQueryToInput('Buat rencana perjalanan/kerja/belajar: ')">
+        <div id="dropdownShortcutMenu" class="dropdown">
+          <div class="item" onclick="setQueryToInput('Buat rencana perjalanan/kerja/belajar: ')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-                <rect x="3" y="4" width="18" height="16" rx="3"/>
-                <path d="M8 2v4M16 2v4" stroke-linecap="round"/>
-                <path d="M7 11h5M7 15h3M14 15l3-3" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="3" y="4" width="18" height="16" rx="3"/>
+              <path d="M8 2v4M16 2v4" stroke-linecap="round"/>
+              <path d="M7 11h5M7 15h3M14 15l3-3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             Buat Rencana
-        </div>
-
-        <div class="item" onclick="openDeepResearchModal()">
+          </div>
+          <div class="item" onclick="openDeepResearchModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="#5b6bff" stroke-width="2">
-                <circle cx="10" cy="10" r="5"/>
-                <line x1="14.5" y1="14.5" x2="20" y2="20" stroke-linecap="round"/>
-                <path d="M3 20 Q8 14 13 20" stroke="#5b6bff" stroke-width="1.5"/>
+              <circle cx="10" cy="10" r="5"/>
+              <line x1="14.5" y1="14.5" x2="20" y2="20" stroke-linecap="round"/>
+              <path d="M3 20 Q8 14 13 20" stroke="#5b6bff" stroke-width="1.5"/>
             </svg>
             Riset Mendalam
-        </div>
-
-        <div class="item" onclick="setQueryToInput('Terjemahkan ke bahasa Indonesia: ')">
+          </div>
+          <div class="item" onclick="setQueryToInput('Terjemahkan ke bahasa Indonesia: ')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2">
-                <path d="M4 4h16v16H4z"/>
-                <path d="M7 12h10M12 7l5 5-5 5"/>
+              <path d="M4 4h16v16H4z"/>
+              <path d="M7 12h10M12 7l5 5-5 5"/>
             </svg>
             Terjemahan
+          </div>
         </div>
+      </div>
 
-        <a href="alarm.html" class="item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
-                <circle cx="12" cy="13" r="8"/>
-                <path d="M12 9v4l3 2"/>
-            </svg>
-            Alarm AI
-        </a>
-
-        <a href="dokter.html" class="item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-                <path d="M12 3c4 0 7 3 7 7v2a7 7 0 0 1-14 0v-2c0-4 3-7 7-7z"/>
-                <circle cx="12" cy="14" r="3"/>
-            </svg>
-            Dokter AI
-        </a>
-
-        <div class="item" onclick="setQueryToInput('Apa itu AbidinAI?')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2">
-                <path d="M4 5h16v10H7l-3 3V5z" stroke-linejoin="round"/>
-                <path d="M9 10h6M9 7h8" stroke-linecap="round"/>
-            </svg>
-            Obrolan AI
-        </div>
-
-    </div>
-</div>
-<div class="memory-controls">
+      <div class="memory-controls">
         <button class="memory-btn clear" id="clearMemoryBtn">
           <i class="fas fa-trash"></i> Hapus Memori
         </button>
       </div>
 
-      <div class="chat-messages" id="chatbox">
-        </div>
+      <div class="chat-messages" id="chatbox"></div>
 
       <div class="input-container">
         <div class="input-box">
           <div id="multiple-images-preview" style="display: none;"></div>
 
-          <!-- PERBAIKAN UTAMA: Textarea dengan pengaturan untuk paste -->
           <textarea 
             id="messageInput" 
             placeholder="Ketik pesan ke AbidinAI..." 
@@ -1300,27 +1202,66 @@
             spellcheck="false"
             style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"
           ></textarea>
+          
           <div class="input-buttons">
             <button class="ocr-btn" onclick="openOCRModal()">
               <i class="fas fa-file-image"></i>
             </button>
+            
             <div class="input-buttons">
               <button class="plus-btn" onclick="togglePlusMenu()">
                 <i class="fas fa-plus"></i>
               </button>
+              
+              <!-- MENU PLUS BERISI SEMUA FITUR DARI SIDEBAR -->
               <div class="plus-menu" id="plusMenu">
-                <button class="menu-item" onclick="openDeepResearchModal()">
-                  <i class="fas fa-search"></i> Riset Mendalam
-                </button>
-                <button class="menu-item" onclick="openAudioSpectrumModal()">
-                  <i class="fas fa-chart-bar"></i> Analisis Audio
-                </button>
-                <!-- FITUR RIWAYAT CHAT DIPINDAHKAN KE SINI -->
-                <button class="menu-item" onclick="openChatHistory()">
-                  <i class="fas fa-history"></i> Riwayat Chat
-                </button>
+                <a href="creator.html" class="menu-item">
+                  <i class="fas fa-paint-brush"></i>
+                  <span>AbidinAI CREATOR</span>
+                </a>
+                <a href="translate.html" class="menu-item">
+                  <i class="fas fa-language"></i>
+                  <span>Terjemahan Otomatis</span>
+                </a>
+                <a href="alarm.html" class="menu-item">
+                  <i class="fas fa-bell"></i>
+                  <span>Alarm AI</span>
+                </a>
+                <a href="obrolan.html" class="menu-item">
+                  <i class="fas fa-comments"></i>
+                  <span>Obrolan AI</span>
+                </a>
+                <a href="obrolanfull.html" class="menu-item">
+                  <i class="fas fa-brain"></i>
+                  <span>Obrolan AI Full</span>
+                </a>
+                <a href="dokter.html" class="menu-item">
+                  <i class="fas fa-user-md"></i>
+                  <span>Dokter Kesehatan</span>
+                </a>
+                <a href="jasa.html" class="menu-item">
+                  <img src="https://png.pngtree.com/png-vector/20250831/ourmid/pngtree-flat-clapperboard-video-icon-black-and-white-striped-top-with-simple-png-image_17345655.webp" alt="Video AI" style="width: 20px; height: 20px; margin-right: 8px;">
+                  <span>Buat Video AI</span>
+                </a>
+                <a href="investasi.html" class="menu-item">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Investasi</span>
+                </a>
+                <div class="menu-item" onclick="openOCRModal()">
+                  <i class="fas fa-file-alt"></i>
+                  <span>Unggah Gambar Pintar</span>
+                </div>
+                <a href="https://wa.me/6283169364879" class="menu-item" target="_blank">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <span>Lapor Masalah</span>
+                </a>
+                <div class="menu-item" onclick="toggleAudio()">
+                  <i class="fas fa-music"></i>
+                  <span>Putar Musik</span>
+                </div>
               </div>
             </div>
+            
             <button class="voice-btn" onclick="startVoiceRecognition()">
               <i class="fas fa-microphone-alt"></i>
             </button>
@@ -1355,23 +1296,18 @@
       const devToolsState = {open: false, orientation: null};
       const devToolsThreshold = 160;
 
-      // PERBAIKAN: Filter paste untuk textarea
       const messageInput = document.getElementById('messageInput');
       
-      // Event listener untuk handle paste
       messageInput.addEventListener('paste', function(e) {
         e.preventDefault();
         
-        // Ambil teks dari clipboard
         let pastedText = (e.clipboardData || window.clipboardData).getData('text');
         
-        // Bersihkan teks: hapus karakter yang tidak perlu
         pastedText = pastedText
-          .replace(/\r\n/g, '\n') // Normalize line endings
-          .replace(/\t/g, '    ')  // Ganti tab dengan 4 spasi
-          .trim(); // Hapus spasi di awal dan akhir
+          .replace(/\r\n/g, '\n')
+          .replace(/\t/g, '    ')
+          .trim();
         
-        // Sisipkan teks yang sudah dibersihkan
         const start = this.selectionStart;
         const end = this.selectionEnd;
         const textBefore = this.value.substring(0, start);
@@ -1379,18 +1315,14 @@
         
         this.value = textBefore + pastedText + textAfter;
         
-        // Posisikan kursor setelah teks yang ditempel
         this.selectionStart = this.selectionEnd = start + pastedText.length;
         
-        // Update tinggi textarea
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
         
-        // Trigger input event untuk update UI
         this.dispatchEvent(new Event('input'));
       });
 
-      // PERBAIKAN: Event listener untuk input (handle typing)
       messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 200) + 'px';
@@ -1585,8 +1517,6 @@
           console.error('Error initializing database:', error);
         }
 
-        document.getElementById('musicMenuItem').addEventListener('click', toggleAudio);
-        document.getElementById('ocrMenuItem').addEventListener('click', openOCRModal);
         initOCRModal();
         initAudioSpectrumModal();
         initDeepResearchModal();
@@ -1694,11 +1624,9 @@
         const menuItem = document.getElementById("musicMenuItem");
         if (player.paused) {
           player.play();
-          menuItem.innerHTML = '<i class="fas fa-music"></i><span>Jeda Musik</span>';
           isMusicPlaying = true;
         } else {
           player.pause();
-          menuItem.innerHTML = '<i class="fas fa-music"></i><span>Putar Musik</span>';
           isMusicPlaying = false;
         }
       };
@@ -2638,20 +2566,15 @@
         speakNext(0);
       }
 
-      // Fungsi baru untuk membuka riwayat chat
       window.openChatHistory = function() {
-        togglePlusMenu(); // Tutup menu plus
-        // Implementasi riwayat chat bisa ditambahkan di sini
-        // Misalnya, menampilkan modal atau mengarahkan ke halaman riwayat
+        // Implementasi riwayat chat
+        alert('Fitur Riwayat Chat - Menampilkan semua percakapan sebelumnya');
         
-        // Contoh sederhana: menampilkan alert
-        alert('Fitur Riwayat Chat sedang dalam pengembangan.');
-        
-        // Atau bisa juga menampilkan modal dengan daftar riwayat chat
-        // loadMessagesFromDB().then(messages => {
-        //   // Tampilkan dalam modal
-        //   console.log(messages);
-        // });
+        // Bisa juga memuat dari database dan menampilkan di modal
+        loadMessagesFromDB().then(messages => {
+          console.log('Riwayat Chat:', messages);
+          // Tampilkan dalam modal atau sidebar
+        });
       };
     })();
   </script>
