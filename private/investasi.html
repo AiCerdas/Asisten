@@ -1083,7 +1083,7 @@
     </div>
 
     <div class="sidebar-menu">
-      <!-- SIDEBAR SEKARANG HANYA BERISI RIWAYAT CHAT -->
+      <!-- SIDEBAR HANYA BERISI RIWAYAT CHAT -->
       <div class="menu-item active" id="chatHistoryMenuItem" onclick="openChatHistory()">
         <i class="fas fa-history"></i>
         <span>Riwayat Chat</span>
@@ -1278,6 +1278,25 @@
     <source src="https://d.top4top.io/m_33403we8x0.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- MODAL RIWAYAT CHAT -->
+  <div class="modal" id="chatHistoryModal">
+    <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-history"></i> Riwayat Chat
+        </div>
+        <button class="close-btn" id="closeChatHistoryModal">&times;</button>
+      </div>
+      <div class="modal-body" id="chatHistoryList" style="padding: 10px;">
+        <!-- Daftar riwayat chat akan ditampilkan di sini -->
+        <div style="text-align: center; color: #718096; padding: 20px;" id="chatHistoryEmpty">
+          <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 10px;"></i>
+          <p>Belum ada riwayat chat</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function() {
       'use strict';
@@ -1422,9 +1441,10 @@
         return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       }
 
+      // FUNGSI INDEXEDDB YANG DIPERBAIKI
       function initDatabase() {
         return new Promise((resolve, reject) => {
-          const request = indexedDB.open('AbidinAIChatDB', 1);
+          const request = indexedDB.open('AbidinAIChatDB', 2); // Versi 2 untuk upgrade
 
           request.onerror = () => {
             console.error('IndexedDB error:', request.error);
@@ -1433,63 +1453,122 @@
 
           request.onsuccess = () => {
             db = request.result;
+            console.log('Database berhasil dibuka');
             resolve(db);
           };
 
           request.onupgradeneeded = (event) => {
             const db = event.target.result;
+            console.log('Upgrade database ke versi', event.oldVersion);
 
-            if (!db.objectStoreNames.contains('conversations')) {
-              const store = db.createObjectStore('conversations', { keyPath: 'id', autoIncrement: true });
-              store.createIndex('timestamp', 'timestamp', { unique: false });
+            // Hapus object store lama jika ada
+            if (db.objectStoreNames.contains('conversations')) {
+              db.deleteObjectStore('conversations');
             }
+
+            // Buat object store baru
+            const store = db.createObjectStore('conversations', { keyPath: 'id', autoIncrement: true });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+            store.createIndex('sender', 'sender', { unique: false });
+            
+            console.log('Object store conversations dibuat');
           };
         });
       }
 
       function saveMessageToDB(sender, text, timestamp) {
-        if (!db) return;
+        return new Promise((resolve, reject) => {
+          if (!db) {
+            console.error('Database tidak tersedia');
+            reject('Database tidak tersedia');
+            return;
+          }
 
-        const transaction = db.transaction(['conversations'], 'readwrite');
-        const store = transaction.objectStore('conversations');
+          try {
+            const transaction = db.transaction(['conversations'], 'readwrite');
+            const store = transaction.objectStore('conversations');
 
-        const message = {
-          sender: sender,
-          text: text,
-          timestamp: timestamp || new Date().getTime()
-        };
+            const message = {
+              sender: sender,
+              text: text,
+              timestamp: timestamp || new Date().getTime()
+            };
 
-        store.add(message);
+            const request = store.add(message);
+            
+            request.onsuccess = () => {
+              console.log('Pesan berhasil disimpan:', sender);
+              resolve(request.result);
+            };
+            
+            request.onerror = (error) => {
+              console.error('Gagal menyimpan pesan:', error);
+              reject(error);
+            };
+          } catch (error) {
+            console.error('Error dalam transaksi:', error);
+            reject(error);
+          }
+        });
       }
 
       function loadMessagesFromDB() {
         return new Promise((resolve, reject) => {
           if (!db) {
+            console.log('Database belum siap, kembali kosong');
             resolve([]);
             return;
           }
 
-          const transaction = db.transaction(['conversations'], 'readonly');
-          const store = transaction.objectStore('conversations');
-          const index = store.index('timestamp');
-          const request = index.getAll();
+          try {
+            const transaction = db.transaction(['conversations'], 'readonly');
+            const store = transaction.objectStore('conversations');
+            const index = store.index('timestamp');
+            const request = index.getAll();
 
-          request.onsuccess = () => {
-            resolve(request.result);
-          };
+            request.onsuccess = () => {
+              const messages = request.result || [];
+              console.log('Pesan dimuat:', messages.length);
+              resolve(messages);
+            };
 
-          request.onerror = () => {
-            reject(request.error);
-          };
+            request.onerror = (error) => {
+              console.error('Gagal memuat pesan:', error);
+              reject(error);
+            };
+          } catch (error) {
+            console.error('Error dalam transaksi:', error);
+            reject(error);
+          }
         });
       }
 
       function clearConversationFromDB() {
-        if (!db) return;
+        return new Promise((resolve, reject) => {
+          if (!db) {
+            reject('Database tidak tersedia');
+            return;
+          }
 
-        const transaction = db.transaction(['conversations'], 'readwrite');
-        const store = transaction.objectStore('conversations');
-        store.clear();
+          try {
+            const transaction = db.transaction(['conversations'], 'readwrite');
+            const store = transaction.objectStore('conversations');
+            const request = store.clear();
+
+            request.onsuccess = () => {
+              console.log('Semua pesan dihapus');
+              resolve();
+            };
+
+            request.onerror = (error) => {
+              console.error('Gagal menghapus pesan:', error);
+              reject(error);
+            };
+          } catch (error) {
+            console.error('Error dalam transaksi:', error);
+            reject(error);
+          }
+        });
       }
 
       document.addEventListener('DOMContentLoaded', async function() {
@@ -1501,11 +1580,14 @@
         try {
           await initDatabase();
 
+          // Muat pesan dari database
           const messages = await loadMessagesFromDB();
           const chatbox = document.getElementById("chatbox");
 
-          if (messages.length === 0) {
-          } else {
+          if (messages && messages.length > 0) {
+            // Urutkan berdasarkan timestamp
+            messages.sort((a, b) => a.timestamp - b.timestamp);
+            
             messages.forEach(msg => {
               const messageClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
               addMessage(msg.sender, msg.text, messageClass, msg.timestamp, false);
@@ -1520,6 +1602,7 @@
         initOCRModal();
         initAudioSpectrumModal();
         initDeepResearchModal();
+        initChatHistoryModal();
 
         document.getElementById('clearMemoryBtn').addEventListener('click', async function() {
           if (confirm('Apakah Anda yakin ingin menghapus semua riwayat percakapan?')) {
@@ -1550,7 +1633,7 @@
 
       window.logout = function() {
           localStorage.removeItem("abidinai_token");
-          clearConversationFromDB();
+          // Tidak perlu hapus database saat logout
           window.location.href = "../index.html";
       };
 
@@ -1621,7 +1704,6 @@
         }
 
         const player = document.getElementById("audioPlayer");
-        const menuItem = document.getElementById("musicMenuItem");
         if (player.paused) {
           player.play();
           isMusicPlaying = true;
@@ -2164,6 +2246,7 @@
         messageDiv.className = `message ${messageClass}`;
 
         const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : getCurrentTime();
 
         messageDiv.innerHTML = `
           <div class="avatar ${messageClass === 'ai-message' ? 'ai-avatar' : ''}">
@@ -2172,7 +2255,7 @@
           <div class="message-content">
             <div class="message-header">
               <span class="message-sender">${sender}</span>
-              <span class="message-time">${timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : getCurrentTime()}</span>
+              <span class="message-time">${timeStr}</span>
             </div>
             <div class="message-text" id="${messageId}-text">${text}</div>
             ${messageClass === 'ai-message' ? `
@@ -2194,8 +2277,11 @@
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
 
-        if (save) {
-          saveMessageToDB(sender, text, timestamp);
+        // Simpan ke database
+        if (save && db) {
+          saveMessageToDB(sender, text, timestamp).catch(error => {
+            console.error('Gagal menyimpan pesan:', error);
+          });
         }
 
         return messageDiv;
@@ -2342,6 +2428,7 @@
 
         if (!displayMessage && uploadedImages.length === 0) return;
 
+        // Simpan pesan user
         const userDiv = addMessage('Anda', displayMessage, 'user-message');
 
         const typingDiv = document.createElement("div");
@@ -2434,12 +2521,20 @@
         }
 
         let messageTextContainer;
+        let messageId;
+        
         if (targetElement) {
             messageTextContainer = targetElement;
+            // Cari messageId dari parent
+            const parentMsg = targetElement.closest('.message');
+            if (parentMsg) {
+              const textDiv = parentMsg.querySelector('.message-text');
+              messageId = textDiv ? textDiv.id : null;
+            }
         } else {
             const container = document.createElement("div");
             container.className = "message ai-message";
-            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
             container.innerHTML = `
               <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
               <div class="message-content">
@@ -2463,7 +2558,13 @@
             `;
             chatbox.appendChild(container);
             messageTextContainer = container.querySelector('.message-text');
-            saveMessageToDB('AbidinAI', aiReply);
+            
+            // Simpan pesan AI ke database
+            if (db) {
+              saveMessageToDB('AbidinAI', aiReply).catch(error => {
+                console.error('Gagal menyimpan pesan AI:', error);
+              });
+            }
         }
 
         const parts = aiReply.split(/```(?:\w+)?\n?([\s\S]*?)```/g);
@@ -2566,15 +2667,87 @@
         speakNext(0);
       }
 
-      window.openChatHistory = function() {
-        // Implementasi riwayat chat
-        alert('Fitur Riwayat Chat - Menampilkan semua percakapan sebelumnya');
-        
-        // Bisa juga memuat dari database dan menampilkan di modal
-        loadMessagesFromDB().then(messages => {
-          console.log('Riwayat Chat:', messages);
-          // Tampilkan dalam modal atau sidebar
+      // FUNGSI UNTUK MODAL RIWAYAT CHAT
+      function initChatHistoryModal() {
+        const modal = document.getElementById('chatHistoryModal');
+        const closeBtn = document.getElementById('closeChatHistoryModal');
+
+        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
         });
+      }
+
+      window.openChatHistory = async function() {
+        const modal = document.getElementById('chatHistoryModal');
+        const historyList = document.getElementById('chatHistoryList');
+        const emptyMessage = document.getElementById('chatHistoryEmpty');
+        
+        // Tampilkan loading
+        historyList.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading" style="margin: 0 auto;"></div><p>Memuat riwayat...</p></div>';
+        modal.style.display = 'flex';
+        
+        try {
+          const messages = await loadMessagesFromDB();
+          
+          if (!messages || messages.length === 0) {
+            historyList.innerHTML = `
+              <div style="text-align: center; color: #718096; padding: 20px;">
+                <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 10px;"></i>
+                <p>Belum ada riwayat chat</p>
+              </div>
+            `;
+            return;
+          }
+          
+          // Urutkan dari terbaru ke terlama
+          messages.sort((a, b) => b.timestamp - a.timestamp);
+          
+          let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+          
+          messages.forEach(msg => {
+            const date = new Date(msg.timestamp);
+            const formattedDate = date.toLocaleDateString('id-ID', { 
+              day: 'numeric', 
+              month: 'short', 
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
+            const senderClass = msg.sender === 'Anda' ? 'user-message' : 'ai-message';
+            const senderIcon = msg.sender === 'Anda' ? 'fa-user' : 'fa-robot';
+            const senderColor = msg.sender === 'Anda' ? '#4f46e5' : '#10b981';
+            
+            // Potong teks yang terlalu panjang
+            const shortText = msg.text.length > 100 ? msg.text.substring(0, 100) + '...' : msg.text;
+            
+            html += `
+              <div style="background: #f9fafb; border-radius: 8px; padding: 12px; border-left: 4px solid ${senderColor};">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas ${senderIcon}" style="color: ${senderColor};"></i>
+                    <span style="font-weight: 600;">${msg.sender}</span>
+                  </div>
+                  <span style="font-size: 12px; color: #718096;">${formattedDate}</span>
+                </div>
+                <div style="font-size: 14px; color: #4a5568; white-space: pre-wrap;">${shortText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+              </div>
+            `;
+          });
+          
+          html += '</div>';
+          historyList.innerHTML = html;
+          
+        } catch (error) {
+          console.error('Error loading chat history:', error);
+          historyList.innerHTML = `
+            <div style="text-align: center; color: #ef4444; padding: 20px;">
+              <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+              <p>Gagal memuat riwayat chat</p>
+            </div>
+          `;
+        }
       };
     })();
   </script>
